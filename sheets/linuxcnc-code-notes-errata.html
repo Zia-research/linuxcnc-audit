@@ -1,0 +1,1016 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LinuxCNC — Code Notes Errata</title>
+<style>
+:root{
+  --bg:#E7EAE7; --bg-2:#DDE1DD; --ink:#141A1D; --ink-2:#3E4A47; --ink-3:#6A7570;
+  --rule:#C0C7C1; --rule-2:#A8B0AA;
+  --accent:#B06E12; --accent-bg:#F2E3C9;
+  --ok:#1D6E78; --ok-bg:#D3E2E3;
+  --err:#A8321F; --err-bg:#F0D6D1;
+  --sheet:#E4E7E4; --sheet-rule:#A9B0AA;
+  --mono:ui-monospace,"Cascadia Mono","SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:"Segoe UI",-apple-system,BlinkMacSystemFont,system-ui,ui-sans-serif,sans-serif;
+  color-scheme:light;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#0F1518; --bg-2:#161E22; --ink:#DCE3E1; --ink-2:#A7B3B0; --ink-3:#74827E;
+  --rule:#263136; --rule-2:#354348;
+  --accent:#E0A03C; --accent-bg:#2C2313;
+  --ok:#4FB2BD; --ok-bg:#102A2E;
+  --err:#E2705A; --err-bg:#33170F;
+  color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0F1518; --bg-2:#161E22; --ink:#DCE3E1; --ink-2:#A7B3B0; --ink-3:#74827E;
+  --rule:#263136; --rule-2:#354348; --accent:#E0A03C; --accent-bg:#2C2313;
+  --ok:#4FB2BD; --ok-bg:#102A2E; --err:#E2705A; --err-bg:#33170F; color-scheme:dark;}
+:root[data-theme="light"]{
+  --bg:#E7EAE7; --bg-2:#DDE1DD; --ink:#141A1D; --ink-2:#3E4A47; --ink-3:#6A7570;
+  --rule:#C0C7C1; --rule-2:#A8B0AA; --accent:#B06E12; --accent-bg:#F2E3C9;
+  --ok:#1D6E78; --ok-bg:#D3E2E3; --err:#A8321F; --err-bg:#F0D6D1; color-scheme:light;}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1240px;margin:0 auto;padding:clamp(16px,3vw,40px) clamp(14px,3vw,40px) 80px;display:flex;flex-direction:column;gap:clamp(24px,3.5vw,44px)}
+code{font-family:var(--mono);font-size:.88em;background:var(--bg-2);border:1px solid var(--rule);padding:.04em .3em;white-space:nowrap}
+
+.tb{border:1px solid var(--rule-2);background:var(--bg-2)}
+.tb-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 24px;padding:22px clamp(16px,2.5vw,32px) 16px;border-bottom:1px solid var(--rule)}
+.tb-h h1{font-family:var(--mono);font-size:clamp(24px,3.6vw,42px);font-weight:700;letter-spacing:-.02em;line-height:1.03;margin-right:auto;text-wrap:balance}
+.tb-h h1 span{color:var(--ink-3);font-weight:400}
+.tb-h .st{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-3);text-align:right;line-height:1.6}
+.tb-h .st b{color:var(--err)}
+.tb-b{padding:18px clamp(16px,2.5vw,32px) 22px;display:flex;flex-direction:column;gap:14px}
+blockquote{border-left:3px solid var(--err);background:var(--err-bg);padding:12px 16px;max-width:76ch}
+blockquote p{font-family:var(--mono);font-size:13.5px;line-height:1.6;color:var(--ink)}
+blockquote cite{display:block;margin-top:6px;font-style:normal;font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:.04em}
+.tb-b>p{max-width:76ch;color:var(--ink-2);font-size:17px;line-height:1.55;text-wrap:pretty}
+.tb-b>p b{color:var(--ink);font-weight:600}
+.tally{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));border-top:1px solid var(--rule)}
+.tally div{padding:12px clamp(16px,2.5vw,32px);border-right:1px solid var(--rule)}
+.tally div:last-child{border-right:0}
+.tally b{display:block;font-family:var(--mono);font-size:26px;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
+.tally .e b{color:var(--err)} .tally .o b{color:var(--ok)} .tally .a b{color:var(--accent)}
+.tally span{display:block;font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-3)}
+
+.sh{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px;border-bottom:2px solid var(--ink);padding-bottom:7px;margin-bottom:16px}
+.sh .n{font-family:var(--mono);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--bg);background:var(--ink);padding:2px 7px;flex:none}
+.sh h2{font-family:var(--mono);font-size:clamp(19px,2.4vw,26px);font-weight:700;letter-spacing:-.015em;line-height:1.15;text-wrap:balance}
+.sh .sub{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:.05em}
+.lede{max-width:74ch;color:var(--ink-2);font-size:17px;line-height:1.55;margin-bottom:18px;text-wrap:pretty}
+
+.plate{position:relative;background:var(--sheet);border:1px solid var(--sheet-rule);margin:18px 0;
+  background-image:linear-gradient(rgba(120,132,126,.15) 1px,transparent 1px),linear-gradient(90deg,rgba(120,132,126,.15) 1px,transparent 1px);background-size:22px 22px}
+.plate::before,.plate::after{content:"";position:absolute;width:9px;height:9px;border:1px solid var(--sheet-rule);border-radius:50%}
+.plate::before{top:7px;left:7px}.plate::after{bottom:7px;right:7px}
+.plate-b{overflow-x:auto;padding:20px 16px 12px}
+.plate-b svg{display:block;width:100%;min-width:900px;height:auto}
+.plate-c{border-top:1px solid var(--sheet-rule);padding:8px 16px;font-family:var(--mono);font-size:11px;color:#4A544F;display:flex;flex-wrap:wrap;gap:5px 20px;align-items:center}
+.plate-c b{color:#141A1D;text-transform:uppercase;letter-spacing:.09em;font-weight:600}
+
+.bx{fill:#DCE0DC;stroke:#5E6A63;stroke-width:1.3}
+.bx-o{fill:none;stroke:#8C948E;stroke-width:1.2;stroke-dasharray:5 4}
+.bx-err{fill:#F2DCD7;stroke:#A8321F;stroke-width:1.6}
+.bx-new{fill:#F0DCBE;stroke:#B06E12;stroke-width:1.5}
+.bx-ok{fill:#D3E2E3;stroke:#1D6E78;stroke-width:1.4}
+.bx-q{fill:#FBF0DA;stroke:#B06E12;stroke-width:1.8;stroke-dasharray:5 3}
+.tt{font-family:var(--mono);font-size:11px;fill:#141A1D;font-weight:600}
+.ts{font-family:var(--mono);font-size:8.8px;fill:#4A544F}
+.tg{font-family:var(--mono);font-size:9.5px;fill:#4A544F;letter-spacing:.14em;text-transform:uppercase}
+.ln{stroke:#5E6A63;stroke-width:1.3;fill:none}
+.ln-d{stroke:#5E6A63;stroke-width:1.3;fill:none;stroke-dasharray:6 4}
+.ln-err{stroke:#A8321F;stroke-width:1.6;fill:none}
+.mk circle{fill:#A8321F;stroke:#F2DCD7;stroke-width:1.5}
+.mk text{font-family:var(--mono);font-size:10px;font-weight:700;fill:#FFF;text-anchor:middle}
+.strike{stroke:#A8321F;stroke-width:2;opacity:.85}
+
+.tsc{overflow-x:auto;border:1px solid var(--rule-2);margin:18px 0}
+table{border-collapse:collapse;width:100%;min-width:860px;background:var(--bg-2);font-size:14px}
+thead th{text-align:left;font-family:var(--mono);font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--bg);background:var(--ink);padding:8px 11px;white-space:nowrap}
+tbody td{padding:11px;border-top:1px solid var(--rule);vertical-align:top;line-height:1.5}
+tbody tr:nth-child(even){background:color-mix(in srgb,var(--bg) 55%,var(--bg-2))}
+td.no{font-family:var(--mono);font-weight:700;color:var(--err);font-size:15px;width:38px;text-align:center;font-variant-numeric:tabular-nums}
+td.was{color:var(--ink-2)}
+td.was em{font-style:normal;font-family:var(--mono);font-size:12.5px;color:var(--err);display:block;margin-bottom:3px}
+td.is b{color:var(--ink);font-weight:600}
+td.ev{font-family:var(--mono);font-size:11.5px;color:var(--ok);white-space:nowrap;line-height:1.6}
+
+.ok-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;margin:18px 0}
+.ok-item{border:1px solid var(--rule-2);border-left:4px solid var(--ok);background:var(--bg-2);padding:11px 14px}
+.ok-item b{display:block;font-family:var(--mono);font-size:12.5px;color:var(--ok);margin-bottom:3px}
+.ok-item span{font-size:13.5px;color:var(--ink-2);line-height:1.5}
+
+.note{border:1px solid var(--rule-2);border-left:4px solid var(--accent);background:var(--bg-2);padding:14px 18px;margin:18px 0;max-width:78ch}
+.note h4{font-family:var(--mono);font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:6px}
+.note p+p{margin-top:9px}
+
+.cov{display:flex;height:34px;border:1px solid var(--rule-2);margin:18px 0 6px;overflow:hidden}
+.cov div{display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11.5px;font-weight:600;white-space:nowrap}
+.cov .d{background:var(--accent-bg);color:var(--accent);flex:19}
+.cov .u{background:var(--bg-2);color:var(--ink-3);flex:57;border-left:2px solid var(--bg)}
+.cov-l{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10.5px;color:var(--ink-3);margin-bottom:18px}
+.dead{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0}
+.dead span{font-family:var(--mono);font-size:12px;padding:3px 8px;border:1px solid var(--err);background:var(--err-bg);color:var(--err);text-decoration:line-through}
+.grp{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin:16px 0}
+.grp div{border:1px solid var(--rule-2);border-left:3px solid var(--accent);background:var(--bg-2);padding:10px 13px}
+.grp b{display:block;font-family:var(--mono);font-size:11.5px;color:var(--accent);margin-bottom:4px}
+.grp code{white-space:normal;display:inline;background:none;border:0;padding:0;color:var(--ink);font-size:12px}
+.verdict{display:flex;align-items:center;gap:12px;border:1px solid var(--rule-2);background:var(--bg-2);padding:12px 16px;margin:16px 0}
+.verdict .b{font-family:var(--mono);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:3px 9px;flex:none}
+.verdict .b.ok{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok)}
+.verdict .b.ko{background:var(--err-bg);color:var(--err);border:1px solid var(--err)}
+.verdict p{font-size:14px;line-height:1.5;color:var(--ink-2)}
+
+.sem{overflow-x:auto;border:1px solid var(--rule-2);margin:18px 0}
+.sem table{min-width:900px}
+.sem td.cmd{font-family:var(--mono);font-size:12.5px;font-weight:600;white-space:nowrap;color:var(--ink)}
+.sem td.st{white-space:nowrap;width:1%}
+.pill2{display:inline-block;font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:3px 8px;border:1px solid currentColor;white-space:nowrap}
+.p-ko{color:var(--err);background:var(--err-bg)}
+.p-okk{color:var(--ok);background:var(--ok-bg)}
+.p-stub{color:var(--ink-3)}
+.p-part{color:var(--accent);background:var(--accent-bg)}
+.quote-code{font-family:var(--mono);font-size:12px;background:var(--bg-2);border:1px solid var(--rule);border-left:3px solid var(--err);padding:10px 13px;margin:12px 0;white-space:pre-wrap;overflow-x:auto;color:var(--ink-2)}
+.face{display:grid;grid-template-columns:1fr;gap:0;border:1px solid var(--rule-2);margin:16px 0}
+@media(min-width:760px){.face{grid-template-columns:1fr 1fr}}
+.face>div{padding:13px 16px}
+.face .doc{background:var(--err-bg);border-bottom:1px solid var(--rule-2)}
+@media(min-width:760px){.face .doc{border-bottom:0;border-right:1px solid var(--rule-2)}}
+.face .code{background:var(--bg-2)}
+.face h5{font-family:var(--mono);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px}
+.face .doc h5{color:var(--err)} .face .code h5{color:var(--ok)}
+.face p{font-size:13.5px;line-height:1.5;color:var(--ink-2)}
+.face code{font-size:12px}
+
+.srcs{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:8px}
+.src{border:1px solid var(--rule-2);background:var(--bg-2);padding:10px 13px;font-family:var(--mono);font-size:12px;line-height:1.5}
+.src b{display:block;color:var(--accent);margin-bottom:2px}
+.src span{color:var(--ink-3);word-break:break-all}
+footer{border-top:1px solid var(--rule);padding-top:14px;margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--ink-3);display:flex;flex-wrap:wrap;gap:6px 24px}
+.warn{border:1px solid var(--err);border-left:5px solid var(--err);background:var(--err-bg);padding:15px 19px}
+.warn h4{font-family:var(--mono);font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--err);margin-bottom:7px}
+.warn p{font-size:14.5px;line-height:1.6;color:var(--ink-2);max-width:88ch}
+.warn p+p{margin-top:9px}
+.warn p b{color:var(--ink);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="tb">
+  <div class="tb-h">
+    <h1>Errata <span>— LinuxCNC Code Notes</span></h1>
+    <div class="st">master <b>2.10.0~pre1 — unreleased</b><br>HEAD caa13ca6 (2026-07-30) · audited 2026-08-03</div>
+  </div>
+  <div class="tb-b">
+    <blockquote>
+      <p>“Much of this information is now outdated and has never been reviewed for accuracy.”</p>
+      <cite>docs/src/code/code-notes.adoc — “Intended audience”, opening section</cite>
+    </blockquote>
+    <p>
+      The document warns you itself. This audit takes the warning at its word and puts the
+      <i>Code Notes</i> against the source of the <code>master</code> branch — both block diagrams, the
+      motion command list, the libnml and CMS chapters, the tool table, the documented
+      <b>semantics</b> of every surviving command, handler by handler in <code>command.c</code> — and,
+      beyond the Code Notes, a sampled audit of the <b>G-code reference</b> against the interpreter.
+    </p>
+    <p>
+      <b>Twenty-seven corrections.</b> Two commands declared “always accepted” can in fact be rejected.
+      A defect described as “currently broken” has been fixed without the text moving — twice. Three
+      documented commands still have no handler at all, and nothing even emits them. The G-code
+      reference documents two <b>errors that are implemented nowhere</b>. What holds up is listed as
+      such — sixteen points, including one whole chapter. <b>Fixes for the actionable errata are
+      prepared as three patches</b> (see <code>upstream/</code> beside this file).
+    </p>
+  </div>
+  <div class="tally">
+    <div class="e"><b>27</b><span>corrections</span></div>
+    <div class="o"><b>16</b><span>confirmed correct</span></div>
+    <div class="a"><b>73</b><span>of 76 commands have a handler</span></div>
+    <div class="a"><b>3</b><span>upstream patches prepared</span></div>
+  </div>
+</header>
+
+<div class="warn">
+  <h4>⚠ Which LinuxCNC does this describe?</h4>
+  <p>
+    Every finding here is against <code>master</code>, which is <b>unreleased</b>. The newest tag in the
+    repository is <code>v2.9.10</code>. Most of the errata hold for 2.9 as well — HAL, the
+    <code>emcmot</code> segment, the queues, the servo cycle, joints versus axes — but
+    <b>erratum 3 does not</b>.
+  </p>
+  <p>
+    The commit that moved all I/O handling out of the <code>iocontrol</code> process and into
+    <code>milltask</code> is <code>764655eb4d</code> (2023-05-16). <code>git tag --contains</code>
+    returns nothing for it and <code>git branch -r --contains</code> returns only
+    <code>origin/master</code>. <b>If you run 2.9.x — the current stable — <code>iocontrol</code> is
+    still a separate process on your machine.</b> Ask which version you are on before acting on that one.
+  </p>
+  <p>
+    A second date worth keeping straight: <code>iotaskintf.cc</code> was dropped from the task
+    <code>Submakefile</code> back on <b>2011-08-03</b> (<code>d56fdbfcbb</code>) — twelve years before
+    the I/O handling itself moved. Two separate events, easily conflated.
+  </p>
+</div>
+
+<!-- ══════ SHEET A ══════ -->
+<section>
+  <div class="sh"><span class="n">Sheet A</span><h2>The diagram as published</h2><span class="sub">faithfully redrawn · error markers in red</span></div>
+  <p class="lede">
+    Topology and captions follow the original. Blocks struck through or ringed in red carry a
+    numbered marker keyed to the errata tables below.
+  </p>
+  <div class="plate"><div class="plate-b">
+  <svg viewBox="0 0 1160 900" role="img" aria-label="Official LinuxCNC block diagram redrawn with ten error markers">
+    <rect class="bx" x="430" y="28" width="290" height="58"/>
+    <text class="tt" x="575" y="55" text-anchor="middle">GUI</text>
+    <text class="ts" x="575" y="70" text-anchor="middle">operator interfaces</text>
+    <line class="ln" x1="575" y1="86" x2="575" y2="108"/>
+    <rect class="bx-ok" x="500" y="108" width="150" height="26"/>
+    <line class="ln" x1="550" y1="108" x2="550" y2="134"/><line class="ln" x1="600" y1="108" x2="600" y2="134"/>
+    <text class="ts" x="525" y="125" text-anchor="middle">CMD</text>
+    <text class="ts" x="575" y="125" text-anchor="middle">STAT</text>
+    <text class="ts" x="625" y="125" text-anchor="middle">ERR</text>
+    <text class="tg" x="492" y="125" text-anchor="end">NML</text>
+    <line class="ln" x1="575" y1="134" x2="575" y2="158"/>
+
+    <rect class="bx" x="300" y="158" width="560" height="140"/>
+    <text class="tt" x="845" y="180" text-anchor="end">EMCTASK</text>
+    <rect class="bx" x="336" y="200" width="220" height="70"/>
+    <text class="tt" x="446" y="228" text-anchor="middle">RS-274</text>
+    <text class="ts" x="446" y="243" text-anchor="middle">(GCODE) INTERPRETER</text>
+    <rect class="bx" x="600" y="200" width="220" height="70"/>
+    <text class="tt" x="710" y="228" text-anchor="middle">SEQUENCING</text>
+    <text class="tt" x="710" y="243" text-anchor="middle">LOGIC</text>
+
+    <line class="ln" x1="420" y1="298" x2="420" y2="330"/>
+    <rect class="bx-err" x="345" y="330" width="150" height="26"/>
+    <line class="ln-err" x1="395" y1="330" x2="395" y2="356"/><line class="ln-err" x1="445" y1="330" x2="445" y2="356"/>
+    <text class="ts" x="370" y="347" text-anchor="middle">CMD</text>
+    <text class="ts" x="420" y="347" text-anchor="middle">STAT</text>
+    <text class="ts" x="470" y="347" text-anchor="middle">ERR</text>
+    <text class="tg" x="337" y="347" text-anchor="end" fill="#A8321F">NML?</text>
+    <g class="mk"><circle cx="510" cy="343" r="11"/><text x="510" y="347">1</text></g>
+
+    <line class="ln" x1="800" y1="298" x2="800" y2="330"/>
+    <rect class="bx-err" x="725" y="330" width="150" height="26"/>
+    <text class="ts" x="750" y="347" text-anchor="middle">CMD</text>
+    <text class="ts" x="800" y="347" text-anchor="middle">STAT</text>
+    <text class="ts" x="850" y="347" text-anchor="middle">ERR</text>
+    <text class="tg" x="717" y="347" text-anchor="end">NML</text>
+    <line class="strike" x1="725" y1="330" x2="875" y2="356"/>
+    <line class="strike" x1="725" y1="356" x2="875" y2="330"/>
+
+    <line class="ln-d" x1="24" y1="386" x2="1136" y2="386"/>
+    <text class="tg" x="30" y="380">NON-REALTIME</text>
+    <text class="tg" x="30" y="400">REALTIME</text>
+    <g class="mk"><circle cx="1120" cy="386" r="11"/><text x="1120" y="390">9</text></g>
+
+    <rect class="bx" x="300" y="404" width="290" height="36"/>
+    <text class="tt" x="445" y="427" text-anchor="middle">SHARED MEMORY BUFFER</text>
+    <line class="ln" x1="420" y1="356" x2="420" y2="404"/>
+
+    <line class="ln-err" x1="420" y1="440" x2="420" y2="478"/>
+    <polygon fill="#A8321F" points="420,478 415,466 425,466"/>
+    <polygon fill="#A8321F" points="420,440 415,452 425,452"/>
+    <text class="tg" x="434" y="464" fill="#A8321F">FIFOS?</text>
+    <g class="mk"><circle cx="510" cy="459" r="11"/><text x="510" y="463">2</text></g>
+
+    <rect class="bx-o" x="40" y="490" width="610" height="380"/>
+    <text class="tt" x="634" y="510" text-anchor="end">EMCMOT</text>
+    <rect class="bx-o" x="66" y="522" width="560" height="88"/>
+    <rect class="bx" x="252" y="530" width="160" height="28"/>
+    <text class="ts" x="332" y="548" text-anchor="middle">TRAJECTORY PLANNER</text>
+    <rect class="bx" x="80" y="570" width="140" height="30"/>
+    <text class="ts" x="150" y="583" text-anchor="middle">FORWARD</text>
+    <text class="ts" x="150" y="594" text-anchor="middle">KINEMATICS</text>
+    <rect class="bx" x="238" y="570" width="140" height="30"/>
+    <text class="ts" x="308" y="583" text-anchor="middle">INVERSE</text>
+    <text class="ts" x="308" y="594" text-anchor="middle">KINEMATICS</text>
+    <rect class="bx" x="396" y="570" width="150" height="30"/>
+    <text class="ts" x="471" y="583" text-anchor="middle">LIMIT &amp; HOME</text>
+    <text class="ts" x="471" y="594" text-anchor="middle">STATUS</text>
+    <g class="mk"><circle cx="612" cy="536" r="11"/><text x="612" y="540">8</text></g>
+
+    <rect class="bx-err" x="66" y="628" width="256" height="150" fill="none" stroke-dasharray="5 4"/>
+    <text class="tg" x="78" y="646" fill="#A8321F">AXIS 1</text>
+    <g class="mk"><circle cx="308" cy="642" r="11"/><text x="308" y="646">6</text></g>
+    <rect class="bx" x="86" y="654" width="150" height="26"/>
+    <text class="ts" x="161" y="671" text-anchor="middle">INTERPOLATOR</text>
+    <circle cx="161" cy="700" r="11" class="bx"/><text class="ts" x="161" y="704" text-anchor="middle">Σ</text>
+    <line class="ln" x1="161" y1="680" x2="161" y2="689"/>
+    <line class="ln" x1="161" y1="711" x2="161" y2="720"/>
+    <rect class="bx-err" x="86" y="720" width="150" height="26"/>
+    <text class="ts" x="161" y="737" text-anchor="middle">PID SERVO</text>
+    <line class="strike" x1="86" y1="720" x2="236" y2="746"/>
+    <rect class="bx" x="86" y="752" width="150" height="24"/>
+    <text class="ts" x="161" y="768" text-anchor="middle">UNIT CONVERT</text>
+    <g class="mk"><circle cx="255" cy="733" r="11"/><text x="255" y="737">5</text></g>
+    <rect class="bx-o" x="342" y="628" width="256" height="150"/>
+    <text class="tg" x="354" y="646">AXIS N</text>
+    <text class="ts" x="470" y="710" text-anchor="middle" opacity=".55">(identical)</text>
+
+    <rect class="bx-o" x="66" y="792" width="532" height="60"/>
+    <text class="tg" x="78" y="808">REALTIME HARDWARE DEVICES</text>
+    <rect class="bx-err" x="80" y="814" width="118" height="28"/>
+    <text class="ts" x="139" y="832" text-anchor="middle">ENCODER CNTR</text>
+    <rect class="bx-err" x="208" y="814" width="118" height="28"/>
+    <text class="ts" x="267" y="832" text-anchor="middle">D/A CONVERTER</text>
+    <rect class="bx-err" x="336" y="814" width="118" height="28"/>
+    <text class="ts" x="395" y="832" text-anchor="middle">LIMIT SWITCHES</text>
+    <rect class="bx" x="464" y="814" width="118" height="28"/>
+    <text class="ts" x="523" y="832" text-anchor="middle">MOTOR / ENC.</text>
+
+    <rect class="bx-err" x="690" y="490" width="430" height="380" fill="none" stroke-dasharray="6 4"/>
+    <text class="tt" x="1104" y="510" text-anchor="end" fill="#A8321F">EMCIO</text>
+    <g class="mk"><circle cx="700" cy="500" r="11"/><text x="700" y="504">3</text></g>
+    <line class="strike" x1="690" y1="490" x2="1120" y2="870"/>
+    <line class="strike" x1="1120" y1="490" x2="690" y2="870"/>
+    <line class="ln" x1="800" y1="356" x2="800" y2="490"/>
+    <rect class="bx" x="810" y="530" width="190" height="30"/>
+    <text class="ts" x="905" y="543" text-anchor="middle">COORDINATING</text>
+    <text class="ts" x="905" y="554" text-anchor="middle">CONTROLLER</text>
+    <rect class="bx-err" x="706" y="596" width="130" height="30"/>
+    <text class="ts" x="771" y="609" text-anchor="middle">SPINDLE</text>
+    <text class="ts" x="771" y="620" text-anchor="middle">CONTROLLER</text>
+    <g class="mk"><circle cx="700" cy="590" r="11"/><text x="700" y="594">7</text></g>
+    <rect class="bx" x="850" y="596" width="130" height="30"/>
+    <text class="ts" x="915" y="609" text-anchor="middle">COOLANT</text>
+    <text class="ts" x="915" y="620" text-anchor="middle">CONTROLLER</text>
+    <rect class="bx" x="994" y="596" width="112" height="30"/>
+    <text class="ts" x="1050" y="609" text-anchor="middle">AUXILIARY</text>
+    <text class="ts" x="1050" y="620" text-anchor="middle">CONTROLLER</text>
+    <rect class="bx-o" x="706" y="666" width="400" height="54"/>
+    <text class="tg" x="718" y="684">NON-REALTIME HARDWARE DEVICES</text>
+
+    <rect x="690" y="748" width="430" height="104" fill="#F2DCD7" stroke="#A8321F" stroke-width="1.4" stroke-dasharray="4 3"/>
+    <text class="tt" x="706" y="770" fill="#A8321F">MISSING FROM THE DIAGRAM</text>
+    <text class="ts" x="706" y="790">HAL — the layer that now carries all coupling</text>
+    <text class="ts" x="706" y="802">between motion and the hardware</text>
+    <g class="mk"><circle cx="1096" cy="786" r="11"/><text x="1096" y="790">4</text></g>
+    <text class="ts" x="706" y="822">interp_list and TC_QUEUE — the two real queues</text>
+    <text class="ts" x="706" y="834">of the system, never drawn</text>
+    <g class="mk"><circle cx="1096" cy="826" r="11"/><text x="1096" y="830">10</text></g>
+  </svg>
+  </div>
+  <div class="plate-c"><b>Sheet A</b><span>redrawn after docs/src/code/LinuxCNC-block-diagram-small.png — original captions kept · in the repository unchanged since 2012-11-19, commit b60c20198e (git log --follow shows a single commit); the drawing's content is plainly older but nothing in the repository dates it further back</span></div>
+  </div>
+</section>
+
+<!-- ══════ ERRATA 1-10 ══════ -->
+<section>
+  <div class="sh"><span class="n">Errata</span><h2>Corrections 1 to 10 — overall diagram</h2><span class="sub">every row is checkable in the source</span></div>
+  <div class="tsc">
+  <table>
+    <thead><tr><th>#</th><th>What the diagram claims</th><th>What master says</th><th>Evidence</th></tr></thead>
+    <tbody>
+      <tr><td class="no">1</td>
+        <td class="was"><em>“NML?” between EMCTASK and shared memory</em>The task→motion link would be an NML channel with its CMD/STAT/ERR triplet.</td>
+        <td class="is">It is not NML. The task writes straight into an <b>RTAPI shmem</b> segment opened by <code>motmod</code> with key 100, through <code>usrmotWriteEmcmotCommand()</code>. And there is <b>exactly one NML triplet in the whole system</b> — GUI to task — not three.</td>
+        <td class="ev">motion.c:44<br>usrmotintf.h:67<br>linuxcnc.nml</td></tr>
+      <tr><td class="no">2</td>
+        <td class="was"><em>“FIFOS?” between shared memory and EMCMOT</em>The crossing into real time would be done with queues.</td>
+        <td class="is">No. It is a <b>single slot</b>: <code>emcmot_command_t command</code>, guarded by <code>command_mutex</code>, with a <code>commandNum</code> counter whose echo the task waits for in <code>commandNumEcho</code>. One command at a time, 1 s timeout. The only ring in that segment is <code>emcmot_error_t</code> — 32 × 1024 B, lock-free MPSC.</td>
+        <td class="ev">motion_struct.h:20-21<br>motion.h:211, 584<br>motion.h:746</td></tr>
+      <tr><td class="no">3</td>
+        <td class="was"><em>EMCIO, a fourth process</em>A separate discrete I/O controller with its own NML channels to EMCTASK.</td>
+        <td class="is">The process is gone. The task <code>Submakefile</code> carries <code># disabled:&nbsp;emc/task/iotaskintf.cc</code>, and the <b>14</b> <code>iocontrol.0.*</code> pins are created by <code>milltask</code> itself. The <code>iocontrol</code> name is kept so existing <code>.hal</code> files keep working.</td>
+        <td class="ev">task/Submakefile:13<br>taskclass.cc:41,133</td></tr>
+      <tr><td class="no">4</td>
+        <td class="was"><em>HAL appears nowhere</em>The motion controller would talk to hardware directly.</td>
+        <td class="is">Structural omission, and the heaviest one: the diagram predates HAL. Today <b>all</b> coupling goes through a 2 MiB shared block (key <code>0x48414C32</code>) holding components, pins, signals, functions and threads. The motion controller does nothing but write to pins.</td>
+        <td class="ev">hal_priv.h:120-122<br>motion.c:518+</td></tr>
+      <tr><td class="no">5</td>
+        <td class="was"><em>PID SERVO, D/A CONVERTER, ENCODER COUNTER, LIMIT SWITCHES inside EMCMOT</em>Servo loop and I/O would be internal to the motion controller.</td>
+        <td class="is">All moved out. They are <b>independent HAL components</b>, wired in a <code>.hal</code> file by the integrator. The comment in <code>control.c</code> is unambiguous: the final motor position goes “<i>to the HAL (which routes it to the PID</i>”. Nothing in <code>src/emc/motion/</code> computes a PID.</td>
+        <td class="ev">control.c:180<br>hal/components/pid.c</td></tr>
+      <tr><td class="no">6</td>
+        <td class="was"><em>“AXIS 1 … AXIS N”</em>One controller per axis, axis and motor conflated.</td>
+        <td class="is">These are <b>joints</b>, not axes. Since the joints/axes rework a joint is a motor and an axis is a Cartesian coordinate: <code>EMCMOT_MAX_JOINTS 16</code> against <code>EMCMOT_MAX_AXIS 9</code>. On a trivkins machine they coincide; on a delta or a hexapod they do not.</td>
+        <td class="ev">emcmotcfg.h:25,31</td></tr>
+      <tr><td class="no">7</td>
+        <td class="was"><em>SPINDLE CONTROLLER inside EMCIO</em>The spindle would be driven outside real time.</td>
+        <td class="is">The spindle moved <b>into</b> real time. <code>motmod</code> exports <code>spindle.N.on</code>, <code>speed-out</code>, <code>at-speed</code>, <code>index-enable</code>, <code>orient</code>… for <b>8</b> spindles. It had to: threading and rigid tapping need servo-rate synchronisation.</td>
+        <td class="ev">motion.c:709-734<br>emcmotcfg.h:33</td></tr>
+      <tr><td class="no">8</td>
+        <td class="was"><em>Planner, kinematics and homing as fixed blocks</em>Three functions welded into EMCMOT.</td>
+        <td class="is">They are <b>separately loaded modules</b>: <code>tpmod</code>, <code>homemod</code>, and one kinematics module out of 19. Each can be replaced by a custom implementation without recompiling the rest. In master, <code>cruckig</code> — a 34-file pure-C port of Ruckig — brings a finite-jerk planner.</td>
+        <td class="ev">tp/tpmod.c<br>motion/homemod.c<br>tp/cruckig/</td></tr>
+      <tr><td class="no">9</td>
+        <td class="was"><em>The “NON-REALTIME / REALTIME” line</em>Implies a kernel boundary.</td>
+        <td class="is">By default it is not one any more. With the <code>uspace</code> flavour on a <code>PREEMPT_RT</code> kernel, “real-time” components are <b><code>SCHED_FIFO</code> user-space threads</b> hosted by <code>rtapi_app</code>. The boundary has become a <b>scheduling</b> boundary. Kernel-module mode survives only for RTAI.</td>
+        <td class="ev">rtapi/uspace_posix.cc<br>rtapi/rtai_rtapi.c</td></tr>
+      <tr><td class="no">10</td>
+        <td class="was"><em>No queue shown anywhere</em>The diagram writes “FIFOS?” where there are none, and nothing where there are.</td>
+        <td class="is">Both real queues are elsewhere and absent from the drawing: <code>interp_list</code>, the <code>std::deque</code> that absorbs how far the interpreter runs ahead of the machine; and <code>TC_QUEUE</code>, the ring of <b>2000 segments</b> (≈ 1 MB) that gives the planner the lookahead it needs to blend corners.</td>
+        <td class="ev">nml_intf/interpl.hh:46<br>tp/tcq.h<br>emcmotcfg.h:70</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ══════ SHEET B ══════ -->
+<section>
+  <div class="sh"><span class="n">Sheet B</span><h2>The corrected diagram</h2><span class="sub">same topology, ten corrections applied</span></div>
+  <p class="lede">
+    Deliberately laid out like Sheet A so the comparison can be made block by block. Amber marks what
+    was corrected or added; blue marks what the original already had right.
+  </p>
+  <div class="plate"><div class="plate-b">
+  <svg viewBox="0 0 1160 900" role="img" aria-label="Corrected LinuxCNC architecture diagram based on master sources">
+    <rect class="bx-ok" x="380" y="28" width="390" height="58"/>
+    <text class="tt" x="575" y="52" text-anchor="middle">GUI · halui · linuxcncrsh</text>
+    <text class="ts" x="575" y="68" text-anchor="middle">axis · gmoccapy · qtvcp · touchy · gscreen</text>
+    <line class="ln" x1="575" y1="86" x2="575" y2="108"/>
+    <rect class="bx-ok" x="460" y="108" width="230" height="30"/>
+    <line class="ln" x1="537" y1="108" x2="537" y2="138"/><line class="ln" x1="614" y1="108" x2="614" y2="138"/>
+    <text class="ts" x="498" y="121" text-anchor="middle">emcCommand</text>
+    <text class="ts" x="498" y="132" text-anchor="middle">8192 B · queue</text>
+    <text class="ts" x="575" y="121" text-anchor="middle">emcStatus</text>
+    <text class="ts" x="575" y="132" text-anchor="middle">20480 B</text>
+    <text class="ts" x="652" y="121" text-anchor="middle">emcError</text>
+    <text class="ts" x="652" y="132" text-anchor="middle">8192 B · queue</text>
+    <text class="tg" x="452" y="126" text-anchor="end">NML</text>
+    <text class="ts" x="700" y="126">the only triplet · owned by linuxcncsvr</text>
+    <line class="ln" x1="575" y1="138" x2="575" y2="158"/>
+
+    <rect class="bx-new" x="240" y="158" width="680" height="150"/>
+    <text class="tt" x="906" y="178" text-anchor="end">milltask</text>
+    <rect class="bx-ok" x="270" y="196" width="170" height="66"/>
+    <text class="tt" x="355" y="222" text-anchor="middle">RS-274</text>
+    <text class="ts" x="355" y="237" text-anchor="middle">interpreter · rs274ngc</text>
+    <rect class="bx-q" x="456" y="196" width="150" height="66"/>
+    <text class="tt" x="531" y="218" text-anchor="middle" fill="#B06E12">interp_list</text>
+    <text class="ts" x="531" y="232" text-anchor="middle">std::deque</text>
+    <text class="ts" x="531" y="244" text-anchor="middle">unbounded</text>
+    <g class="mk"><circle cx="600" cy="202" r="11" fill="#B06E12"/><text x="600" y="206">10</text></g>
+    <rect class="bx-ok" x="622" y="196" width="140" height="66"/>
+    <text class="tt" x="692" y="222" text-anchor="middle">sequencing</text>
+    <text class="ts" x="692" y="237" text-anchor="middle">emctaskmain.cc</text>
+    <rect class="bx-new" x="778" y="196" width="126" height="66"/>
+    <text class="tt" x="841" y="216" text-anchor="middle" fill="#7A4A08">iocontrol.0.*</text>
+    <text class="ts" x="841" y="230" text-anchor="middle">14 HAL pins</text>
+    <text class="ts" x="841" y="242" text-anchor="middle">former io process</text>
+    <g class="mk"><circle cx="898" cy="202" r="11" fill="#B06E12"/><text x="898" y="206">3</text></g>
+    <text class="ts" x="270" y="284">tool, coolant, estop — no NML channel left for I/O</text>
+
+    <line class="ln" x1="420" y1="308" x2="420" y2="336"/>
+    <rect class="bx-new" x="150" y="336" width="620" height="72"/>
+    <text class="tg" x="162" y="352" fill="#7A4A08">RTAPI shmem · key 100 · emcmot segment</text>
+    <rect class="bx-new" x="166" y="358" width="196" height="42"/>
+    <text class="ts" x="264" y="374" text-anchor="middle">emcmot_command_t</text>
+    <text class="ts" x="264" y="386" text-anchor="middle">SINGLE SLOT</text>
+    <text class="ts" x="264" y="396" text-anchor="middle">mutex + commandNum</text>
+    <g class="mk"><circle cx="356" cy="364" r="11" fill="#B06E12"/><text x="356" y="368">2</text></g>
+    <rect class="bx-new" x="374" y="358" width="186" height="42"/>
+    <text class="ts" x="467" y="374" text-anchor="middle">emcmot_status_t</text>
+    <text class="ts" x="467" y="386" text-anchor="middle">seqlock head / tail</text>
+    <text class="ts" x="467" y="396" text-anchor="middle">+ config, internal</text>
+    <rect class="bx-q" x="572" y="358" width="184" height="42"/>
+    <text class="ts" x="664" y="374" text-anchor="middle" fill="#B06E12">emcmot_error_t</text>
+    <text class="ts" x="664" y="386" text-anchor="middle">MPSC RING 32 × 1024</text>
+    <text class="ts" x="664" y="396" text-anchor="middle">the only real queue here</text>
+    <text class="ts" x="786" y="368">not NML,</text>
+    <text class="ts" x="786" y="380">not a FIFO:</text>
+    <text class="ts" x="786" y="392">one exchange at a time</text>
+    <g class="mk"><circle cx="164" cy="336" r="11" fill="#B06E12"/><text x="164" y="340">1</text></g>
+
+    <line class="ln-d" x1="24" y1="432" x2="1136" y2="432"/>
+    <text class="tg" x="30" y="426">ordinary scheduling</text>
+    <text class="tg" x="30" y="446" fill="#7A4A08">SCHED_FIFO — rtapi_app, user space</text>
+    <text class="ts" x="700" y="428">a scheduling boundary, no longer a kernel boundary — except under RTAI</text>
+    <g class="mk"><circle cx="1120" cy="432" r="11" fill="#B06E12"/><text x="1120" y="436">9</text></g>
+
+    <rect class="bx-new" x="40" y="462" width="1080" height="222"/>
+    <text class="tt" x="1104" y="482" text-anchor="end" fill="#7A4A08">motmod + loaded modules</text>
+    <rect class="bx-new" x="66" y="494" width="150" height="52"/>
+    <text class="ts" x="141" y="512" text-anchor="middle">tpmod</text>
+    <text class="ts" x="141" y="524" text-anchor="middle">trajectory planner</text>
+    <text class="ts" x="141" y="536" text-anchor="middle">cruckig · finite jerk</text>
+    <rect class="bx-new" x="228" y="494" width="140" height="52"/>
+    <text class="ts" x="298" y="512" text-anchor="middle">homemod</text>
+    <text class="ts" x="298" y="524" text-anchor="middle">homing</text>
+    <rect class="bx-new" x="380" y="494" width="160" height="52"/>
+    <text class="ts" x="460" y="512" text-anchor="middle">*kins</text>
+    <text class="ts" x="460" y="524" text-anchor="middle">forward and inverse</text>
+    <text class="ts" x="460" y="536" text-anchor="middle">kinematics · 19 modules</text>
+    <g class="mk"><circle cx="66" cy="494" r="11" fill="#B06E12"/><text x="66" y="498">8</text></g>
+    <rect class="bx-q" x="552" y="494" width="164" height="52"/>
+    <text class="tt" x="634" y="514" text-anchor="middle" fill="#B06E12">TC_QUEUE</text>
+    <text class="ts" x="634" y="528" text-anchor="middle">ring · 2000 segments</text>
+    <text class="ts" x="634" y="540" text-anchor="middle">≈ 1 MB</text>
+    <g class="mk"><circle cx="710" cy="500" r="11" fill="#B06E12"/><text x="710" y="504">10</text></g>
+    <rect class="bx-new" x="728" y="494" width="180" height="52"/>
+    <text class="ts" x="818" y="512" text-anchor="middle">spindle × 8</text>
+    <text class="ts" x="818" y="524" text-anchor="middle">spindle.N.on · speed-out</text>
+    <text class="ts" x="818" y="536" text-anchor="middle">at-speed · index-enable</text>
+    <g class="mk"><circle cx="902" cy="500" r="11" fill="#B06E12"/><text x="902" y="504">7</text></g>
+    <rect class="bx-ok" x="920" y="494" width="180" height="52"/>
+    <text class="ts" x="1010" y="512" text-anchor="middle">limit and home</text>
+    <text class="ts" x="1010" y="524" text-anchor="middle">status</text>
+    <rect class="bx-new" x="66" y="566" width="474" height="102"/>
+    <text class="tg" x="78" y="584" fill="#7A4A08">JOINT 1 … 16 — a motor, not an axis · 9 separate Cartesian axes</text>
+    <g class="mk"><circle cx="524" cy="576" r="11" fill="#B06E12"/><text x="524" y="580">6</text></g>
+    <rect class="bx-ok" x="86" y="594" width="160" height="26"/>
+    <text class="ts" x="166" y="611" text-anchor="middle">cubic interpolator</text>
+    <rect class="bx-new" x="266" y="594" width="160" height="26"/>
+    <text class="ts" x="346" y="611" text-anchor="middle">backlash + screw comp</text>
+    <text class="ts" x="86" y="640">output: motor_pos_cmd on a HAL pin — the controller stops there</text>
+    <rect class="bx-ok" x="566" y="566" width="534" height="102" fill="none" stroke-dasharray="5 4"/>
+    <text class="tg" x="578" y="584">WHAT THE DIAGRAM GOT RIGHT</text>
+    <text class="ts" x="578" y="606">cubic interpolator · forward and inverse kinematics · limit/home status</text>
+    <text class="ts" x="578" y="620">RS-274 interpreter · sequencing logic · NML triplet to the GUI</text>
+    <text class="ts" x="578" y="634">encoder and motor closing the loop · the principle of a real-time boundary</text>
+
+    <rect class="bx-new" x="40" y="700" width="1080" height="42"/>
+    <text class="tt" x="56" y="718" fill="#7A4A08">HAL</text>
+    <text class="ts" x="94" y="718">2 MiB shared block · key 0x48414C32 · components ▸ pins ▸ signals ▸ functions ▸ threads</text>
+    <text class="ts" x="94" y="732">absent from the original — yet it now carries every bit of hardware coupling</text>
+    <g class="mk"><circle cx="1100" cy="700" r="11" fill="#B06E12"/><text x="1100" y="704">4</text></g>
+
+    <rect class="bx-new" x="40" y="758" width="530" height="112"/>
+    <text class="tg" x="56" y="776" fill="#7A4A08">HAL COMPONENTS — wired by the integrator, moved out of the controller</text>
+    <g class="mk"><circle cx="554" cy="768" r="11" fill="#B06E12"/><text x="554" y="772">5</text></g>
+    <rect class="bx" x="58" y="788" width="110" height="26"/><text class="ts" x="113" y="805" text-anchor="middle">pid</text>
+    <rect class="bx" x="178" y="788" width="110" height="26"/><text class="ts" x="233" y="805" text-anchor="middle">stepgen</text>
+    <rect class="bx" x="298" y="788" width="110" height="26"/><text class="ts" x="353" y="805" text-anchor="middle">pwmgen</text>
+    <rect class="bx" x="418" y="788" width="134" height="26"/><text class="ts" x="485" y="805" text-anchor="middle">encoder</text>
+    <rect class="bx" x="58" y="822" width="110" height="26"/><text class="ts" x="113" y="839" text-anchor="middle">estop_latch</text>
+    <rect class="bx" x="178" y="822" width="110" height="26"/><text class="ts" x="233" y="839" text-anchor="middle">limit3</text>
+    <text class="ts" x="298" y="839">124 .comp + 25 .c source files</text>
+
+    <rect class="bx" x="590" y="758" width="530" height="112"/>
+    <text class="tg" x="606" y="776">DRIVERS AND HARDWARE</text>
+    <rect class="bx" x="608" y="788" width="150" height="26"/><text class="ts" x="683" y="805" text-anchor="middle">hostmot2 · Mesa</text>
+    <rect class="bx" x="768" y="788" width="150" height="26"/><text class="ts" x="843" y="805" text-anchor="middle">hal_parport</text>
+    <rect class="bx" x="928" y="788" width="174" height="26"/><text class="ts" x="1015" y="805" text-anchor="middle">gpio · rpi, beaglebone</text>
+    <rect class="bx-ok" x="608" y="822" width="494" height="26"/>
+    <text class="ts" x="855" y="839" text-anchor="middle">motor · encoder · limit switches · spindle — 23 driver files + hostmot2 (42 modules, one driver)</text>
+  </svg>
+  </div>
+  <div class="plate-c"><b>Sheet B</b><span>established by reading master at HEAD caa13ca6 · markers = errata numbers</span></div>
+  </div>
+</section>
+
+<!-- ══════ SHEET C ══════ -->
+<section>
+  <div class="sh"><span class="n">Sheet C</span><h2>The second diagram — joint controller</h2><span class="sub">verdict: largely accurate</span></div>
+  <p class="lede">
+    The document carries a second diagram, of a single joint controller. It ages far better than the
+    first: <b>all ten pins it shows still exist</b>, at the same points in the chain. Two corrections only.
+  </p>
+  <div class="plate"><div class="plate-b">
+  <svg viewBox="0 0 1160 500" role="img" aria-label="Joint controller diagram redrawn and audited">
+    <text class="tg" x="20" y="64">FEEDBACK TO KINEMATICS</text>
+    <line class="ln" x1="20" y1="74" x2="640" y2="74"/>
+    <polygon fill="#5E6A63" points="20,74 32,69 32,79"/>
+    <rect class="bx-ok" x="640" y="58" width="130" height="32"/>
+    <text class="ts" x="705" y="78" text-anchor="middle">pos-fb</text>
+    <line class="ln" x1="770" y1="74" x2="812" y2="74"/>
+    <circle cx="826" cy="74" r="13" class="bx"/><text class="ts" x="826" y="78" text-anchor="middle">Σ</text>
+    <line class="ln" x1="840" y1="74" x2="892" y2="74"/>
+    <rect class="bx-ok" x="892" y="58" width="150" height="32"/>
+    <text class="ts" x="967" y="78" text-anchor="middle">motor-pos-fb</text>
+    <text class="tg" x="1054" y="78">← HAL</text>
+    <rect class="bx-ok" x="762" y="118" width="130" height="28"/>
+    <text class="ts" x="827" y="136" text-anchor="middle">motor-offset</text>
+    <line class="ln" x1="827" y1="118" x2="827" y2="88"/>
+
+    <text class="tg" x="20" y="216">COMMANDS FROM KINEMATICS</text>
+    <line class="ln" x1="20" y1="226" x2="150" y2="226"/>
+    <rect class="bx-ok" x="150" y="210" width="126" height="32"/>
+    <text class="ts" x="213" y="230" text-anchor="middle">coarse-pos</text>
+    <line class="ln" x1="276" y1="226" x2="310" y2="226"/>
+    <rect class="bx-ok" x="310" y="206" width="146" height="40"/>
+    <text class="ts" x="383" y="222" text-anchor="middle">cubic</text>
+    <text class="ts" x="383" y="236" text-anchor="middle">interpolator</text>
+    <line class="ln" x1="456" y1="226" x2="510" y2="226"/>
+    <rect class="bx-ok" x="510" y="210" width="110" height="32"/>
+    <text class="ts" x="565" y="230" text-anchor="middle">pos-cmd</text>
+    <line class="ln" x1="620" y1="226" x2="664" y2="226"/>
+    <rect class="bx-ok" x="664" y="200" width="164" height="52"/>
+    <text class="ts" x="746" y="220" text-anchor="middle">backlash &amp; screw</text>
+    <text class="ts" x="746" y="234" text-anchor="middle">error comp</text>
+    <line class="ln" x1="828" y1="226" x2="862" y2="226"/>
+    <circle cx="876" cy="226" r="13" class="bx"/><text class="ts" x="876" y="230" text-anchor="middle">Σ</text>
+    <line class="ln" x1="827" y1="146" x2="827" y2="226"/>
+    <line class="ln" x1="890" y1="226" x2="920" y2="226"/>
+    <rect class="bx-ok" x="920" y="210" width="150" height="32"/>
+    <text class="ts" x="995" y="230" text-anchor="middle">motor-pos-cmd</text>
+    <text class="tg" x="1082" y="230">→ HAL</text>
+
+    <rect class="bx-ok" x="150" y="286" width="126" height="28"/>
+    <text class="ts" x="213" y="304" text-anchor="middle">free-pos-cmd</text>
+    <rect class="bx-ok" x="150" y="322" width="126" height="28"/>
+    <text class="ts" x="213" y="340" text-anchor="middle">free-vel-lim</text>
+    <rect class="bx-ok" x="310" y="286" width="146" height="64"/>
+    <text class="ts" x="383" y="308" text-anchor="middle">free mode</text>
+    <text class="ts" x="383" y="322" text-anchor="middle">trajectory planner</text>
+    <text class="ts" x="383" y="338" text-anchor="middle">simple_tp.c</text>
+    <line class="ln" x1="276" y1="300" x2="310" y2="300"/>
+    <line class="ln" x1="276" y1="336" x2="310" y2="336"/>
+    <path class="ln" d="M 456 318 L 486 318 L 486 246"/>
+    <text class="ts" x="492" y="292">free mode</text>
+
+    <rect class="bx-o" x="640" y="286" width="440" height="118"/>
+    <text class="tg" x="654" y="304">JOINT HAL PINS — ALL VERIFIED PRESENT</text>
+    <rect class="bx-ok" x="654" y="314" width="140" height="26"/><text class="ts" x="724" y="331" text-anchor="middle">pos-lim-sw-in</text>
+    <rect class="bx-ok" x="806" y="314" width="140" height="26"/><text class="ts" x="876" y="331" text-anchor="middle">neg-lim-sw-in</text>
+    <rect class="bx-ok" x="654" y="348" width="140" height="26"/><text class="ts" x="724" y="365" text-anchor="middle">home-sw-in</text>
+    <rect class="bx-ok" x="806" y="348" width="140" height="26"/><text class="ts" x="876" y="365" text-anchor="middle">amp-enable-out</text>
+    <rect class="bx-ok" x="958" y="348" width="112" height="26"/><text class="ts" x="1014" y="365" text-anchor="middle">amp-fault-in</text>
+    <rect class="bx-err" x="958" y="314" width="112" height="26"/>
+    <text class="ts" x="1014" y="331" text-anchor="middle">index-pulse-in</text>
+    <line class="strike" x1="958" y1="314" x2="1070" y2="340"/>
+    <g class="mk"><circle cx="1074" cy="310" r="11"/><text x="1074" y="314">11</text></g>
+
+    <rect x="20" y="410" width="1040" height="66" fill="#F2DCD7" stroke="#A8321F" stroke-width="1.4" stroke-dasharray="4 3"/>
+    <text class="tt" x="36" y="432" fill="#A8321F">MISSING FROM THE DIAGRAM</text>
+    <text class="ts" x="36" y="450">The whole axis.L.* family — axis.x.pos-cmd, axis.x.teleop-vel-cmd, external offsets — is absent.</text>
+    <text class="ts" x="36" y="464">The diagram knows only the joint. Same root cause as erratum 6: the joints/axes split postdates it.</text>
+    <g class="mk"><circle cx="1040" cy="440" r="11"/><text x="1040" y="444">12</text></g>
+  </svg>
+  </div>
+  <div class="plate-c"><b>Sheet C</b><span>redrawn after docs/src/code/emc2-motion-joint-controller-block-diag.png · blue = verified present</span></div>
+  </div>
+</section>
+
+<!-- ══════ ERRATA 11-15 ══════ -->
+<section>
+  <div class="sh"><span class="n">Errata</span><h2>Corrections 11 to 15</h2><span class="sub">joint diagram, command list, libnml, tool table</span></div>
+  <div class="tsc">
+  <table>
+    <thead><tr><th>#</th><th>What the document claims</th><th>What master says</th><th>Evidence</th></tr></thead>
+    <tbody>
+      <tr><td class="no">11</td>
+        <td class="was"><em>Pin “index-pulse-in”</em>A plain pulse input on the joint controller.</td>
+        <td class="is">It is called <code>joint.N.index-enable</code> and it is not an input: it is a <b>bidirectional</b> <code>HAL_IO</code> pin, hence a handshake — the requester sets it, the encoder driver clears it when the index is seen. It is moreover created by <b><code>homemod</code></b>, not <code>motmod</code> — a direct consequence of erratum 8.</td>
+        <td class="ev">homing.c:254-255<br>homing.c:113,537</td></tr>
+      <tr><td class="no">12</td>
+        <td class="was"><em>The joint controller ignores axes</em>Only joint quantities flow.</td>
+        <td class="is">The whole <code>axis.L.*</code> family is missing: <code>axis.x.pos-cmd</code>, <code>axis.x.teleop-vel-cmd</code> and the external offsets. It carries Cartesian jogging and plasma torch height control, which act <b>in parallel</b> with the chain drawn.</td>
+        <td class="ev">motion.c · axis.c<br>emcmotcfg.h:31</td></tr>
+      <tr><td class="no">13</td>
+        <td class="was"><em>“This section simply lists all of the commands”</em>27 documented commands, presented as the inventory.</td>
+        <td class="is">The <code>cmd_code_t</code> enumeration holds <b>76</b>. Seven documented names no longer exist, and <b>57 commands were never documented</b> — including whole features: reverse run, rigid tapping, finite jerk, external offsets, spindle orient, multi-spindle.</td>
+        <td class="ev">motion.h · cmd_code_t<br>code-notes.adoc:227-740</td></tr>
+      <tr><td class="no">14</td>
+        <td class="was"><em>“LinuxCNC manages tool information in a tool table file”</em>A single text file.</td>
+        <td class="is">Storage was rebuilt: <b>three back-ends</b> coexist in <code>src/emc/tooldata/</code> — <code>mmap</code> (readers map the table read-only), an <b>external database</b> driven by <code>[EMCIO]DB_PROGRAM</code>, and NML. A third-party program can therefore own the tool data. None of this appears in the chapter.</td>
+        <td class="ev">tooldata_mmap.cc<br>tooldata_db.cc<br>taskclass.cc:147</td></tr>
+      <tr><td class="no">15</td>
+        <td class="was"><em>“type — SHMEM, LOCMEM, FILEMEM, PHANTOM, or GLOBMEM”</em>Five buffer types announced as valid in the NML config file.</td>
+        <td class="is">Two of the five do not exist. <code>FILEMEM</code> <b>and <code>GLOBMEM</code> are recognised nowhere</b> — <code>GLOBMEM</code> survives only in a comment on the <code>buffer_type</code> field declaration. Only <b>three</b> types actually construct an object: <code>PHANTOM</code> (:729), <code>SHMEM</code> (:819), <code>LOCMEM</code> (:849). A fourth string, <code>RTLMEM</code> (:844), is recognised solely in order to be <b>refused</b> — <code>rcs_print_error("RTLMEM not supported.")</code>.</td>
+        <td class="ev">cms_cfg.cc<br>libnml/buffer/</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ══════ PART 1 — COMMAND LIST ══════ -->
+<section>
+  <div class="sh"><span class="n">Part 1</span><h2>The command list</h2><span class="sub">erratum 13 in detail</span></div>
+  <p class="lede">
+    The widest gap in the document. The “Commands” chapter runs five hundred lines and presents itself
+    as the inventory of the motion controller's commands. It covers a quarter of them.
+  </p>
+  <div class="cov">
+    <div class="d">19 documented and still valid</div>
+    <div class="u">57 never documented</div>
+  </div>
+  <div class="cov-l"><span>0</span><span>actual chapter coverage: 25 %</span><span>76 commands</span></div>
+
+  <p style="max-width:74ch;color:var(--ink-2)">Seven documented names match no symbol in the code:</p>
+  <div class="dead">
+    <span>EMCMOT_ENABLE_AMPLIFIER</span><span>EMCMOT_DISABLE_AMPLIFIER</span><span>EMCMOT_ACTIVATE_JOINT</span>
+    <span>EMCMOT_DEACTIVATE_JOINT</span><span>EMCMOT_SCALE</span><span>EMCMOT_HOME</span><span>EMCMOT_CLEAR_PROBE_FLAG</span>
+  </div>
+  <p style="max-width:74ch;color:var(--ink-2);font-size:14.5px">
+    The first two are gone outright: amp enabling became the <code>joint.N.amp-enable-out</code> pin. The
+    others were renamed — <code>EMCMOT_JOINT_ACTIVATE</code>, <code>EMCMOT_JOINT_DEACTIVATE</code>,
+    <code>EMCMOT_JOINT_HOME</code>, <code>EMCMOT_CLEAR_PROBE_FLAGS</code> in the plural — and
+    <code>SCALE</code> was split into <code>FEED_SCALE</code>, <code>RAPID_SCALE</code> and
+    <code>SPINDLE_SCALE</code>.
+  </p>
+  <p style="max-width:74ch;color:var(--ink-2);margin-top:18px">Among the 57 missing, these are not details — they are whole machine features.</p>
+  <div class="grp">
+    <div><b>Reverse run</b><code>EMCMOT_REVERSE</code>, <code>EMCMOT_FORWARD</code> — replaying a program backwards.</div>
+    <div><b>Finite jerk</b><code>EMCMOT_SET_JERK</code>, <code>SET_JOINT_JERK_LIMIT</code>, <code>SET_AXIS_JERK_LIMIT</code>.</div>
+    <div><b>Switchable planner</b><code>EMCMOT_SET_PLANNER_TYPE</code>, <code>SETUP_ARC_BLENDS</code>.</div>
+    <div><b>Rigid tapping</b><code>EMCMOT_RIGID_TAP</code>, <code>SET_SPINDLESYNC</code>.</div>
+    <div><b>Cartesian axes</b>The whole <code>EMCMOT_SET_AXIS_*</code> family — limits, velocity, acceleration, locking joint.</div>
+    <div><b>Spindle</b><code>SPINDLE_ORIENT</code>, <code>SET_NUM_SPINDLES</code>, <code>SET_SPINDLE_PARAMS</code>, brakes.</div>
+    <div><b>External offsets</b><code>EMCMOT_SET_OFFSET</code> — plasma torch height control rests on it.</div>
+    <div><b>Others</b><code>JOG_ABORT</code>, <code>JOINT_UNHOME</code>, <code>SET_PROBE_ERR_INHIBIT</code>, <code>SET_DOUT</code>, <code>SET_AOUT</code>.</div>
+  </div>
+</section>
+
+<!-- ══════ PART 2 — LIBNML & TOOLS ══════ -->
+<section>
+  <div class="sh"><span class="n">Part 2</span><h2>libnml, CMS and the tool table</h2><span class="sub">verdicts</span></div>
+  <div class="verdict"><span class="b ok">intact</span>
+    <p><b>The libnml and CMS chapters.</b> Every class described still exists at the stated path:
+    <code>linklist.hh</code>, <code>shmem.hh</code>, <code>memsem.hh</code>, <code>timer.hh</code>,
+    <code>cms.hh</code>, <code>nml.hh</code>. The description of the config file format, the
+    <code>B</code> and <code>P</code> lines, the <code>update()</code> mechanism and the NML base class
+    is accurate. <b>This is the best-aged part of the document</b> — unsurprisingly: libnml is inherited
+    NIST code nobody rewrites.</p></div>
+  <div class="verdict"><span class="b ko">two dead types</span>
+    <p><b>Two of the five buffer types do not exist</b> — <code>FILEMEM</code> and <code>GLOBMEM</code>
+    (erratum 15). Only <code>PHANTOM</code>, <code>SHMEM</code> and <code>LOCMEM</code> construct
+    anything; <code>RTLMEM</code> is recognised only to be refused. In fairness the document says a few
+    lines later that <i>“SHMEM [is] the only buffer type to use”</i> — the error is signalled without
+    being corrected.</p></div>
+  <div class="verdict"><span class="b ok">concepts intact</span>
+    <p><b>The toolchanger model.</b> The <i>random</i> / <i>nonrandom</i> distinction, pocket 0 as the
+    spindle, the special meaning of T0 under <i>nonrandom</i>, copy versus swap: all still accurate. It is
+    the <b>storage</b> that changed, not the model (erratum 14).</p></div>
+  <div class="note">
+    <h4>A constant: names outlive structures</h4>
+    <p>Three times in this audit a name survived what it designated. Pins are still called
+    <code>iocontrol.0.*</code> though the <code>iocontrol</code> process is gone. The INI section holding
+    <code>RANDOM_TOOLCHANGER</code>, <code>TOOL_TABLE</code> and <code>DB_PROGRAM</code> is still
+    <code>[EMCIO]</code>, named after a component that no longer exists.</p>
+    <p>This is not negligence, it is compatibility: thousands of user-written <code>.hal</code> and
+    <code>.ini</code> files keep working. But it explains why documentation ages so badly here:
+    <b>the names stay right while the structure they describe has been dismantled.</b> A reader trusting
+    the names will conclude <code>iocontrol</code> is a process. It has not been one for a long time.</p>
+  </div>
+</section>
+
+<!-- ══════ PART 3 — SEMANTICS ══════ -->
+<section>
+  <div class="sh"><span class="n">Part 3</span><h2>Semantics of the surviving commands</h2><span class="sub">“Requirements” and “Results” against command.c</span></div>
+  <p class="lede">
+    Knowing that a name exists says nothing about behaviour. Here are the nineteen surviving commands,
+    each against its handler. <b>Four are contradicted, three have no handler, four are not described at
+    all</b> — and eight hold up.
+  </p>
+  <div class="sem">
+    <table>
+      <thead><tr><th>Command</th><th>Verdict</th><th>What the audit finds</th><th>Evidence</th></tr></thead>
+      <tbody>
+        <tr><td class="cmd">ABORT</td><td class="st"><span class="pill2 p-part">incomplete</span></td>
+          <td>The document writes “<i>I don't know exactly what kind of stop results</i>” for teleop mode. The code answers: <code>axis_jog_abort_all(0)</code>. It also adds a spindle at-speed diagnostic the text ignores.</td><td class="ev">command.c:492</td></tr>
+        <tr><td class="cmd">FREE</td><td class="st"><span class="pill2 p-okk">accurate</span></td>
+          <td>The deferred flag switch is described correctly: the handler only sets <code>coordinating = 0</code> and <code>teleoperating = 0</code>.</td><td class="ev">command.c:583</td></tr>
+        <tr><td class="cmd">TELEOP</td><td class="st"><span class="pill2 p-part">moved</span></td>
+          <td>The handler is now one call: <code>switch_to_teleop_mode()</code>. The described conditions no longer live in the handler; they migrated into that function.</td><td class="ev">command.c:618</td></tr>
+        <tr><td class="cmd">COORD</td><td class="st"><span class="pill2 p-okk">accurate</span></td>
+          <td>Same deferred mechanism as FREE. Description conforms.</td><td class="ev">command.c</td></tr>
+        <tr><td class="cmd">ENABLE</td><td class="st"><span class="pill2 p-ko">contradicted</span></td>
+          <td><b>“Requirements: None” is false.</b> Rejected if the <code>motion.enable</code> pin is low. See erratum 16.</td><td class="ev">command.c:1366</td></tr>
+        <tr><td class="cmd">DISABLE</td><td class="st"><span class="pill2 p-okk">accurate</span></td>
+          <td>Always accepted, effect deferred to the controller cycle. Conforms.</td><td class="ev">command.c</td></tr>
+        <tr><td class="cmd">ENABLE_WATCHDOG</td><td class="st"><span class="pill2 p-ko">dead</span></td>
+          <td>No <code>case</code> in <code>command.c</code>. The document gives it a full section. Erratum 20.</td><td class="ev">command.c</td></tr>
+        <tr><td class="cmd">DISABLE_WATCHDOG</td><td class="st"><span class="pill2 p-ko">dead</span></td>
+          <td>Same. The document admits “<i>Currently nothing</i>”, which stays true — but it is a phantom command.</td><td class="ev">command.c</td></tr>
+        <tr><td class="cmd">PAUSE</td><td class="st"><span class="pill2 p-part">incomplete</span></td>
+          <td>The handler matches (<code>tpPause()</code> then <code>paused = 1</code>), but following the flag into the planner answers the document's own open question — and finds an omission that matters. Erratum 25.</td><td class="ev">command.c:1230<br>tp.c:243-252</td></tr>
+        <tr><td class="cmd">RESUME</td><td class="st"><span class="pill2 p-okk">accurate</span></td>
+          <td><code>stepping = 0</code>, <code>tpResume()</code>, <code>paused = 0</code>. Conforms.</td><td class="ev">command.c:1252</td></tr>
+        <tr><td class="cmd">STEP</td><td class="st"><span class="pill2 p-ko">contradicted</span></td>
+          <td><b>“Requirements: None” is false.</b> Rejected with an error unless the planner is already paused. Erratum 17.</td><td class="ev">command.c:1261</td></tr>
+        <tr><td class="cmd">OVERRIDE_LIMITS</td><td class="st"><span class="pill2 p-ko">contradicted</span></td>
+          <td>The defect documented as “<i>currently broken</i>” has been fixed. Erratum 19.</td><td class="ev">command.c:702</td></tr>
+        <tr><td class="cmd">JOG_CONT</td><td class="st"><span class="pill2 p-ko">contradicted</span></td>
+          <td>No longer free-mode only, and five new rejection conditions. Erratum 18.</td><td class="ev">command.c:796</td></tr>
+        <tr><td class="cmd">JOG_INCR</td><td class="st"><span class="pill2 p-ko">contradicted</span></td>
+          <td>Same handler, same gaps.</td><td class="ev">command.c</td></tr>
+        <tr><td class="cmd">JOG_ABS</td><td class="st"><span class="pill2 p-ko">contradicted</span></td>
+          <td>Same handler, same gaps.</td><td class="ev">command.c</td></tr>
+        <tr><td class="cmd">SET_LINE</td><td class="st"><span class="pill2 p-stub">undocumented</span></td>
+          <td>The document says “<i>(More later)</i>”. Nothing to audit — there is no description.</td><td class="ev">—</td></tr>
+        <tr><td class="cmd">SET_CIRCLE</td><td class="st"><span class="pill2 p-stub">undocumented</span></td>
+          <td>“<i>(More later)</i>”.</td><td class="ev">—</td></tr>
+        <tr><td class="cmd">PROBE</td><td class="st"><span class="pill2 p-stub">undocumented</span></td>
+          <td>“<i>(More later)</i>” — for an entire probing feature.</td><td class="ev">—</td></tr>
+        <tr><td class="cmd">SET_TELEOP_VECTOR</td><td class="st"><span class="pill2 p-ko">dead</span></td>
+          <td>“<i>(More later)</i>”, and no handler either. Erratum 20.</td><td class="ev">command.c</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 style="font-family:var(--mono);font-size:16px;margin:26px 0 10px;color:var(--ink)">The two false “Requirements: None”</h3>
+  <div class="face">
+    <div class="doc"><h5>The document — ENABLE</h5>
+      <p>“<i>None. The command can be issued at any time, and will always be accepted.</i>”</p></div>
+    <div class="code"><h5>command.c:1366</h5>
+      <p>The command is refused when the hardware input is low. An operator who has not armed the enable chain gets a rejection, not an acceptance.</p></div>
+  </div>
+  <div class="quote-code">if ( !hal_get_bool(emcmot_hal_data->enable) ) {
+    reportError(_("can't enable motion, enable input is false"));
+} else {
+    emcmotInternal->enabling = 1;
+    ...
+}</div>
+  <div class="face">
+    <div class="doc"><h5>The document — STEP</h5>
+      <p>“<i>None. The command can be issued at any time, and will always be accepted.</i>” and “<i>The trajectory planner resumes, and later pauses</i>”.</p></div>
+    <div class="code"><h5>command.c:1261</h5>
+      <p>STEP only acts on an <b>already paused</b> planner. Otherwise, an explicit error. That is the opposite of a command that is always accepted.</p></div>
+  </div>
+  <div class="quote-code">if(emcmotStatus->paused) {
+    emcmotInternal->idForStep = emcmotStatus->id;
+    emcmotStatus->stepping = 1;
+    tpResume(&emcmotInternal->coord_tp);
+    emcmotStatus->paused = 1;
+} else {
+    reportError(_("MOTION: can't STEP while already executing"));
+}</div>
+</section>
+
+<!-- ══════ ERRATA 16-21 ══════ -->
+<section>
+  <div class="sh"><span class="n">Errata</span><h2>Corrections 16 to 25</h2><span class="sub">semantics and deeper reads</span></div>
+  <div class="tsc">
+  <table>
+    <thead><tr><th>#</th><th>What the document claims</th><th>What master says</th><th>Evidence</th></tr></thead>
+    <tbody>
+      <tr><td class="no">16</td>
+        <td class="was"><em>ENABLE — “Requirements: None”</em>“The command can be issued at any time, and will always be accepted.”</td>
+        <td class="is">There is a condition. <code>ENABLE</code> is <b>rejected with an error message</b> if the <code>motion.enable</code> HAL pin is low — a hardware condition: the enable chain must be armed. The clause “if forward kinematics are not available, switch to free mode” <i>is</i> still accurate — that is the <code>KINEMATICS_INVERSE_ONLY</code> test.</td>
+        <td class="ev">command.c:1366</td></tr>
+      <tr><td class="no">17</td>
+        <td class="was"><em>STEP — “Requirements: None”</em>“Always accepted. The planner resumes, and later pauses.”</td>
+        <td class="is">The command only acts when <code>emcmotStatus->paused</code> is true. Otherwise it is <b>refused</b> with “<i>can't STEP while already executing</i>”. The document describes exactly half the behaviour.</td>
+        <td class="ev">command.c:1261</td></tr>
+      <tr><td class="no">18</td>
+        <td class="was"><em>JOG_CONT / JOG_INCR / JOG_ABS</em>“Rejected if the machine is not in free mode, or if any joint is in motion. The joint is identified by <code>emcmotCommand->axis</code>.”</td>
+        <td class="is">Three gaps. <b>Jogging is no longer free-mode only</b>: the handler tests <code>!GET_MOTION_TELEOP_FLAG()</code> and also serves the teleop case, where jogging is Cartesian. The field is <code>joint</code>, not <code>axis</code> — <code>axis</code> now means a Cartesian coordinate (erratum 6). And <b>five rejection conditions unknown to the document</b> were added: the <code>jog-inhibit</code> pin, homing in progress, a jogwheel already active on that joint, a locking joint needing unlock, and jogging further onto a limit — the last no longer silent but raising <code>SET_JOINT_ERROR_FLAG</code>.</td>
+        <td class="ev">command.c:796-840</td></tr>
+      <tr><td class="no">19</td>
+        <td class="was"><em>OVERRIDE_LIMITS — “This is currently broken”</em>“Once an OVERRIDE_LIMITS command is received, limits are ignored until another OVERRIDE_LIMITS re-enables them.” And: “Limits on all joints are over-ridden.”</td>
+        <td class="is"><b>The defect was fixed; the document still describes the bug.</b> The code comment now says the opposite: “<i>they are automatically re-enabled at the end of the next jog</i>” — precisely the behaviour the document presented as unrealised intent. Second gap: only limits <b>actually tripped</b> are overridden, through a mask built from <code>GET_JOINT_NHL_FLAG</code> and <code>GET_JOINT_PHL_FLAG</code> — not “all joints”.</td>
+        <td class="ev">command.c:702-730</td></tr>
+      <tr><td class="no">20</td>
+        <td class="was"><em>Three commands described as operational</em><code>SET_TELEOP_VECTOR</code> “<i>instructs the motion controller to move along a specific vector</i>”, plus <code>ENABLE_WATCHDOG</code> and <code>DISABLE_WATCHDOG</code>, each with its Requirements/Results section.</td>
+        <td class="is">All three have <b>no <code>case</code> in <code>command.c</code></b>. Issuing them does nothing. For the watchdogs the document half-admits it (“<i>Currently nothing</i>”); for <code>SET_TELEOP_VECTOR</code> it does not — that one is presented as a motion command.</td>
+        <td class="ev">motion.h vs command.c</td></tr>
+      <tr><td class="no">21</td>
+        <td class="was"><em>Internal note dated 6/5/2020</em>“The cmd_code_t enumeration contains 73 commands, but the switch statement in command.c contemplates only 70.”</td>
+        <td class="is">The document therefore already contains a self-audit — <b>itself now stale</b>. The figures today are <b>76 and 73</b>. The gap of three is unchanged and covers exactly the same three commands as in 2020: nothing was fixed in six years, neither the code nor the note. Adversarial re-check: a whole-tree search shows the three appear only in <code>motion.h</code> and <code>motion-logger.c</code> — <b>nothing even emits them</b>.</td>
+        <td class="ev">code-notes.adoc:242-246<br>motion.h · command.c</td></tr>
+      <tr><td class="no">22</td>
+        <td class="was"><em>“For an example of such a bug, see the treatment of axes in src/emc/ini/initraj.cc:loadTraj()”</em>Offered as a live example of a joints/axes bug.</td>
+        <td class="is"><b>Fixed.</b> The code now reads: “<i>originally, this code would only set axes X, Y and Z … Now all axes are set</i>”. The <b>second</b> instance of the document preserving a bug report past its repair (the first was OVERRIDE_LIMITS, erratum 19) — at two, it is a characteristic, not an accident: <i>the document records defects and never their repair</i>.</td>
+        <td class="ev">initraj.cc:203-205</td></tr>
+      <tr><td class="no">23</td>
+        <td class="was"><em>The EMCIO chapter versus its own diagram</em>The block diagram shows EMCIO as a fourth process; the prose opens “The I/O Controller is part of TASK” — then describes an “iocontrol main loop process” anyway.</td>
+        <td class="is"><b>The document contradicts itself</b>, independently of which version matches the code. The first line was updated for the merge into task; the rest of the chapter still describes the dead separate process.</td>
+        <td class="ev">code-notes.adoc:754-767</td></tr>
+      <tr><td class="no">24</td>
+        <td class="was"><em>TELEOP requires all joints homed</em>Stated unconditionally.</td>
+        <td class="is">True only when <code>kinType != KINEMATICS_IDENTITY</code>. On a <code>trivkins</code> machine, teleop needs <b>no homing at all</b>. Found by following the handler's delegate, <code>switch_to_teleop_mode()</code>.</td>
+        <td class="ev">motion.c:173-178</td></tr>
+      <tr><td class="no">25</td>
+        <td class="was"><em>PAUSE — “I don't know if it pauses all motion immediately, or if it completes the current move”</em>The document's own open question, plus “Requirements: None”.</td>
+        <td class="is">Neither. The machine <b>decelerates to a stop mid-segment</b> at that segment's accel/jerk limits. And the omission that matters: <b>pause is silently ignored while the segment is position-synchronized to the spindle</b> — threading (G33) and rigid tapping — because <code>tpGetFeedScale()</code> forces <code>1.0</code> there, bypassing pause <i>and</i> feed override. Pressing pause during a G33 does nothing until the synchronized move ends. Nothing in the chapter says so.</td>
+        <td class="ev">tp.c:243-252<br>tp.c:2782-2787</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">
+    <h4>Counting method</h4>
+    <p><code>command.c</code> holds 76 <code>case EMCMOT_*</code> labels for <b>73 distinct values</b>: the
+    three jog commands appear twice, in two different <code>switch</code> statements — one for handling,
+    the other only for an error message. Against the 76 enumeration values, three commands are left with
+    no handler.</p>
+  </div>
+</section>
+
+<!-- ══════ G-CODE REFERENCE ══════ -->
+<section>
+  <div class="sh"><span class="n">Part 4</span><h2>Beyond the Code Notes — the G-code reference</h2><span class="sub">sampled: G33 · G33.1 · G76 · G64 · G96</span></div>
+  <p class="lede">
+    The same method pointed at the documentation users actually read: <code>docs/src/gcode/g-code.adoc</code>
+    (2 786 lines) against <code>src/emc/rs274ngc/</code>. A sampled audit — five families tied to spindle
+    synchronization and path control — and a finding of a different kind: <b>the reference documents
+    errors that are implemented nowhere</b>.
+  </p>
+  <div class="tsc">
+  <table>
+    <thead><tr><th>#</th><th>What the reference claims</th><th>What the interpreter says</th><th>Evidence</th></tr></thead>
+    <tbody>
+      <tr><td class="no">26</td>
+        <td class="was"><em>G33 / G33.1 — “It is an error if … The requested linear motion exceeds machine velocity limits due to the spindle speed”</em></td>
+        <td class="is"><b>No such check exists</b> — not in the interpreter, not in task, not in motion. Triple-confirmed through independent oracles: the <code>NCE_*</code> error catalog, every <code>_()</code> string in the interpreter, and all 26 <code>.po</code> translation catalogs — the message has never existed in any translated release. Meanwhile <b>two real errors were missing</b> from the documented list: K word required (<code>NCE_K_WORD_MISSING_WITH_G33</code>) and F word forbidden (<code>NCE_F_WORD_USED_WITH_G33</code>). Also stated now: “spindle not turning” tests the <i>commanded</i> M3/M4 state, not measured rotation.</td>
+        <td class="ev">interp_check.cc:375-378<br>interp_convert.cc:5496-5529</td></tr>
+      <tr><td class="no">27</td>
+        <td class="was"><em>G96 — “It is an error if … A feed move is specified in G96 mode while the spindle is not turning”</em></td>
+        <td class="is"><b>No such check exists anywhere.</b> The spindle-not-turning checks apply only to G33/G33.1/G76 and the tapping cycles. A plain G1 in CSS mode with a stopped spindle is accepted without a word. Documented in passing: without <code>D</code>, CSS mode applies <b>no RPM limit</b> — <code>SET_SPINDLE_MODE(s, 1e30)</code>.</td>
+        <td class="ev">interp_cycles.cc:270<br>interp_convert.cc:5087</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note">
+    <h4>Why nobody caught them</h4>
+    <p>Both phantom errors describe <i>physically sensible</i> constraints — things a reader would believe
+    a CNC ought to check. That is exactly why they survived: they are plausible. This documentation does
+    not only rot by aging; it also contains <b>invented safety checks</b> that were perhaps once planned
+    and never implemented.</p>
+  </div>
+  <div class="note">
+    <h4>In-code defects found in passing (code, not docs)</h4>
+    <p><code>interp_convert.cc:5534</code> — G76's <code>$</code>-validity check reports
+    “<i>Invalid D-number in G76 cycle</i>”, the wrong word name. <code>command.c:1475</code> and
+    <code>:1553</code> — PROBE and RIGID_TAP carry the copy-pasted comment “<i>requires … enable
+    off</i>” while the test three lines below requires enable <b>on</b>. <code>command.c:1966</code> —
+    <code>SET_AXIS_LOCKING_JOINT</code>'s debug message prints a name matching no command.</p>
+  </div>
+  <div class="note">
+    <h4>Fixes are prepared</h4>
+    <p>Errata 15–17, 19, 21–23 and 25–27 are fixed in <b>three patches</b> on the <code>audit-fixes</code>
+    branch of the local clone, exported to <code>upstream/</code> with a README mapping each patch to its
+    errata — all three verified to apply cleanly on pristine master. The complete 76-command inventory the
+    Code Notes never had is written out in <code>motion-commands-reference.md</code>. Submission upstream
+    is the repository owner's call.</p>
+  </div>
+</section>
+
+<!-- ══════ CONFIRMED ══════ -->
+<section>
+  <div class="sh"><span class="n">Confirmed</span><h2>What the Code Notes still get right</h2><span class="sub">verified, unchanged</span></div>
+  <p class="lede">An audit that only found faults would be dishonest. <b>Sixteen points hold</b>, including one whole chapter and one I expected to be obsolete.</p>
+  <div class="ok-list">
+    <div class="ok-item"><b>The NML triplet to the GUI</b><span>CMD / STAT / ERR between interfaces and task: accurate, and it is the only one in the system.</span></div>
+    <div class="ok-item"><b>EMCTASK's contents</b><span>RS-274 interpreter and sequencing logic really do share one process.</span></div>
+    <div class="ok-item"><b>The cubic interpolator</b><span>Still present and active: <code>joint->cubic</code>, <code>cubicDrain()</code>. It bridges the trajectory rate and the servo rate.</span></div>
+    <div class="ok-item"><b>Forward and inverse kinematics</b><span>Both directions and their place in the loop are right — only their modularity changed.</span></div>
+    <div class="ok-item"><b>Limit and home status</b><span>The “LIMIT &amp; HOME STATUS” block still matches something real in the controller.</span></div>
+    <div class="ok-item"><b>Encoder and motor at the end of the chain</b><span>The physical loop closes as drawn.</span></div>
+    <div class="ok-item"><b>The principle of a real-time boundary</b><span>It still exists and structures everything; its nature changed, not its existence.</span></div>
+    <div class="ok-item"><b>The joint controller's pins</b><span>Ten pins verified one by one: <code>pos-lim-sw-in</code>, <code>neg-lim-sw-in</code>, <code>home-sw-in</code>, <code>amp-enable-out</code>, <code>amp-fault-in</code>, <code>motor-pos-cmd</code>, <code>motor-pos-fb</code>, <code>pos-fb</code>, <code>motor-offset</code>, backlash and screw comp. All present.</span></div>
+    <div class="ok-item"><b>The free mode planner</b><span><code>simple_tp.c</code> is still there, and joint jogging still goes through it.</span></div>
+    <div class="ok-item"><b>libnml's classes</b><span>All six described classes exist at the stated paths. The best-aged chapter of the document.</span></div>
+    <div class="ok-item"><b>The toolchanger model</b><span><i>random</i> versus <i>nonrandom</i>, copy versus swap: the description is still right.</span></div>
+    <div class="ok-item"><b>Pocket 0 and T0 semantics</b><span>Pocket 0 = spindle; T0 = “no tool” under nonrandom only. Unchanged.</span></div>
+    <div class="ok-item"><b>FREE — deferred switching</b><span>The document explains the handler does not make the transition but <i>requests</i> it by clearing two flags. That is exactly what the code does.</span></div>
+    <div class="ok-item"><b>PAUSE and RESUME</b><span><code>tpPause()</code> / <code>tpResume()</code> and the <code>paused</code> flag: conform to the description, with no hidden condition.</span></div>
+    <div class="ok-item"><b>DISABLE</b><span>Always accepted, effect deferred to the controller cycle — unlike its counterpart ENABLE.</span></div>
+    <div class="ok-item"><b>ENABLE's kinematics clause</b><span>“If forward kinematics are not available, switch to free mode”: the <code>KINEMATICS_INVERSE_ONLY</code> test is still there.</span></div>
+  </div>
+
+  <div class="note">
+    <h4>The one I expected to correct, and could not</h4>
+    <p>The per-joint cubic interpolator looked like the obvious candidate for removal — many modern
+    planners emit the setpoint directly at the servo rate. On checking, <code>cubic.c</code> is still
+    compiled and <code>control.c</code> still calls <code>cubicDrain()</code> on every joint. The original
+    diagram was right about this.</p>
+  </div>
+
+  <div class="note">
+    <h4>Scope — what remains unverified</h4>
+    <p>Two earlier limits have since been <b>lifted</b>: the delegate functions were followed
+    (<code>switch_to_teleop_mode()</code> yielded erratum 24, the <code>pausing</code> flag yielded
+    erratum 25), and the 57 undocumented commands are now written up in
+    <code>motion-commands-reference.md</code>. The chapters “Backlash and Screw Error Compensation” and
+    “User Interfaces” turned out to be single-line <code>FIXME</code>s — empty; “Task controller —
+    State” and “Reckoning of joints and axes” check out (the latter with one stale bug pointer,
+    erratum 22).</p>
+    <p>Still unexamined: “Terms and definitions”, “Adding custom NML commands”, the tool G-codes
+    (T, M6, G43, G10 L1, M61, G41/G42) and the internal state variables. The G-code reference audit is a
+    <b>sample</b> — five families out of a 2 786-line document. Other files under
+    <code>docs/src/code/</code> — style guide, building, writing tests — are out of scope.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sh"><span class="n">Sources</span><h2>References</h2></div>
+  <div class="srcs">
+    <div class="src"><b>Document audited</b><span>docs/src/code/code-notes.adoc · LinuxCNC-block-diagram-small.png · emc2-motion-joint-controller-block-diag.png</span></div>
+    <div class="src"><b>Task ↔ motion link</b><span>src/emc/motion/motion_struct.h · motion.h · usrmotintf.h</span></div>
+    <div class="src"><b>EMCIO removal</b><span>src/emc/task/Submakefile · src/emc/task/taskclass.cc</span></div>
+    <div class="src"><b>HAL</b><span>src/hal/hal_priv.h · src/hal/hal_lib.c</span></div>
+    <div class="src"><b>PID outside motion</b><span>src/emc/motion/control.c:180 · src/hal/components/pid.c</span></div>
+    <div class="src"><b>Joints and axes</b><span>src/emc/motion/emcmotcfg.h</span></div>
+    <div class="src"><b>Spindle in real time</b><span>src/emc/motion/motion.c:709-734</span></div>
+    <div class="src"><b>Loadable modules</b><span>src/emc/tp/tpmod.c · src/emc/motion/homemod.c · src/emc/tp/cruckig/</span></div>
+    <div class="src"><b>RTAPI flavours</b><span>src/rtapi/uspace_posix.cc · rtai_rtapi.c</span></div>
+    <div class="src"><b>Queues</b><span>src/emc/nml_intf/interpl.hh · src/emc/tp/tcq.h</span></div>
+    <div class="src"><b>Joint controller</b><span>src/emc/motion/homing.c:254 · motion.c · simple_tp.c</span></div>
+    <div class="src"><b>Command list</b><span>src/emc/motion/motion.h — cmd_code_t</span></div>
+    <div class="src"><b>Tool table</b><span>src/emc/tooldata/ — mmap, db, nml · taskclass.cc:141-147</span></div>
+    <div class="src"><b>CMS buffer types</b><span>src/libnml/cms/cms_cfg.cc · src/libnml/buffer/</span></div>
+    <div class="src"><b>Command semantics</b><span>src/emc/motion/command.c — 492, 583, 618, 702, 796, 1230, 1252, 1261, 1366</span></div>
+    <div class="src"><b>2020 self-audit</b><span>docs/src/code/code-notes.adoc:242-246</span></div>
+    <div class="src"><b>Deeper reads (22–25)</b><span>initraj.cc:203-205 · motion.c:173-178 · tp.c:243-252, 2782-2787</span></div>
+    <div class="src"><b>G-code reference (26–27)</b><span>docs/src/gcode/g-code.adoc vs interp_check.cc:375-378 · interp_convert.cc:5496-5529, 5087, 2221</span></div>
+    <div class="src"><b>Phantom-error oracles</b><span>rs274ngc_return.hh · all _() strings · 26 .po catalogs</span></div>
+    <div class="src"><b>Prepared fixes</b><span>upstream/0001…0003.patch · motion-commands-reference.md</span></div>
+  </div>
+  <footer>
+    <span>LinuxCNC — GPL-2.0</span>
+    <span>established by reading the source, no recalled values</span>
+    <span>companion knowledge base: LINUXCNC-FINDINGS.md</span>
+    <span>master (unreleased) at HEAD caa13ca6, 2026-07-30 · audited 2026-08-03</span>
+  </footer>
+</section>
+
+</div>
+</body>
+</html>

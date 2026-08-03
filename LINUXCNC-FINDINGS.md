@@ -1,0 +1,999 @@
+# LinuxCNC — Verified Architecture Findings
+
+**A living knowledge base.** Every statement here was verified by reading the source, not recalled
+from memory. Each carries a `file:line` citation so it can be re-checked or invalidated.
+
+> **If you are an AI agent picking this up:** treat this file as *evidence, not authority*. The
+> citations were accurate at the HEAD recorded below. Before acting on any line, confirm the cited
+> file and symbol still exist. Add what you verify; delete what you disprove. Do not add anything
+> you have not read in the source.
+
+---
+
+## Repository state at time of writing
+
+| | |
+|---|---|
+| Repository | `github.com/LinuxCNC/linuxcnc` |
+| Branch | `master` |
+| `VERSION` | `2.10.0~pre1` |
+| HEAD | `caa13ca6ae` (2026-07-30) |
+| Licence | GPL-2.0 |
+| Tracked files | 9 442 (`git ls-files`) |
+| Local clone | `./linuxcnc/` (full clone, ~1.2 GB with history) |
+
+All paths below are relative to the repository root.
+
+> ### ⚠ Release caveat — read this before quoting anything here
+>
+> **Everything in this file describes `master`, which is unreleased.** The newest tag in the
+> repository is `v2.9.10`. Several findings below describe changes that exist *only* on `master` and
+> have shipped in **no released LinuxCNC**.
+>
+> The sharpest example: *"moving all IO handling from iocontrol to task"* is commit `764655eb4d`
+> (2023-05-16). `git tag --contains 764655eb4d` returns **nothing**, and `git branch -r --contains`
+> returns only `origin/master`. **If you run LinuxCNC 2.9.x — the current stable — `iocontrol` is
+> still a separate process.** Erratum 3 is a statement about `master`, not about the software most
+> users have installed.
+>
+> Before repeating any finding to a user, ask which version they run.
+
+---
+
+## Method
+
+1. Full clone, then read the actual source — never the documentation alone.
+2. Every quantity comes from a header constant or a counted file list, not an estimate.
+3. Where the official documentation and the code disagree, the code wins and the disagreement is
+   recorded in [Part 3](#part-3--errata-against-the-official-code-notes).
+4. Claims that could not be verified are listed in Part 5, not asserted.
+
+### Audit trail
+
+This file was re-audited against the source on **2026-08-03**, deliberately hunting for its own
+errors. **Twelve were found and corrected.**
+
+Where a *claim reversed meaning*, the old wording is preserved inline in a
+`> **Correction, 2026-08-03.**` block — five such blocks exist, so a reader who saw the earlier
+revision can tell what changed. The remaining seven were quantitative fixes (wrong counts, a wrong
+file total, an over-confident inference) and were corrected in place; all twelve are itemised in the
+changelog at the end of this file.
+
+Two were substantive misreadings rather than sloppiness, and both are worth knowing about as failure
+modes:
+
+- **`RTLMEM` (§5.2)** — a `strcmp` was read as an implementation when it is a *rejection*. Recognising
+  a string is not supporting it.
+- **The error ring (§2.3)** — the saturation behaviour was stated backwards. When the ring is full the
+  **newest** message is refused, not the oldest evicted.
+
+The rest were quantitative: counts that conflated files with the things they implement (drivers vs
+driver modules, registration calls vs devices, source files vs kinematics modules), and inferences
+presented with more confidence than the evidence carried.
+
+**Rule adopted from this audit:** a count is only trustworthy when the file-to-entity relationship is
+stated. "65 drivers" was wrong because 42 of those files are modules of *one* driver.
+
+---
+
+## Part 1 — The shape of the system
+
+LinuxCNC is two worlds — user space and the real-time domain — that share no call stack. Everything
+crossing between them uses exactly **three** mechanisms:
+
+| Mechanism | Who talks | Where |
+|---|---|---|
+| **NML** channels | GUIs ↔ task | `configs/common/linuxcnc.nml` |
+| **`emcmot` shared memory** | task ↔ motion controller | RTAPI shmem, key 100 |
+| **HAL** shared memory | every real-time component ↔ hardware | 2 MiB block, key `0x48414C32` |
+
+Understanding LinuxCNC means understanding these three crossings and the queues that pace them.
+
+### Process inventory
+
+| Binary | Role | Source |
+|---|---|---|
+| `linuxcncsvr` | Creates and owns all NML buffers; TCP server on port 5005. **Starts first.** | `src/emc/task/emcsvr.cc` |
+| `milltask` | Task loop + RS-274 interpreter + canon + `iocontrol.0.*` HAL pins | `src/emc/task/` |
+| `rtapi_app` | Hosts every "real-time" component in the `uspace` flavours | `src/rtapi/uspace_rtapi_app.cc` |
+| GUI | `axis`, `gmoccapy`, `qtvcp`, `touchy`, `gscreen`, `mdro` | `src/emc/usr_intf/` |
+
+**A GUI is not confined to NML.** It is tempting to say the GUI never touches the real-time domain —
+that is wrong. AXIS itself is a HAL component: `axis.py:3950` does `hal.component("axisui")`.
+`halui` is a HAL component by definition, and any embedded `pyvcp`/`gladevcp` panel creates pins.
+GUIs issue *motion* through NML, but they read and write HAL shared memory directly. The correct
+statement is: **a GUI never runs inside a real-time thread**, not that it never touches real-time data.
+
+Startup order is not negotiable. `configs/common/linuxcnc.nml` states it in its first line:
+*"emcsvr is the master for all NML channels, and therefore is the first to start."*
+
+---
+
+## Part 2 — Verified facts by subsystem
+
+### 2.1 NML
+
+Neutral Message Language, inherited from the NIST RCS library. Two layers: **NML** handles typed
+messages, **CMS** below it moves bytes and picks the transport.
+
+**Transport classes present** in `src/libnml/buffer/`: `shmem`, `tcpmem`, `locmem`, `phantom`,
+`physmem` (plus `memsem` and `rem_msg`, which are helpers, not transports).
+
+Do not read that list as "five configurable options". Only **three** can be named as a `buffer_type`
+in the NML config — `SHMEM`, `LOCMEM`, `PHANTOM` — while `TCPMEM` is reached through a *process*
+line of type `REMOTE` (`cms_cfg.cc:743`), not a buffer type. See §5.2 for the full picture, including
+two documented types that do not exist.
+
+**Channels — there are exactly three** (`configs/common/linuxcnc.nml`):
+
+| Channel | Size | Buffer no. | Mode |
+|---|---|---|---|
+| `emcCommand` | 8 192 B | 1001 | `queue confirm_write serial` — a real FIFO with acknowledgement |
+| `emcStatus` | 20 480 B | 1002 | overwrite — last value wins, **not** a queue |
+| `emcError` | 8 192 B | 1003 | `queue` |
+
+All three carry `xdr` (architecture-neutral encoding) and `TCP=5005`.
+Variants: `linuxcnc_big.nml` raises `emcStatus` to 170 000 B; `server.nml` / `client.nml` use 10 240 B.
+
+**Message serialization.** A message is a C++ class deriving from `NMLmsg` with a single
+`update(CMS*)` method that lists its members. The *same* method both encodes and decodes — CMS is in
+one mode or the other. Example from `src/emc/nml_intf/emc.cc`:
+
+```c
+void EMC_IO_STAT::update(CMS *cms) {
+    cms->update(debug);
+    cms->update(reason);
+    cms->update(fault);
+    tool.update(cms);
+}
+```
+
+These functions still carry the comment *"Automatically generated by NML CodeGen Java Applet,
+Sat Oct 11 13:45:16 UTC 2003"*.
+
+**API** (`src/libnml/nml/nml.hh`): `write()`, `read()` returns the message type id (0 = nothing new),
+`get_address()` retrieves the object, `peek()` reads without consuming, `blocking_read(timeout)`.
+
+**Key boundary: NML stops at the task.** It never crosses into real time.
+
+### 2.2 HAL
+
+Not a message bus — a 2 MiB shared memory block containing linked lists of objects.
+
+| Constant | Value | Source |
+|---|---|---|
+| `HAL_KEY` | `0x48414C32` (ASCII `"HAL2"`) | `src/hal/hal_priv.h:120` |
+| `HAL_VER` | `0x00000013` | `src/hal/hal_priv.h:121` |
+| `HAL_SIZE` | `2*256*4096` = 2 MiB | `src/hal/hal_priv.h:122` |
+
+`hal_data_t` sits at offset 0 and roots linked lists of `hal_comp_t`, `hal_pin_t`, `hal_sig_t`,
+`hal_param_t`, `hal_funct_t`, `hal_thread_t`.
+
+**All internal pointers are stored as offsets** from `hal_shmem_base` (the `SHMFIELD` macro), so the
+block stays valid whatever address each process maps it at.
+
+**A signal is a pointer redirect, not a copy.** A pin owns a `data_ptr_addr`; unlinked, it is pointed
+at the component's own `dummysig` (`hal_lib.c:1161,1169`). `hal_link()` (`hal_lib.c:1478`) repoints it
+at the signal's storage. Zero copy, zero serialization, no lock in the critical path.
+
+**Two writers on one signal are refused** — verified, not inferred (`hal_lib.c:1552,1567`):
+
+```c
+if ((pin->dir == HAL_OUT) && ((sig->writers > 0) || (sig->bidirs > 0 ))) { /* reject */ }
+if ((pin->dir == HAL_IO)  &&  (sig->writers > 0))                        { /* reject */ }
+```
+
+Short circuits are impossible by construction.
+
+**Threads.** `motmod` creates them (`src/emc/motion/motion.c`):
+
+```c
+hal_create_thread("base-thread", base_period_nsec, base_thread_fp);
+hal_create_thread("servo-thread", servo_period_nsec, 1);
+```
+
+The `base-thread` is created **only if the base period is genuinely faster than the servo period**
+(`motion.c:1008-1014`):
+
+```c
+servo_base_ratio = (servo_period_sec / base_period_sec) + 0.5;   /* rounded */
+/* only create base thread if it is faster than servo thread */
+if (servo_base_ratio > 1) {
+    retval = hal_create_thread("base-thread", base_period_nsec, base_thread_fp);
+```
+
+So with a Mesa card generating steps in its FPGA, there is no base thread at all.
+
+> **Correction, 2026-08-03.** An earlier revision said the base thread is created "when
+> `base_period_nsec` is non-zero". That is not the test — the test is the *ratio*. A base period set
+> equal to or slower than the servo period also produces no base thread.
+
+**`motmod` exports exactly two HAL functions**: `motion-command-handler` and `motion-controller`.
+A third, `motion-traj-planner`, exists in `motion.c` but is wrapped in `#if 0` with the comment
+*"currently the traj planner is called from the controller"* — **it is dead code**. The planner runs
+inside the servo cycle.
+
+**HAL stream FIFO** (`src/hal/hal.h:1229-1266`, `src/hal/components/streamer.h`): a genuine
+single-producer/single-consumer ring in its own shmem segment, ≤ `HAL_STREAM_MAX_PINS` (21) pins,
+depth set at load time, with `underruns`/`overruns` counters. Keys: `STREAMER_SHMEM_KEY 0x48535430`,
+`SAMPLER_SHMEM_KEY 0x48534130`.
+
+### 2.3 The `emcmot` shared segment
+
+Created by `motmod` with `DEFAULT_SHMEM_KEY` = 100 (`emcmotcfg.h:49`, `motion.c:44`; overridable via
+the `key` module parameter).
+
+Layout (`src/emc/motion/motion_struct.h`):
+
+```c
+typedef struct emcmot_struct_t {
+    rtapi_mutex_t command_mutex;
+    struct emcmot_command_t  command;   /* task -> motion */
+    struct emcmot_status_t   status;    /* motion -> task */
+    struct emcmot_config_t   config;
+    struct emcmot_error_t    error;     /* ring buffer */
+    struct emcmot_internal_t internal;
+} emcmot_struct_t;
+```
+
+**The command slot is not a queue.** One slot, protected by `command_mutex`, with a
+`commandNum` → `commandNumEcho` handshake. Timeout `DEFAULT_EMCMOT_COMM_TIMEOUT` = 1.0 s, reported as
+`EMCMOT_COMM_ERROR_TIMEOUT` (`usrmotintf.h:60`).
+
+**The mutex is used asymmetrically — this is the whole philosophy of the system:**
+
+| Side | Call | Behaviour | Source |
+|---|---|---|---|
+| User space | `rtapi_mutex_get()` | **blocking** — waits its turn | `usrmotintf.cc:98` |
+| Real time | `rtapi_mutex_try()` | **non-blocking** — gives up, retries next cycle | `command.c:2018` |
+
+**Status uses a seqlock, not a mutex.** `emcmot_status_t`, `emcmot_config_t` and `emcmot_internal_t`
+each begin with `head` and end with `tail`.
+
+Writer (`control.c:245` and `:275`):
+```c
+emcmotStatus->head++;                       /* entering */
+    /* ... entire servo cycle ... */
+emcmotStatus->tail = emcmotStatus->head;    /* done */
+```
+
+Reader (`usrmotintf.cc:132-140`): `memcpy` the whole struct, then compare `s->head == s->tail` in the
+*copy*. Mismatch means the write overlapped the copy — sleep 1 µs and retry, ultimately
+`EMCMOT_COMM_SPLIT_READ_TIMEOUT`. **The real-time side never blocks and never even tests.**
+
+**The error buffer is a genuine lock-free MPSC ring** (`motion.h:746`, implemented in
+`emcmotutil.c:20-88`): 32 × 1024 B. The algorithm is documented in the file header —
+producers are *"real-time threads invoked via the rtapi message handler"*, the consumer is the
+single-threaded userspace task.
+
+| Side | Behaviour |
+|---|---|
+| Producer `emcmotErrorPutfv()` | CAS-loop to claim a sequence on `write_reserve`; write the slot; `fetch_add(write_commit)` with release ordering |
+| Producer, ring full | **`return -1` — the new message is discarded** (`emcmotutil.c:66-68`) |
+| Consumer `emcmotErrorGet()` | if `write_reserve != write_commit` a producer is mid-write → return -1 and retry later, *"so the RT producer is never blocked"* |
+
+> **Correction, 2026-08-03.** An earlier revision said the ring *"drops the oldest messages"*. It is
+> the opposite: when full, the **newest** message is refused and the older ones survive.
+> ```c
+> if (w - r >= (unsigned long long)EMCMOT_ERROR_NUM) {
+>     return -1;          /* full: caller's message is lost */
+> }
+> ```
+> The half that was right: the real-time producer never blocks either way.
+
+### 2.4 Queue and buffer inventory
+
+The distinction matters — most of these are *not* FIFOs:
+
+| Object | Kind | Capacity | Producer → Consumer | Sync |
+|---|---|---|---|---|
+| `interp_list` | **FIFO** `std::deque<NMLmsg>` | unbounded | Interp/canon → task loop | none, single-threaded |
+| `emcCommand` | **FIFO** (CMS) | 8 192 B | GUI/halui/rsh → task | CMS semaphore + ack |
+| `emcError` | **FIFO** (CMS) | 8 192 B | task → GUI | CMS semaphore |
+| `emcStatus` | snapshot | 20 480 B | task → GUI | overwrite |
+| `emcmot_command_t` | **single slot** | 1 command | task → motion | mutex + echo |
+| `emcmot_status_t` | snapshot | 1 state | motion → task | seqlock |
+| `emcmot_error_t` | **lock-free MPSC ring** | 32 × 1024 B | RT `emcmotErrorPutf()` → `emcmotErrorGet()` | atomics; newest lost when full |
+| `TC_QUEUE_STRUCT` | **ring** + reverse history | 2000 × ~512 B ≈ 1 MB | `tpAddLine`/`tpAddCircle` → `tpRunCycle` | none, servo thread |
+| `hal_stream_t` | **SPSC FIFO** | set at load | halstreamer ↔ RT ↔ halsampler | one reader, one writer |
+
+`TC_QUEUE_STRUCT` (`src/emc/tp/tcq.h`) carries `start`/`end`/`allFull` plus `_rlen`/`rend` for the
+reverse-run history (`tcqBackStep`). Size from `DEFAULT_TC_QUEUE_SIZE` (`emcmotcfg.h:70`), whose
+comment reads *"a TC_STRUCT is about 512 bytes so this queue is about a megabyte."*
+
+### 2.5 The servo cycle
+
+`emcmotController()` — `src/emc/motion/control.c:209-277`, exact call order:
+
+| Line | Call |
+|---|---|
+| 245 | `emcmotStatus->head++` — open the seqlock |
+| 248 | `read_homing_in_pins` |
+| 249 | `handle_kinematicsSwitch` |
+| 250 | `process_inputs` |
+| 251 | `do_forward_kins` |
+| 252 | `process_probe_inputs` |
+| 253 | `check_for_faults` |
+| 254 | `set_operating_mode` |
+| 256 | `handle_jjogwheels` (if `jog-inhibit` is low) |
+| 259 | `axis_handle_jogwheels` |
+| 262 | `do_homing` (provided by `homemod`) |
+| 266 | **`get_pos_cmds`** → `tpRunCycle` (`:1348`) → `kinematicsInverse` (`:1359`, `:1440`) |
+| 267 | `compute_screw_comp` |
+| 268 | `axis_plan_external_offsets` |
+| 269 | `output_to_hal` |
+| 270 | `write_homing_out_pins` |
+| 271 | `update_status` |
+| 275 | `emcmotStatus->tail = head` — close the seqlock |
+
+### 2.6 The seven position representations
+
+Documented in the Code Notes ("Block diagrams and Data Flow"). **All seven field names verified
+present in `motion.h`** at the lines given below. Command side descends, feedback side climbs:
+
+| # | Field | `motion.h` | Frame | Rate |
+|---|---|---|---|---|
+| 1 | `carte_pos_cmd` | :598 | Cartesian, commanded | trajectory |
+| 2 | `joints[n].coarse_pos` | :462 | joint, before interpolation | trajectory |
+| 3 | `joints[n].pos_cmd` | :463 | joint, after interpolation | **servo** |
+| 4 | `joints[n].motor_pos_cmd` | :470 | motor (+ backlash, screw comp, offset) | servo |
+| 5 | `joints[n].motor_pos_fb` | :471 | motor, measured | servo |
+| 6 | `joints[n].pos_fb` | :472 | joint (− offset, − comp) | servo |
+| 7 | `carte_pos_fb` | :600 | Cartesian, measured (forward kins) | trajectory |
+
+The **cubic interpolator** (`src/emc/kinematics/cubic.c`, used via `joint->cubic` and `cubicDrain()`
+in `control.c`) is what bridges the trajectory rate and the servo rate. It is still there.
+
+### 2.7 Loadable modules
+
+Three functions are separate modules loaded by `halcmd loadrt`. **"Since 2.9" is verified**:
+`tpmod.c` and `homemod.c` both entered on 2022-02-09 in commit `08ac87d411` *"motion: allow alt
+tp,home modules, demo comp files"*, and the earliest tag containing it is `v2.9.0-pre1`.
+
+| Module | Source | Replaces |
+|---|---|---|
+| `tpmod` | `src/emc/tp/tpmod.c` | trajectory planner |
+| `homemod` | `src/emc/motion/homemod.c` | homing sequence |
+| kinematics | `src/emc/kinematics/` — **19** modules | joints ↔ axes transforms |
+
+New in `master`: **`cruckig`** (`src/emc/tp/cruckig/`, 34 files) — a pure-C port of Ruckig giving a
+finite-jerk planner. Pure C is a real-time constraint: no allocation, no exceptions, no STL.
+`debian/changelog` records *"Add a finite-jerk trajectory planner"*.
+
+### 2.8 RTAPI flavours
+
+| Flavour | File | Execution context |
+|---|---|---|
+| uspace / POSIX | `uspace_posix.cc` | `SCHED_FIFO` user-space threads — **the default** on `PREEMPT_RT` |
+| uspace / RTAI | `uspace_rtai.cc` | RTAI user-space threads |
+| uspace / Xenomai | `uspace_xenomai.cc` | Cobalt domain |
+| uspace / Xenomai EVL | `uspace_xenomai_evl.cc` | EVL core |
+| RTAI kernel | `rtai_rtapi.c` + `rtai_ulapi.c` | kernel modules |
+
+In `uspace` mode a "real-time" component is just a shared object `dlopen`-ed into `rtapi_app`.
+`tpmod.c` says it plainly: `hal_init("tpmod"); // dlopen(".../tpmod.so")`.
+
+The headers `rtapi_math.h`, `rtapi_string.h`, `rtapi_stdint.h`, `rtapi_atomic.h` exist because libc
+is unavailable in kernel context.
+
+### 2.9 EtherCAT
+
+**Headline: there is no EtherCAT driver in the LinuxCNC repository.** No source file speaks the
+protocol, and no file name contains `ethercat` or `lcec`. The driver is a separate project. What the
+repository *does* contain is a set of deliberate accommodations for that external driver — which is
+the interesting part.
+
+#### 2.9.1 Real accommodations in the core
+
+**`initf` — a HAL command whose documented reason to exist is EtherCAT.** It is the real-time
+analogue of `addf`: it registers a function to run **exactly once**, in real-time context, before any
+cyclic function runs.
+
+| Piece | Location |
+|---|---|
+| API contract | `src/hal/hal.h:1063-1080` |
+| Implementation | `src/hal/hal_lib.c:2865` |
+| Post-init rejection (`-EALREADY`) | `src/hal/hal_lib.c:2918-2927` |
+| halcmd verb | `src/hal/utils/halcmd_commands.cc:291` (`do_initf_cmd`) |
+| User doc | `docs/src/hal/basic-hal.adoc:95-106` |
+| Man page | `docs/src/man/man1/halcmd.1.adoc:192` |
+
+The HAL manual names the use case outright: *"intended for one-shot setup that must execute in the
+realtime task (for example EtherCAT master activation via `lcec.0.activate`)"*
+(`basic-hal.adoc:100`). That line is also the in-repo evidence that the external driver's HAL
+component prefix is `lcec`.
+
+**The special init cycle** (`src/hal/hal_lib.c:3594-3632`). On the first cycle after `start`,
+`thread_task()` runs the init list once and does four things the cyclic path never does:
+
+1. no timing measurement, so a long init does not poison `maxtime`;
+2. no tripping of the "unexpected realtime delay" catch-up loop;
+3. the cyclic `funct_list` is **deliberately not executed** in that cycle;
+4. the period is re-anchored — and the comment says why:
+   *"lands the next wakeup at a clean period boundary (used to keep **EtherCAT send clear of
+   SYNC0**)"*.
+
+That is a distributed-clocks concern: DC slaves latch I/O on the SYNC0 pulse, so the master's frame
+transmission must keep a clean phase relationship to it. After the init pass the list is drained back
+to the free pool and `init_done` is latched.
+
+**`rtapi_task_self_resync()` — and its RTAI hole.** This is the primitive that performs the
+re-anchoring. On the RTAI backend it is a **stub that warns once and does nothing**
+(`src/rtapi/rtai_rtapi.c:903-916`). Its own comment explains the reasoning:
+*"The primary consumer (EtherCAT init via initf) runs on the uspace backend."*
+
+> **Practical consequence, worth flagging to anyone building an EtherCAT machine:** under RTAI the
+> period re-anchoring silently does not happen. The SYNC0 phase guarantee described above is a
+> `uspace` feature only. Not verified experimentally — this is what the source says.
+
+#### 2.9.2 Mentions with no code behind them
+
+| Where | What it says |
+|---|---|
+| `docs/src/getting-started/hardware-interface.adoc:20` | lists EtherCAT among the interface options |
+| `docs/src/getting-started/hardware-interface.adoc:25` | example of mixing *"ethercat for servo drives, and parallel port for additional GPIO"* |
+| `docs/src/getting-started/about-linuxcnc.adoc:57` | EtherCAT in the list of buses an integrator may use |
+| `debian/control.top.in:119` and `debian/control.main-pkg.in:70` | **the package description advertises EtherCAT support** — *"A variety of interface hardware is supported including Modbus, EtherCAT…"* — for a package that ships no EtherCAT driver |
+
+#### 2.9.3 The external driver — audited
+
+Cloned to `./linuxcnc-ethercat/` and read on 2026-08-03.
+
+| | |
+|---|---|
+| Repository | `linuxcnc-ethercat/linuxcnc-ethercat` — GPL-2.0, actively maintained |
+| HEAD read | `87a72a8` (2026-08-03), `v1.42.1-10-g87a72a8` |
+| Size | 548 tracked files, ~20 MB |
+| Core | 75 `.c` + 35 `.h`; `lcec_main.c` 69 KB, `lcec_conf.c` 42 KB, `lcec_ethercat.c` 28 KB |
+| Device drivers | 60 `.c` under `src/devices/` (Beckhoff EL/EP series, CiA402 class drivers, …) |
+| Docs | `documentation/` — `distributed-clocks.md`, `cia402.md`, `configuration-reference.md`, `adding-drivers.md`, `DEVICES.md` |
+
+**The IgH dependency is confirmed**: `src/lcec.h:29` and `src/lcec_conf.h:24` both
+`#include "ecrt.h"`, and the code calls `ecrt_request_master()`, `ecrt_master_create_domain()`,
+`ecrt_slave_config_dc()`. Release cadence is fast — `v1.42.1` (2026-07-30), `v1.42.0` (07-21),
+`v1.41.2` (07-10), roughly monthly or better.
+
+**The organisation maintains four repositories**, which is itself a finding:
+
+| Repo | What |
+|---|---|
+| `linuxcnc-ethercat` | the HAL driver |
+| `ethercat` | **their own fork of the IgH EtherLab master**, rebuilt with fixes |
+| `apt` | Debian repository serving both; packages carry epoch `1:1.6.9-…` so they supersede the openSUSE build on a normal `apt upgrade` |
+| `esi-data` | EtherCAT ESI data processed into YAML (Go) |
+
+#### 2.9.4 How the two repositories meet — the loop closes
+
+The `initf` facility described in §2.9.1 has exactly the consumer LinuxCNC's comments imply, and the
+driver reaches for it through a **weak symbol** so one binary serves both old and new LinuxCNC
+(`src/lcec_main.c:37-45`):
+
+```c
+#pragma weak hal_init_funct_to_thread
+extern int hal_init_funct_to_thread(const char *funct_name, const char *thread_name, int position);
+static int initf_supported = 0;
+```
+
+```c
+initf_supported = (&hal_init_funct_to_thread != NULL);      /* lcec_main.c:200 */
+if (!initf_supported) {
+  rtapi_print_msg(RTAPI_MSG_WARN, LCEC_MSG_PFX
+      "linuxcnc lacks initf support; using legacy inline activation. "
+      "DC phasing will trim via PLL. Upgrade linuxcnc for clean activation.\n");
+}
+```
+
+So there are two activation paths:
+
+| LinuxCNC | Path | DC phase |
+|---|---|---|
+| ships `initf` | deferred activation from RT context via the `lcec.activate` funct | clean from the first cycle |
+| lacks `initf` | legacy inline activation in `rtapi_app_main` | **trimmed afterwards by a PLL** |
+
+Combined with §2.9.1, this yields a practical ranking for anyone building an EtherCAT machine:
+`uspace` + a LinuxCNC with `initf` gives clean DC phasing; **RTAI cannot**, because
+`rtapi_task_self_resync()` is a no-op there, whatever the driver does.
+
+The DC parameters the LinuxCNC core comment alludes to are configured at `lcec_main.c:307`:
+`ecrt_slave_config_dc(config, assignActivate, sync0Cycle, sync0Shift, sync1Cycle, sync1Shift)`.
+One process-data domain is created **per Sync Unit** (`lcec_main.c:230-239`).
+
+#### 2.9.5 A documentation error found by cross-checking the two repositories
+
+`docs/src/hal/basic-hal.adoc:100` in LinuxCNC gives the example **`lcec.0.activate`**. The driver
+exports it as **`lcec.activate`** — global, not per-master (`lcec_main.c:408`):
+
+```c
+rtapi_snprintf(name, HAL_NAME_LEN, "%s.activate", LCEC_MODULE_NAME);
+```
+
+Only the cyclic functs are per-master — `"%s.%s.read"` and `"%s.%s.write"` give
+`lcec.<master>.read` / `.write`, so `lcec.0.read` is right while `lcec.0.activate` is not. There is
+also a global `lcec.read-all` (`lcec_main.c:416`). A user copying the LinuxCNC manual's example into
+a `.hal` file gets a funct that does not exist.
+
+> This one is worth reporting upstream. It is a one-word fix in `basic-hal.adoc` and in
+> `docs/src/man/man1/halcmd.1.adoc`.
+
+#### 2.9.6 Why this matters architecturally
+
+LinuxCNC's core carries real-time scheduling machinery — a whole HAL verb, a special thread cycle, and
+an RTAPI primitive — for a driver it does not ship. `initf` has essentially one consumer, and that
+consumer lives in another repository under different maintainers. It is a rare case of an out-of-tree
+component shaping in-tree real-time design.
+
+### 2.10 Repository map with counts
+
+```
+src/
+├── emc/                    the machine controller
+│   ├── motion/             motmod — control.c, command.c, axis.c, homing.c, homemod.c
+│   ├── tp/                 planners — tp.c, tcq.c, blendmath.c, sp_scurve.c, cruckig/ (34 files)
+│   ├── kinematics/         26 joints↔axes modules
+│   ├── rs274ngc/           G-code interpreter, 48 files incl. Python bindings
+│   ├── task/               milltask + linuxcncsvr
+│   ├── nml_intf/           message definitions — emc.hh, canon.hh, interpl.hh
+│   ├── usr_intf/           GUIs
+│   ├── tooldata/           tool table — mmap, NML, database
+│   ├── ini/                INI reading, exposed as HAL pins
+│   ├── sai/                standalone interpreter
+│   ├── canterp/            canonical-command interpreter
+│   └── motion-logger/      stub motmod for tests
+├── hal/
+│   ├── hal_lib.c           the core
+│   ├── components/         124 .comp + 25 .c
+│   ├── drivers/            23 top-level driver files (17 .c + 6 .comp)
+│   │                       + mesa-hostmot2/ = 42 .c, ONE driver in many modules
+│   ├── user_comps/         17
+│   ├── utils/              halcmd, halmeter, halscope, halcompile
+│   └── classicladder/      ladder-logic PLC
+├── libnml/                 cms/ buffer/ nml/ rcs/ linklist/ posemath/ os_intf/
+├── rtapi/                  5 flavours + libc substitute headers
+├── module_helper/          privilege helper for rtapi_app
+└── tests/
+
+configs/    2 017 files      docs/  387 .adoc      lib/python/  hal.py, qtvcp/, rs274/, vismach.py
+```
+
+---
+
+## Part 3 — Errata against the official Code Notes
+
+Target: `docs/src/code/code-notes.adoc` and its two block diagrams. The document opens with its own
+warning: *"Much of this information is now outdated and has never been reviewed for accuracy."*
+
+**Provenance of the overall diagram.** `LinuxCNC-block-diagram-small.png` entered the repository on
+**2012-11-19**, commit `b60c20198e`, *"docs: add some architecture diagrams"*, by Sebastian
+Kuzminsky — and `git log --follow` shows **exactly one commit**: it has never been modified since.
+The drawing's *content* is clearly older (it depicts the EMC/EMC2 era), but nothing in the
+repository dates it, so do not claim it goes back to the project's origins. What is verifiable:
+**unchanged in the repository since 2012.**
+
+Two useful dates for erratum 3: `iotaskintf.cc` was dropped from the task `Submakefile` on
+**2011-08-03** (`d56fdbfcbb`), while IO handling actually moved into task on **2023-05-16**
+(`764655eb4d`) — the latter still unreleased, see the caveat at the top.
+
+### 3.1 Overall block diagram (`LinuxCNC-block-diagram-small.png`)
+
+| # | The diagram says | The code says | Evidence |
+|---|---|---|---|
+| 1 | `"NML?"` between EMCTASK and shared memory | Not NML. Direct RTAPI shmem, key 100, via `usrmotWriteEmcmotCommand()`. And there is **one** NML triplet in the whole system, not three. | `motion.c:44`, `usrmotintf.h:67`, `linuxcnc.nml` |
+| 2 | `"FIFOS?"` into EMCMOT | Not FIFOs. A **single slot** under `command_mutex` with `commandNum`/`commandNumEcho`. The only ring in that segment is `emcmot_error_t`. | `motion_struct.h:20-21`, `motion.h:211,584,746` |
+| 3 | EMCIO as a fourth process with its own NML channels | The process is gone. `# disabled: emc/task/iotaskintf.cc`; the 14 `iocontrol.0.*` pins are created by `milltask` itself. | `task/Submakefile:13`, `taskclass.cc:41,133` |
+| 4 | HAL appears nowhere | Structural omission — the diagram predates HAL. All hardware coupling now goes through the 2 MiB block. | `hal_priv.h:120-122` |
+| 5 | `PID SERVO`, `D/A CONVERTER`, `ENCODER COUNTER`, `LIMIT SWITCHES` inside EMCMOT | All moved out; they are independent HAL components wired in a `.hal` file. `control.c:180` says the final motor position goes *"to the HAL (which routes it to the PID"*. Nothing in `src/emc/motion/` computes a PID. | `control.c:180`, `hal/components/pid.c` |
+| 6 | `AXIS 1 … AXIS N` | These are **joints**, not axes. `EMCMOT_MAX_JOINTS 16` vs `EMCMOT_MAX_AXIS 9`. | `emcmotcfg.h:25,31` |
+| 7 | `SPINDLE CONTROLLER` inside EMCIO (non-real-time) | The spindle moved **into** real time. `motmod` exports `spindle.N.on`, `speed-out`, `at-speed`, `index-enable`, `orient`… for 8 spindles. Threading and rigid tapping require servo-rate sync. | `motion.c:709-734`, `emcmotcfg.h:33` |
+| 8 | Planner, kinematics, homing as fixed blocks | Separately loaded modules: `tpmod`, `homemod`, one of 26 `*kins`. | `tp/tpmod.c`, `motion/homemod.c` |
+| 9 | `NON-REALTIME / REALTIME` line implies a kernel boundary | By default it is not. `uspace` on `PREEMPT_RT` runs "real-time" components as `SCHED_FIFO` user-space threads in `rtapi_app`. It is a **scheduling** boundary. | `rtapi/uspace_posix.cc` |
+| 10 | No queue shown anywhere | The two real queues are absent: `interp_list` and `TC_QUEUE` (2000 segments ≈ 1 MB). | `interpl.hh:46`, `tp/tcq.h`, `emcmotcfg.h:70` |
+
+### 3.2 Joint controller diagram (`emc2-motion-joint-controller-block-diag.png`)
+
+**Verdict: this one aged well.** All ten pins it shows still exist — `pos-lim-sw-in`, `neg-lim-sw-in`,
+`home-sw-in`, `amp-enable-out`, `amp-fault-in`, `motor-pos-cmd`, `motor-pos-fb`, `pos-fb`,
+`motor-offset`, backlash & screw comp. Two corrections only:
+
+| # | The diagram says | The code says | Evidence |
+|---|---|---|---|
+| 11 | pin `index-pulse-in` | It is `joint.N.index-enable`, and it is **bidirectional** (`HAL_IO`) — a handshake where the encoder driver clears it when the index is seen. It is created by **`homemod`**, not `motmod`. | `homing.c:254-255,113,537` |
+| 12 | no notion of axes | The whole `axis.L.*` family is missing — `axis.x.pos-cmd`, `axis.x.teleop-vel-cmd`, external offsets. Same root cause as erratum 6. | `motion.c`, `axis.c` |
+
+### 3.3 Command list, libnml, tool table
+
+| # | The document says | The code says | Evidence |
+|---|---|---|---|
+| 13 | 27 documented commands, presented as the inventory | `cmd_code_t` holds **76**. Seven documented names no longer exist; **57 were never documented**. | `motion.h`, `code-notes.adoc:227-740` |
+| 14 | "LinuxCNC manages tool information in a tool table file" | Storage was rebuilt: **three back-ends** — `mmap` (readers map it read-only), an **external database** driven by `[EMCIO]DB_PROGRAM`, and NML. | `tooldata_mmap.cc`, `tooldata_db.cc`, `taskclass.cc:147` |
+| 15 | buffer types "SHMEM, LOCMEM, FILEMEM, PHANTOM, or GLOBMEM" | Two of the five do not exist. **`FILEMEM` and `GLOBMEM` are recognised nowhere** — `GLOBMEM` survives only in a comment on the `buffer_type` field declaration. Only **three** types actually construct an object: `PHANTOM`, `SHMEM`, `LOCMEM`. A fourth string, `RTLMEM`, is recognised solely in order to be **refused** with `"RTLMEM not supported."`. See §5.2. | `cms_cfg.cc:729,819,844,849` |
+| 22 | *"see the treatment of axes in `initraj.cc:loadTraj()`"* — offered as a live example of a joints/axes bug | **Fixed.** `initraj.cc:203-205` now reads *"originally, this code would only set axes X, Y and Z … Now all axes are set"*. Second instance of the document preserving a bug report past its repair. See §5.3. | `initraj.cc:203-205` |
+| 23 | The block diagram shows EMCIO as a fourth process | The prose chapter says the opposite — *"The I/O Controller is part of TASK"* (`:756`) — then goes on to describe an "iocontrol main loop process" anyway. **The document contradicts itself**, independently of whether either version matches the code. | `code-notes.adoc:754-767` |
+| 25 | `PAUSE` — *"It has no effect in free or teleop mode"*, and *"I don't know if it pauses all motion immediately, or if it completes the current move"* | Answered, and one omission is a safety fact. The machine **decelerates to a stop mid-segment** at that segment's accel/jerk limits — neither instant nor at the end of the move. And **pause is silently ignored during threading and rigid tapping** (`TC_SYNC_POSITION`): `tpGetFeedScale()` returns `1.0` there, bypassing pause and feed override alike. Nothing in the chapter mentions this. See §5.6. | `tp.c:243-252, 2782-2787, 4083` |
+| 24 | TELEOP requires all joints homed | True only when `kinType != KINEMATICS_IDENTITY`. On a `trivkins` machine teleop needs **no** homing. The requirement is stated unconditionally. See §5.1. | `motion.c:173-178` |
+
+### 3.4 Command semantics
+
+Of the 19 surviving commands, 4 are contradicted, 3 have no handler, 4 have no description at all
+("*(More later)*"), and 8 hold up.
+
+| # | The document says | The code says | Evidence |
+|---|---|---|---|
+| 16 | `ENABLE` — *"Requirements: None … always be accepted"* | **False.** Rejected if the `motion.enable` HAL pin is low. (The "no forward kins → free mode" clause *is* still right: the `KINEMATICS_INVERSE_ONLY` test.) | `command.c:1366` |
+| 17 | `STEP` — *"Requirements: None … always be accepted"* | **False.** Only acts when `emcmotStatus->paused` is true; otherwise `reportError("MOTION: can't STEP while already executing")`. | `command.c:1261` |
+| 18 | `JOG_CONT`/`JOG_INCR`/`JOG_ABS` — free mode only, joint given by `emcmotCommand->axis` | Three gaps. Jog is **no longer free-mode only** — the handler tests `!GET_MOTION_TELEOP_FLAG()` and also serves teleop (Cartesian) jogging. The field is `joint`; `axis` now means a Cartesian coordinate. And **five undocumented rejection conditions** were added: `jog-inhibit` pin, homing active, jogwheel already active, locking joint needs unlock, jogging further onto a limit (no longer silent — sets `SET_JOINT_ERROR_FLAG`). | `command.c:796-840` |
+| 19 | `OVERRIDE_LIMITS` — *"This is currently broken…"* | **The bug was fixed; the document still describes it.** The code comment now reads *"they are automatically re-enabled at the end of the next jog"* — the behaviour the document presented as unrealised intent. Also, only limits **actually tripped** are overridden, via a mask built from `GET_JOINT_NHL_FLAG`/`GET_JOINT_PHL_FLAG` — not "all joints". | `command.c:702-730` |
+| 20 | `SET_TELEOP_VECTOR`, `ENABLE_WATCHDOG`, `DISABLE_WATCHDOG` described as operational | All three have **no `case` in `command.c`**. Issuing them does nothing. | `motion.h` vs `command.c` |
+| 21 | Internal note dated 6/5/2020: *"73 commands, but the switch contemplates only 70"* | The document contains a self-audit that is **itself stale**. Today the figures are **76 and 73**, the gap of three is unchanged, and it covers exactly the same three commands. Nothing was fixed in six years — neither the code nor the note. | `code-notes.adoc:242-246` |
+
+**Counting method.** `command.c` has 76 `case EMCMOT_*` labels but **73 distinct values** — the three
+jog commands appear in two different `switch` statements, one for handling and one only for an error
+message. Against 76 enum values, three commands have no handler.
+
+---
+
+## Part 4 — What the Code Notes still get right
+
+An audit that only found faults would be dishonest. Sixteen points hold:
+
+1. **The NML triplet to the GUI** — CMD/STAT/ERR between interfaces and task. Correct, and it is the only one.
+2. **EMCTASK's contents** — RS-274 interpreter and sequencing logic do share one process.
+3. **The cubic interpolator** — still present and active (`joint->cubic`, `cubicDrain()`).
+4. **Forward and inverse kinematics** — both directions and their place in the loop are right; only modularity changed.
+5. **Limit & home status** — still a real block of the controller.
+6. **Encoder and motor at the end of the chain** — the physical loop closes as drawn.
+7. **The principle of a real-time boundary** — it exists and structures everything; only its nature changed.
+8. **The joint controller's pins** — ten verified one by one, all present.
+9. **The free-mode planner** — `simple_tp.c` is still there.
+10. **libnml's classes** — all six exist at the described paths: `linklist.hh`, `shmem.hh`, `memsem.hh`, `timer.hh`, `cms.hh`, `nml.hh`. **The best-aged chapter of the document.**
+11. **The toolchanger model** — random vs nonrandom, copy vs swap: still accurate.
+12. **Pocket 0 and T0 semantics** — pocket 0 = spindle; T0 = "no tool" in nonrandom only.
+13. **`FREE` — deferred switching** — the handler really does only clear `coordinating` and `teleoperating`.
+14. **`PAUSE` and `RESUME`** — `tpPause()` / `tpResume()` and the `paused` flag, no hidden conditions.
+15. **`DISABLE`** — always accepted, effect deferred to the controller cycle (unlike its counterpart `ENABLE`).
+16. **`ENABLE`'s kinematics clause** — the `KINEMATICS_INVERSE_ONLY` test is still there.
+
+---
+
+## Part 5 — Agenda: closed, open, and unreachable
+
+Not verified. Do not assert any of this without reading the source first.
+
+### Closed on 2026-08-03
+
+| Was open | Outcome |
+|---|---|
+| Delegating handlers (`switch_to_teleop_mode`, `tpPause`) | **Resolved** — see §5.1 |
+| `GLOBMEM` status | **Resolved**, and it widens erratum 15 — see §5.2 |
+| Code Notes chapters not examined | **Resolved** — see §5.3 |
+| The `linuxcnc-ethercat/ethercat` fork | **Resolved** — see §5.4 |
+| `linuxcnc-ethercat` config format and CiA402 | **Partly resolved** — see §5.5 |
+
+#### 5.1 Where the handlers delegate
+
+**`switch_to_teleop_mode()` is at `src/emc/motion/motion.c:169-187`** — not in `control.c`, which is
+why the first search missed it. Its logic refines the documented TELEOP requirements:
+
+```c
+if (emcmotConfig->kinType != KINEMATICS_IDENTITY) {
+    if (!get_allhomed()) {
+        reportError(_("all joints must be homed before going into teleop mode"));
+        return;
+    }
+}
+```
+
+The homing requirement is real, but **conditional on the kinematics type**. On an identity-kinematics
+machine (`trivkins`) teleop mode needs no homing at all. The Code Notes state the requirement
+unconditionally. The rest of the function disables every joint's `free_tp` and sets
+`teleoperating = 1`, `coordinating = 0`.
+
+**`tpPause()` is `src/emc/tp/tp.c:4174-4181` and does exactly one thing**: `tp->pausing = 1`. So the
+document's admission — *"I don't know if it pauses all motion immediately, or if it completes the
+current move"* — is **still not answered by this level**. The behaviour lives in how `tpRunCycle`
+consumes the `pausing` flag. One level deeper again; not followed.
+
+#### 5.2 CMS buffer types — the documented list is wrong twice over
+
+`src/libnml/cms/cms_cfg.cc` recognises four strings, but **only three construct anything**:
+
+| Type | Site | Outcome |
+|---|---|---|
+| `PHANTOM` | `cms_cfg.cc:729` | constructs `PHANTOMMEM` |
+| `SHMEM` | `cms_cfg.cc:819` | constructs `SHMEM` |
+| `LOCMEM` | `cms_cfg.cc:849` | constructs `LOCMEM` |
+| `RTLMEM` | `cms_cfg.cc:844` | **refused** — `rcs_print_error("RTLMEM not supported.\n"); return (-1);` |
+
+```c
+if (!strcmp(buffer_type, "RTLMEM")) {
+    rcs_print_error("RTLMEM not supported.\n");
+    return (-1);
+}
+```
+
+`RTLMEM` has no class in `libnml/buffer/` and appears nowhere else in `src/libnml/`. It is a
+tombstone: the name is kept only so the parser can give a clear error instead of an obscure one.
+
+`GLOBMEM` appears **only in a comment** on the `buffer_type` field declaration
+(`/* "SHMEM" or "GLOBMEM" */`) — no parser branch, no class. It is as dead as `FILEMEM`, but more
+quietly: declaring `GLOBMEM` falls through to a generic failure, while `RTLMEM` at least names itself.
+
+**Erratum 15 widens**: the document lists five buffer types; **two of them (`FILEMEM`, `GLOBMEM`) do
+not exist**, and only three of the five are usable.
+
+> **Correction, 2026-08-03.** An earlier revision of this file listed `RTLMEM` as a working,
+> undocumented fourth type. That was a misreading — the `strcmp` was taken for an implementation when
+> it is a rejection. Corrected above.
+
+#### 5.3 The remaining Code Notes chapters
+
+- **"Backlash and Screw Error Compensation"** (`code-notes.adoc:741-743`) is **one line: `FIXME`.**
+  An empty chapter.
+- **"User Interfaces"** (`:769-771`) is likewise **just `FIXME`.**
+- **"Task controller — State"** is accurate: three states, *E-stop*, *E-stop Reset*, *Machine On*,
+  matching `docs/src/code/task-state-transitions.dot`.
+- **"IO controller (EMCIO)" contradicts the block diagram.** Line 756 states *"The I/O Controller is
+  part of TASK"* — already updated for the merge. But lines 759-767 still describe events "handled by
+  iocontrol" and an "iocontrol main loop process". So the diagram shows a separate process
+  (erratum 3), the first line of the prose says it is part of task, and the rest of the prose still
+  describes a separate loop. **The document disagrees with itself.**
+- **"Reckoning of joints and axes" is the best chapter in the document.** Current and self-aware.
+  `axis_mask` confirmed at `emc_nml.hh:979`, `joints` at `:977`. Its claim that
+  `status.motion.traj.axes` was *removed in 2.9* is **consistent with** what I checked — there is no
+  `int axes` in `emc_nml.hh` — but I verified only its absence today, **not the release it went in**.
+  Do not repeat the "2.9" part as verified.
+- **It points at a bug that has since been fixed.** Line 1391: *"For an example of such a bug, see the
+  treatment of axes in `src/emc/ini/initraj.cc:loadTraj()`"*. At `initraj.cc:203-205` the code now
+  reads: *"NOTE: originally, this code would only set axes X, Y and Z and ignore everything else. Now
+  all axes are set if provided in the [TRAJ]HOME position."*
+  **This is the second time the document preserves a bug report for a bug that no longer exists**
+  (the first was `OVERRIDE_LIMITS`, erratum 19). At two instances it stops being an accident and
+  becomes a characteristic of the document: *it records defects and never records their repair*.
+- Three inline `FIXME`s survive and are still valid, notably `:1343` — *"remove the
+  EMCMOT_SET_OFFSET message"* — and the command is indeed still there at `command.c:1909`.
+
+#### 5.4 The EtherCAT master fork
+
+`linuxcnc-ethercat/ethercat` reports **`fork: false` with no declared parent**, so GitHub does not
+consider it a fork of anything. *How* the IgH EtherLab code got there — import, subtree, manual copy —
+is **not established**; only that GitHub records no fork relationship. Default branch `dev-1.6`.
+
+Every tag is a pre-release: the newest is **`v1.6.9+parallelop1.pre9`**, and the series runs
+`.pre4 … .pre9`. There is no final `v1.6.9+parallelop1` tag. So the master this project ships is a
+**pre-release patch series on top of IgH 1.6.9**.
+
+The divergence is legible from the branches and recent commits:
+
+- **NIC driver backports for modern kernels**: `e1000e-5.4`, `e1000e-5.10`, `igb-6.8`, `igc_6.8`,
+  `realtek-5.10` — the classic pain point of IgH, which needs patched network drivers.
+- **Packaging**: DKMS, *"build all common NIC drivers and a parallel EoE variant"*, a udev rule for
+  `/dev/EtherCAT*` owned by group `ethercat`, and the binary package renamed
+  `ethercat` → `ethercat-master`.
+- **Protocol work**: `speed-up-foe`, `skip-sii-read`, CCAT module loading, and distributed-clock
+  reference-clock branches (`test/mr-204-dc-refclock`,
+  `218-ecrt_master_select_reference_clock-…`).
+
+#### 5.5 The lcec configuration model
+
+Configuration is **XML**, not INI (`documentation/configuration-reference.md`):
+
+```xml
+<masters>
+  <master idx="0" appTimePeriod="1000000" refClockSyncCycles="-1">
+    <slave .../>
+  </master>
+</masters>
+```
+
+Two driver styles coexist: 60 **compiled-in device drivers** (easier to use, extra error checking,
+harder to write) and a **generic driver** that maps HAL pins straight to EtherCAT PDOs with no code
+at all — *"In many cases this is sufficient to get arbitrary hardware working."*
+
+**CiA402** — the standard servo-drive profile — gets a substantial class layer:
+`lcec_class_cia402.c` (43 KB), `lcec_class_cia402_opt.h` (31 KB), `lcec_basic_cia402.c` (12 KB).
+
+The `examples/` folder also carries an **FSoE** case (Functional Safety over EtherCAT) with Beckhoff
+TwinSAFE project files — safety traffic on the same wire.
+
+#### 5.6 What PAUSE actually does — the Code Notes' own question, answered
+
+The document admits: *"At this point I don't know if it pauses all motion immediately, or if it
+completes the current move and then pauses before pulling another move from the queue."*
+**Neither.** `tp->pausing` is consumed at exactly two decision points, both guarded by the same
+condition:
+
+```c
+bool pausing = tp->pausing && (tc->synchronized == TC_SYNC_NONE || tc->synchronized == TC_SYNC_VELOCITY);
+```
+
+| Site | Effect |
+|---|---|
+| `tpGetFeedScale()` — `tp.c:243-247` | returns **`0.0`**, ahead of every other case |
+| `tpCalculateSCurveAccel()` — `tp.c:2782-2787` | sets `use_velocity_control`, so Ruckig plans a controlled run-down to zero |
+
+So the machine **decelerates to a stop inside the current segment**, at that segment's acceleration
+and jerk limits. It neither stops instantly nor finishes the move: it halts wherever the deceleration
+ramp ends, mid-segment. `tpHandleAbort()` (`tp.c:4083`) then returns `TP_ERR_STOPPED` once velocity
+reaches zero.
+
+> **The exception the Code Notes never mention, and it is a safety fact.**
+> Pause is **ignored** while the segment is position-synchronized to the spindle
+> (`TC_SYNC_POSITION`) — that is, **during threading and rigid tapping**. `tpGetFeedScale()` returns
+> `1.0` for that case (`tp.c:251-252`), bypassing pause *and* feed override alike. The tool position
+> is slaved to spindle angle; letting the operator pause mid-thread would destroy the thread.
+> Velocity-synchronized moves (`TC_SYNC_VELOCITY`) *can* be paused.
+>
+> Pressing pause during a G33 or G84 does nothing until the synchronized move completes. Nothing in
+> the LinuxCNC Code Notes says so.
+
+`tp->pausing` is also cleared wholesale on planner reset, alongside `aborting` and `reverse_run`
+(`tp.c:433-448`).
+
+#### 5.7 lcec internals — the parser, the generator, the device registry
+
+**The XML grammar is a table**, not ad-hoc parsing (`lcec_conf.c:80-95`). Fourteen element types with
+an explicit parent→child relation and a per-element attribute handler:
+
+```
+masters > master > slave > { dcConf | watchdog | initCmds | modParam
+                           | sdoConfig > sdoDataRaw
+                           | idnConfig > idnDataRaw
+                           | syncManager > pdo > pdoEntry > complexEntry }
+```
+
+Note `idnConfig` / `idnDataRaw`: those are **Sercos IDNs**, so the driver speaks SoE (Sercos over
+EtherCAT) as well as CoE.
+
+**`lcec_configgen.c` writes your config for you from a live bus.** It shells out to `ethercat slaves`,
+`ethercat sdos`, `ethercat pdos` and `ethercat upload`, parses the output, looks up matching drivers
+in the in-process registry linked from `liblcecdevices.a`, and emits an XML skeleton on stdout. It is
+a **2026 C port of an earlier Go implementation** (`src/configgen/lcec_configgen.go`), by Luca
+Toniolo after Scott Laird's original — one of the newest pieces in the project.
+
+**Device drivers are registration tables, not code per device.** Each driver file declares a static
+`lcec_typelist_t types[]` where one row binds a part number to a VID:PID and an init function:
+
+```c
+{"EL1002", LCEC_BECKHOFF_VID, 0x03EA3052, 0, NULL, lcec_el1xxx_init, NULL, EL1XXX_F_CHANNELS(2)},
+{"EL1004", LCEC_BECKHOFF_VID, 0x03EC3052, 0, NULL, lcec_el1xxx_init, NULL, EL1XXX_F_CHANNELS(4)},
+```
+
+So `lcec_el1xxx.c` alone covers the whole EL1002/1004/1008/1012/1014/1018 family through one init
+function plus a channel-count flag.
+
+The counts, kept distinct because they are easy to conflate:
+
+| What | Count |
+|---|---|
+| driver files (`src/devices/lcec_*.c`) | 60 |
+| `ADD_TYPES` registration calls | 64 |
+| **`types[]` rows — i.e. supported devices** | **~260** |
+| device rows listed in `DEVICES.md` | 265 |
+
+> **Correction, 2026-08-03.** An earlier revision offered "64 `ADD_TYPES` registrations" as though it
+> were the device tally. It is the number of registration *calls*; the device count is roughly four
+> times that.
+
+**`documentation/DEVICES.md` is honest about coverage.** 279 lines, a table of
+description / driver / VID:PID / device type / **testing status** / notes, opening with:
+*"This is a work in progress, listing all of the devices that LinuxCNC-Ethercat has code to support
+today. **Not all of these are well-tested.**"* Many rows have a blank testing status; some read
+"Part of @scottlaird's test suite". For a machine builder that column is the most useful thing in the
+repository.
+
+### Still open
+
+- **The 57 undocumented motion commands.** Grouped by theme in the errata document, but documenting
+  them properly from the code is a *contribution to LinuxCNC*, not an audit finding. Out of scope
+  here.
+- **The individual lcec device drivers.** The registration mechanism, the parser and the generator are
+  now understood (§5.7); the per-device PDO mappings inside the 60 files are not, and auditing them
+  without the corresponding hardware would be sterile.
+- **`LCNC_Architecture_C1.drawio`** — a C4 *context* diagram. Deliberately coarse, makes no
+  falsifiable claim about internals. Low value to audit.
+- **Other files in `docs/src/code/`** — style guide, building, writing tests. Process documents, not
+  architecture claims. Not audit targets.
+
+### Out of reach from source alone
+
+- **The practical effect of the RTAI/EtherCAT gap** (§2.9.1, §2.9.4). That
+  `rtapi_task_self_resync()` is a no-op under RTAI is what the source says. Measuring what that does
+  to SYNC0 phase needs hardware and a scope. **This one cannot be closed by reading code** — do not
+  leave it on the agenda as if it could.
+
+---
+
+## Part 6 — G-code reference audit (sampled) and the work products
+
+### 6.1 Scope
+
+A *targeted* audit of `docs/src/gcode/g-code.adoc` against `src/emc/rs274ngc/` — the sections tied
+to spindle synchronization and path control: **G33, G33.1, G76 (head), G64, G96/G97**. The reference
+is 2 786 lines; everything outside those sections is unaudited.
+
+### 6.2 Errata 26–27: the reference documents errors that do not exist
+
+| # | The reference claims | The code says | Evidence |
+|---|---|---|---|
+| 26 | G33 and G33.1: *"It is an error if … The requested linear motion exceeds machine velocity limits due to the spindle speed"* | **No such check exists** — not in the interpreter, not in task, not in motion. The real G33 checks are: an axis word present, **K present** (`NCE_K_WORD_MISSING_WITH_G33`), **F absent** (`NCE_F_WORD_USED_WITH_G33`), `$` valid, spindle *commanded* turning. The two real checks were missing from the documented list; the phantom one was present. | `interp_check.cc:375-378`, `interp_convert.cc:5496-5529` |
+| 27 | G96: *"It is an error if … A feed move is specified in G96 mode while the spindle is not turning"* | **No such check exists anywhere.** The spindle-not-turning checks apply only to G33/G33.1/G76 and the tapping cycles (`interp_cycles.cc:270`). A plain G1 in CSS mode with a stopped spindle is accepted. | grep of `rs274ngc/`, `task/`, `motion/` |
+
+Nuances recorded with them: "spindle not turning" tests `settings->spindle_turning[]` — the
+**commanded** M3/M4 state in the interpreter's model, not measured rotation. G33.1's `I` multiplier
+below 1 is silently clamped to 1 (`interp_convert.cc:5522-5527`). G64/G61 path-mode changes are
+refused under cutter comp (`interp_convert.cc:2221`) — absent from the doc. G96 without `D` applies
+**no** RPM limit: `SET_SPINDLE_MODE(s, 1e30)` (`interp_convert.cc:5087`).
+
+**A pattern worth naming:** both phantom errors describe *physically sensible* constraints — things
+a reader would believe a CNC ought to check. That is precisely why nobody caught them: they are
+plausible. The documentation does not just rot by aging; it also contains **invented safety checks**
+that were perhaps once planned and never implemented.
+
+### 6.3 In-code defects found in passing (code, not docs)
+
+| Where | Defect |
+|---|---|
+| `interp_convert.cc:5534` | G76's `$`-validity check reports *"Invalid D-number in G76 cycle"* — wrong word name, inconsistent with G33's message |
+| `command.c:1475`, `:1553` | PROBE and RIGID_TAP carry the copy-pasted comment *"requires coordinated mode, enable off"*; the test requires enable **on** |
+| `command.c:1966` | `SET_AXIS_LOCKING_JOINT` debug message prints `SET_AXIS_ACC_LOCKING_JOINT`, a name matching no command |
+
+### 6.4 Work products
+
+| Artefact | What it is |
+|---|---|
+| `tools/verify-citations.ps1` + `tools/citations-manifest.json` | Machine-checks every citation in this file against both clones. Run after any `git pull`; a FAIL means re-anchor the citation, not necessarily that the finding is wrong. |
+| `upstream/0001…0003.patch` + `upstream/README.md` | Three reviewed patches on the `audit-fixes` branch of the clone, fixing errata 15–17, 19, 21–23, 25–27 in `basic-hal.adoc`, `code-notes.adoc`, `g-code.adoc`. Submission is the user's, under their identity. |
+| `motion-commands-reference.md` | The complete 76-command inventory written from `command.c` — the Code Notes' missing chapter, with per-command gates and a verification-status statement. |
+
+---
+
+## Appendix — constants worth knowing
+
+| Constant | Value | Source |
+|---|---|---|
+| `HAL_KEY` | `0x48414C32` | `hal_priv.h:120` |
+| `HAL_VER` | `0x00000013` | `hal_priv.h:121` |
+| `HAL_SIZE` | 2 MiB | `hal_priv.h:122` |
+| `HAL_STREAM_MAX_PINS` | 21 | `hal.h:1236` |
+| `STREAMER_SHMEM_KEY` | `0x48535430` | `components/streamer.h` |
+| `SAMPLER_SHMEM_KEY` | `0x48534130` | `components/streamer.h` |
+| `DEFAULT_SHMEM_KEY` | 100 | `emcmotcfg.h:49` |
+| `EMCMOT_MAX_JOINTS` | 16 | `emcmotcfg.h:25` |
+| `EMCMOT_MAX_AXIS` | 9 | `emcmotcfg.h:31` |
+| `EMCMOT_MAX_SPINDLES` | 8 | `emcmotcfg.h:33` |
+| `EMCMOT_MAX_DIO` / `AIO` | 64 / 64 | `emcmotcfg.h:34,35` |
+| `EMCMOT_ERROR_NUM` × `LEN` | 32 × 1024 | `emcmotcfg.h:42,43` |
+| `DEFAULT_TC_QUEUE_SIZE` | 2000 | `emcmotcfg.h:70` |
+| `DEFAULT_EMCMOT_COMM_TIMEOUT` | 1.0 s | `emcmotcfg.h:52` |
+
+### A recurring pattern: names outlive structures
+
+Three times in this audit a name survived what it designated:
+
+- Pins are still `iocontrol.0.*` though the `iocontrol` process is gone.
+- The INI section holding `RANDOM_TOOLCHANGER`, `TOOL_TABLE` and `DB_PROGRAM` is still `[EMCIO]`,
+  named after a component that no longer exists (`taskclass.cc:141-147`).
+- `motion-traj-planner` is still exported in source form, inside `#if 0`.
+
+This is deliberate backward compatibility — thousands of user `.hal` and `.ini` files keep working.
+But it is exactly why documentation ages badly here: **the names stay right while the structure they
+describe has been dismantled.** A reader trusting the names will conclude `iocontrol` is a process.
+It has not been one for a long time.
+
+---
+
+## Changelog
+
+| Date | Change |
+|---|---|
+| 2026-07-30 | Initial version. Parts 1–5 established from a full clone at HEAD `caa13ca6ae`. Errata 1–21 verified. |
+| 2026-08-03 | Errata HTML snapshot refreshed to `_20260803_1811` (old `_1450` deleted): errata 22–27 added, PAUSE semantics row updated from “accurate” to “incomplete”, new Part 4 for the G-code reference with the phantom-error oracles, scope note rewritten (two limits lifted), prepared-fixes note added. Browser-verified: 27 rows, no gaps/duplicates, no stale strings. Scope divergence noted in the previous entry is closed. |
+| 2026-08-03 | **Two further verification passes, two new methods.** *Pass A — cross-document consistency*: every shared figure (76/73/3, 19 kins, 48 files, 124+25, ~260, 2 MiB) agrees across all seven documents; errata numbering 1–27 complete, no gaps; all 73 handler lines in `motion-commands-reference.md` machine-matched against `command.c` in **both directions** (no missing, no extra, no drift). One scope divergence noted, not an error: the dated errata HTML snapshot stops at 21 corrections while this living file is at 27. *Pass B — adversarial*: all three patches `git apply --check` cleanly on pristine master; the two phantom-error claims re-attacked through **independent oracles** — the `NCE_*` catalog, every `_()` string in the interpreter, and all 26 `.po` translation catalogs: no trace, so the phantom errors were never real messages in any translated release either. The dead-commands claim came back **stronger**: a whole-tree search shows the three appear only in `motion.h` and `motion-logger.c` — nothing even emits them. Zero errors found by either pass. |
+| 2026-08-03 | **From audit to production.** Built `tools/verify-citations.ps1` + manifest (111 checks, all passing). Prepared three upstream patches on the `audit-fixes` branch (errata 15–17, 19, 21–23, 25–27) with `upstream/README.md`. Wrote `motion-commands-reference.md` — all 76 commands from `command.c`. **Part 6 added**: sampled G-code reference audit found two *phantom errors* — documented checks (G33 over-velocity, G96 feed-while-stopped) that are implemented nowhere — plus three in-code defects (G76's "Invalid D-number" message, the stale "enable off" comments, the SET_AXIS_LOCKING_JOINT debug name). Errata now **27**. |
+| 2026-08-03 | **Second pass: every `file:line` citation machine-checked** against the working tree — each cited line was read back and matched to the claim it supports. 60 citations tested, **58 passed**, two off-by-one errors fixed: `motion_struct.h:21`→`:20-21` (the mutex is on 20, the slot on 21) and `task/Submakefile:12`→`:13`. All constants in the appendix re-read from source. All lcec citations passed unchanged. Method note: automated read-back is worth more than re-reading prose — both errors were invisible to eye inspection and neither changed a conclusion, only its provenance. |
+| 2026-08-03 | **Self-audit against the source. Twelve errors found and corrected.** Two substantive: `RTLMEM` was described as a working buffer type when `cms_cfg.cc:844` explicitly *refuses* it, and the error ring's saturation behaviour was stated backwards (the newest message is refused, not the oldest evicted). Ten quantitative or inferential: "65 drivers" (23 driver files + 42 modules of one driver), "26 kinematics modules" (19 distinct), rs274ngc 40→48 files, the base-thread creation test (ratio, not non-zero), "64 ADD_TYPES" offered as a device count (~260 devices), the five-transports implication, the unverified "removed in 2.9", the fork-provenance inference, the master version (all tags are `.preN`), and "tracked objects"→files. Verified-and-confirmed in passing: the seven position field names with line numbers, the single-writer refusal, NML `read()` semantics, and `tpmod`/`homemod` dating to `v2.9.0-pre1`. |
+| 2026-08-03 | Remaining open items closed. **§5.6** answers the Code Notes' own long-standing question about `PAUSE` — deceleration to a stop mid-segment — and finds the omission that matters: **pause is ignored during threading and rigid tapping** (erratum 25). **§5.7** covers lcec's table-driven XML grammar, the live-bus config generator (a 2026 C port of a Go tool), and the registration-table device model — 64 `ADD_TYPES` across 60 files, with an honest tested/untested column in `DEVICES.md`. Errata now **25**. |
+| 2026-08-03 | **Open agenda worked through.** Closed: delegating handlers (§5.1), `GLOBMEM` (§5.2 — widens erratum 15, and finds undocumented `RTLMEM`), the remaining Code Notes chapters (§5.3 — two are bare `FIXME`s, the EMCIO chapter contradicts the block diagram, and the document preserves a *second* repaired bug), the EtherCAT master fork (§5.4), the lcec configuration model (§5.5). Errata count rises to **24**. One item reclassified as unreachable from source alone: the practical RTAI/EtherCAT DC effect needs hardware. |
+| 2026-08-03 | Cloned and audited `linuxcnc-ethercat` (§2.9.3–2.9.5): IgH dependency confirmed, weak-symbol `initf` probe and its PLL fallback documented, four-repository organisation mapped. **New documentation error found by cross-checking the two repositories**: LinuxCNC's `basic-hal.adoc:100` says `lcec.0.activate`, the driver exports `lcec.activate`. Added the EtherCAT line to the command-flow sheet. |
+| 2026-08-03 | Added **§2.9 EtherCAT**: no driver in the repository, but real accommodations for the external one — the `initf` HAL verb, the special init cycle keeping EtherCAT send clear of SYNC0 (`hal_lib.c:3610`), and `rtapi_task_self_resync()` being a no-op under RTAI. External driver `linuxcnc-ethercat` identified but not audited. |
+| 2026-08-03 | File naming switched to `<name>_YYYYMMDD_HHMM`; all `vN` documents deleted, only the latest kept. Current set: `linuxcnc-command-flow_20260803_1450.html`, `linuxcnc-code-notes-errata_20260803_1450.html`, this file. |
+| 2026-08-03 | Added the **release caveat**: `master` is unreleased, latest tag `v2.9.10`; the IO migration (`764655eb4d`) carries no tag and is master-only. Corrected the claim that a GUI never touches real time — AXIS is itself a HAL component (`axis.py:3950`). Dated the overall block diagram: in the repository unchanged since 2012-11-19 (`b60c20198e`), content undatable. Verified the canon entry points `STRAIGHT_FEED`, `ARC_FEED`, `SET_SPINDLE_SPEED(int spindle, double r)` exist in `canon.hh`. |

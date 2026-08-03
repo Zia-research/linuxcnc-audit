@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LinuxCNC — Command Flow</title>
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   Animated sheet — LinuxCNC master 2.10.0~pre1
+   Deliberate single theme: a control room at night. Graphite
+   ground, luminous traces. The subject of the drawing is the
+   light travelling through it; it does not read on a light ground.
+   Amber = real-time domain · cyan = user space.
+   ═══════════════════════════════════════════════════════════════ */
+:root{
+  --void:#080C0F; --panel:#0D1519; --panel2:#111C21; --grid:#152329;
+  --edge:#1E2E35; --edge2:#2B4049;
+  --dim:#5A6E77; --txt:#A9BEC5; --bright:#E4F1F4;
+  --amber:#F2A62B; --amber2:#B87A16; --amberd:#4A3208;
+  --cyan:#3ECAD6; --cyan2:#1B818C; --cyand:#0C3A40;
+  --red:#E8593C; --redd:#2E120C;
+  --mono:ui-monospace,"Cascadia Mono","SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--void);color:var(--txt);font-family:var(--mono);font-size:14px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(ellipse 140% 90% at 50% -10%,#101E24 0%,transparent 60%);
+  background-attachment:fixed}
+.wrap{max-width:1680px;margin:0 auto;padding:clamp(14px,2.2vw,32px) clamp(12px,2.2vw,32px) 72px;
+  display:flex;flex-direction:column;gap:clamp(16px,2vw,28px)}
+
+.head{border:1px solid var(--edge);background:var(--panel);display:grid;grid-template-columns:1fr;gap:0}
+@media(min-width:900px){.head{grid-template-columns:1fr auto}}
+.head-l{padding:20px clamp(16px,2vw,28px)}
+.eyebrow{font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--amber);margin-bottom:8px}
+h1{font-size:clamp(22px,3.4vw,40px);font-weight:700;letter-spacing:-.02em;line-height:1.02;color:var(--bright)}
+h1 em{font-style:normal;color:var(--dim);font-weight:400}
+.head-l p{margin-top:12px;max-width:70ch;color:var(--txt);font-size:13px;line-height:1.65}
+.head-l p b{color:var(--bright);font-weight:600}
+.head-l p .q{color:var(--amber);font-weight:700}
+.head-r{border-top:1px solid var(--edge);padding:18px clamp(16px,2vw,28px);display:flex;flex-direction:column;
+  gap:12px;justify-content:center;min-width:250px}
+@media(min-width:900px){.head-r{border-top:0;border-left:1px solid var(--edge)}}
+.ctl{display:flex;gap:6px;flex-wrap:wrap}
+button{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;background:var(--panel2);
+  color:var(--txt);border:1px solid var(--edge2);padding:7px 12px;cursor:pointer;
+  transition:background .15s,color .15s,border-color .15s}
+button:hover{border-color:var(--amber2);color:var(--bright)}
+button[aria-pressed="true"]{background:var(--amberd);border-color:var(--amber);color:var(--amber)}
+button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.meta{font-size:10.5px;letter-spacing:.06em;color:var(--dim);line-height:1.8}
+.meta b{color:var(--txt);font-weight:600}
+
+.warn{border:1px solid var(--red);border-left:4px solid var(--red);background:var(--redd);padding:13px 17px}
+.warn h4{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--red);margin-bottom:6px}
+.warn p{font-size:12.5px;line-height:1.6;color:var(--txt);max-width:100ch}
+.warn p b{color:var(--bright)}
+.warn code{background:#1A0E0A;border:1px solid #3E1B13;padding:.05em .35em;font-size:11.5px;color:#F0A28E}
+
+.panel{border:1px solid var(--edge);background:var(--panel);position:relative}
+.panel-hd{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding:10px clamp(12px,1.6vw,20px);
+  border-bottom:1px solid var(--edge);background:var(--panel2)}
+.panel-hd .n{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--void);background:var(--amber);padding:2px 7px;font-weight:700}
+.panel-hd h2{font-size:14px;font-weight:600;letter-spacing:.03em;color:var(--bright);text-transform:uppercase}
+.panel-hd .sub{font-size:11px;color:var(--dim);margin-left:auto}
+.panel-bd{padding:clamp(10px,1.4vw,18px);overflow-x:auto}
+svg{display:block}
+.schema{width:100%;min-width:1400px;height:auto}
+
+.band{fill:#0B1418;stroke:var(--edge);stroke-width:1}
+.band-rt{fill:#12100A;stroke:#2E2410}
+.band-lbl{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;fill:var(--dim)}
+.bus-lbl{font-size:9px;letter-spacing:.16em;text-transform:uppercase;fill:var(--dim)}
+.trace{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.trace-f{stroke:var(--amber2);opacity:.5}
+.trace-r{stroke:var(--cyan2);opacity:.45;stroke-dasharray:7 5}
+.blk{cursor:pointer}
+.blk rect.body{fill:#0E181D;stroke:var(--edge2);stroke-width:1.2;transition:stroke .2s}
+.blk.us rect.body{stroke:var(--cyan2)}
+.blk.rt rect.body{stroke:var(--amber2)}
+.blk.hw rect.body{stroke:#46585F}
+.blk rect.glow{fill:var(--amber);opacity:0;pointer-events:none}
+.blk.us rect.glow{fill:var(--cyan)}
+.blk:hover rect.body,.blk.sel rect.body{stroke:var(--bright);stroke-width:1.8}
+.blk .t1{font-size:11.5px;font-weight:600;fill:var(--bright);letter-spacing:.01em}
+.blk .t2{font-size:9px;fill:var(--dim);letter-spacing:.03em}
+.blk .t3{font-size:8.5px;fill:var(--amber2);letter-spacing:.06em;text-transform:uppercase}
+.blk.shm rect.body{fill:#06181A;stroke:var(--cyan2);stroke-width:1.4}
+.blk.shm .t1{fill:var(--cyan);font-size:9.5px}
+.blk.shm .t2{font-size:8px}
+.blk.slot rect.body{fill:#141005;stroke:var(--amber);stroke-width:1.6}
+.blk.slot .t1{fill:var(--amber)}
+.blk.q rect.body{fill:#141005;stroke:var(--amber);stroke-width:1.4;stroke-dasharray:4 3}
+.blk.q .t1{fill:var(--amber)}
+.blk.q .cell{fill:var(--amberd)}
+.blk.q .cell.on{fill:var(--amber)}
+.blk.shm.q rect.body{fill:#120E06}
+.pulse{pointer-events:none}
+.arrow{fill:var(--amber2);opacity:.75}
+.arrow-r{fill:var(--cyan2);opacity:.7}
+
+.readout{border:1px solid var(--edge);background:var(--panel2);display:grid;grid-template-columns:1fr;gap:0;min-height:88px}
+@media(min-width:820px){.readout{grid-template-columns:230px 1fr auto}}
+.ro-k{padding:12px 16px;border-bottom:1px solid var(--edge)}
+@media(min-width:820px){.ro-k{border-bottom:0;border-right:1px solid var(--edge)}}
+.ro-k .lbl{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+.ro-k .val{font-size:15px;color:var(--amber);font-weight:600;margin-top:3px;word-break:break-word}
+.ro-b{padding:12px 16px;font-size:12.5px;line-height:1.6;color:var(--txt)}
+.ro-b .src{display:block;margin-top:5px;font-size:10.5px;color:var(--cyan2);letter-spacing:.03em}
+.ro-c{padding:12px 16px;border-top:1px solid var(--edge);font-size:10.5px;color:var(--dim);white-space:nowrap}
+@media(min-width:820px){.ro-c{border-top:0;border-left:1px solid var(--edge)}}
+.ro-c b{display:block;color:var(--bright);font-size:13px;font-variant-numeric:tabular-nums}
+
+.row{display:grid;grid-template-columns:1fr;gap:clamp(16px,2vw,28px)}
+@media(min-width:1100px){.row{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr)}}
+.ring-wrap{display:grid;grid-template-columns:1fr;gap:14px;align-items:center}
+@media(min-width:560px){.ring-wrap{grid-template-columns:270px 1fr}}
+.seg{fill:var(--amberd);stroke:var(--panel);stroke-width:2;transition:fill .12s}
+.seg.on{fill:var(--amber)} .seg.past{fill:var(--amber2)}
+.ring-c1{font-size:9px;letter-spacing:.18em;text-transform:uppercase;fill:var(--dim)}
+.ring-c2{font-size:26px;font-weight:700;fill:var(--bright);font-variant-numeric:tabular-nums}
+.ring-c3{font-size:8.5px;letter-spacing:.1em;fill:var(--amber)}
+.steps{list-style:none;font-size:10.5px;line-height:1.5;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1px 14px}
+.steps li{display:grid;grid-template-columns:18px 1fr;gap:7px;padding:1.5px 4px;color:var(--dim);border-left:2px solid transparent;transition:color .12s,background .12s}
+.steps li .i{font-variant-numeric:tabular-nums;text-align:right;color:#3F5158}
+.steps li.on{color:var(--bright);background:var(--amberd);border-left-color:var(--amber)}
+.steps li.on .i{color:var(--amber)}
+.steps li.edge{color:#3F5158;font-style:italic}
+
+.pos-node rect{fill:#0E181D;stroke-width:1.3}
+.pos-node.cmd rect{stroke:var(--amber2)} .pos-node.fb rect{stroke:var(--cyan2)}
+.pos-node .nm{font-size:10.5px;font-weight:600;fill:var(--bright)}
+.pos-node .un{font-size:8.5px;fill:var(--dim);letter-spacing:.05em}
+.pos-node .no{font-size:9px;font-weight:700}
+.pos-node.cmd .no{fill:var(--amber)} .pos-node.fb .no{fill:var(--cyan)}
+.pos-x{font-size:8.5px;fill:var(--dim);letter-spacing:.04em}
+.pos-x.hi{fill:var(--amber2)}
+.pos-arr{fill:none;stroke-width:1.6}
+.pos-arr.cmd{stroke:var(--amber2)} .pos-arr.fb{stroke:var(--cyan2)}
+
+.cap{display:flex;flex-direction:column;gap:9px}
+.cap-row{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:center}
+.cap-row .k{font-size:10.5px;color:var(--txt);text-align:right;line-height:1.3}
+.cap-row .k s{display:block;text-decoration:none;font-size:8.5px;color:var(--dim)}
+.cap-bar{position:relative;height:22px;background:linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/25% 100%;border-left:1px solid var(--edge2)}
+.cap-fill{position:absolute;left:0;top:3px;bottom:3px;border-radius:0 4px 4px 0;transition:width .5s}
+.cap-val{position:absolute;top:50%;transform:translateY(-50%);font-size:10px;color:var(--txt);font-variant-numeric:tabular-nums;white-space:nowrap;padding-left:7px}
+.cap-ax{display:grid;grid-template-columns:150px 1fr;gap:12px;margin-top:2px}
+.cap-ax .t{display:flex;justify-content:space-between;font-size:9px;color:var(--dim);font-variant-numeric:tabular-nums;grid-column:2}
+
+.key{display:flex;flex-wrap:wrap;gap:8px 20px;padding:12px clamp(12px,1.6vw,20px);border-top:1px solid var(--edge);font-size:10.5px;color:var(--dim)}
+.key i{font-style:normal;display:inline-flex;align-items:center;gap:7px}
+.key i::before{content:"";width:16px;height:10px;border:1.4px solid currentColor;flex:none}
+.key .kf{color:var(--amber)} .key .kf::before{background:var(--amberd)}
+.key .kq{color:var(--amber)} .key .kq::before{background:#141005;border-style:dashed}
+.key .ku{color:var(--cyan)} .key .ku::before{background:var(--cyand)}
+.key .kh{color:#7A8D94} .key .kh::before{background:#0E181D}
+footer{border-top:1px solid var(--edge);padding-top:14px;margin-top:8px;display:flex;flex-wrap:wrap;gap:6px 26px;font-size:10px;color:#465A62;letter-spacing:.05em}
+footer b{color:var(--dim)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="head">
+  <div class="head-l">
+    <div class="eyebrow">LinuxCNC · master 2.10.0~pre1 · animated sheet</div>
+    <h1>Command flow <em>— from G-code to motor</em></h1>
+    <p>
+      The official architecture diagram, still published in the <b>Code Notes</b>, carries two
+      annotations on the link between task and motion controller: <span class="q">“NML?”</span> and
+      <span class="q">“FIFOS?”</span>. The authors were marking their own uncertainty. This sheet
+      answers: it is neither — it is a <b>single slot</b> under a mutex, and the real queues are
+      elsewhere. That image has been in the repository <b>unchanged since 2012-11-19</b>
+      (commit <code>b60c20198e</code>); its content is plainly older, but nothing in the repository
+      dates it further back. Hover any block for detail.
+    </p>
+  </div>
+  <div class="head-r">
+    <div class="ctl">
+      <button id="btnPlay" aria-pressed="true">❚❚ Pause</button>
+      <button class="spd" data-s="0.5" aria-pressed="false">×0.5</button>
+      <button class="spd" data-s="1" aria-pressed="true">×1</button>
+      <button class="spd" data-s="2.5" aria-pressed="false">×2.5</button>
+    </div>
+    <div class="meta">
+      source: <b>read from the repository</b><br>
+      HEAD <b>caa13ca6</b> · <b>9 442</b> objects<br>
+      audited: <b>3 August 2026</b>
+    </div>
+  </div>
+</header>
+
+<div class="warn">
+  <h4>Which LinuxCNC is this?</h4>
+  <p>
+    Everything here describes <code>master</code>, which is <b>unreleased</b> — the newest tag in the
+    repository is <code>v2.9.10</code>. One difference matters in practice: the commit that moved all
+    I/O handling out of the <code>iocontrol</code> process and into <code>milltask</code>
+    (<code>764655eb4d</code>, 2023-05-16) carries <b>no tag</b> and exists only on <code>master</code>.
+    <b>If you run 2.9.x, <code>iocontrol</code> is still a separate process on your machine.</b>
+    Everything else on this sheet — HAL, the <code>emcmot</code> segment, the queues, the servo cycle —
+    holds for 2.9 as well.
+  </p>
+</div>
+
+<section class="panel">
+  <div class="panel-hd"><span class="n">Sheet 1</span><h2>Command path &amp; feedback loop</h2><span class="sub">continuous trace · animated pulses</span></div>
+  <div class="panel-bd">
+    <svg class="schema" viewBox="0 0 1600 752" role="img"
+         aria-label="LinuxCNC command flow from reading the G-code file to the motor, with the feedback loop">
+      <rect class="band" x="170" y="56" width="1400" height="152"/>
+      <rect class="band" x="170" y="220" width="1400" height="70"/>
+      <rect class="band band-rt" x="170" y="302" width="1400" height="150"/>
+      <rect class="band" x="170" y="500" width="1400" height="150"/>
+      <text class="band-lbl" x="182" y="72">User space — processes, messages, no deadline</text>
+      <text class="band-lbl" x="182" y="238">Real-time boundary — emcmot shmem · key 100</text>
+      <text class="band-lbl" x="182" y="318" fill="#8A7038">Real time — motmod · servo-thread · hard deadline</text>
+      <text class="band-lbl" x="182" y="516">Hardware — HAL components and I/O cards</text>
+
+      <line x1="170" y1="478" x2="1570" y2="478" stroke="#2E4148" stroke-width="6"/>
+      <line x1="170" y1="478" x2="1570" y2="478" stroke="#3ECAD6" stroke-width="1.5" opacity=".3"/>
+      <text class="bus-lbl" x="182" y="470">HAL — 2 MiB shared memory · key 0x48414C32 · pins ▸ signals ▸ threads</text>
+
+      <path id="pF" class="trace trace-f" d="M 176 162 L 1168 162 L 1545 162 L 1545 254 L 1150 254 L 176 254 L 176 360 L 1368 360 L 1440 360 L 1440 478 L 280 478 L 280 572 L 1330 572"/>
+      <path id="pS" class="trace trace-r" d="M 1288 400 L 1288 428 L 85 428 L 85 100 L 700 100"/>
+      <path id="pB" class="trace trace-r" d="M 1330 612 L 1330 700 L 150 700 L 150 400"/>
+
+      <g class="arrow">
+        <polygon points="1545,205 1540,193 1550,193"/>
+        <polygon points="176,300 171,288 181,288"/>
+        <polygon points="1440,430 1435,418 1445,418"/>
+        <polygon points="280,528 275,516 285,516"/>
+      </g>
+      <g class="arrow-r">
+        <polygon points="85,150 80,162 90,162"/>
+        <polygon points="150,440 145,452 155,452"/>
+      </g>
+      <text class="bus-lbl" x="182" y="640" fill="#6E8189">EtherCAT — a third path, absent from this repository: the lcec driver lives in linuxcnc-ethercat/linuxcnc-ethercat</text>
+      <text class="bus-lbl" x="182" y="654" fill="#6E8189">and plugs in right here, through HAL. LinuxCNC ships no EtherCAT code — only the initf hook that lets it activate cleanly.</text>
+      <text class="bus-lbl" x="1358" y="694" fill="#1B818C">encoder feedback → process_inputs</text>
+      <text class="bus-lbl" x="96" y="90" fill="#1B818C">status &amp; error return</text>
+
+      <g id="blocks"></g>
+      <g id="pulses" class="pulse"></g>
+    </svg>
+  </div>
+  <div class="key">
+    <i class="kf">real-time block</i>
+    <i class="ku">user-space block</i>
+    <i class="kq">queue / ring — dashed outline</i>
+    <i class="kh">hardware</i>
+    <span style="margin-left:auto;color:#465A62">amber pulse = command · cyan pulse = feedback</span>
+  </div>
+</section>
+
+<div class="readout" id="ro">
+  <div class="ro-k"><div class="lbl">Selected block</div><div class="val" id="roName">— hover the sheet —</div></div>
+  <div class="ro-b"><span id="roDesc">Every block carries its exact role and the source file that implements it. The pulses follow the real trace: a command descends, status climbs back.</span><span class="src" id="roSrc"></span></div>
+  <div class="ro-c"><div class="lbl" style="font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:#5A6E77">Capacity</div><b id="roCap">—</b><span id="roCap2" style="font-size:10px"></span></div>
+</div>
+
+<div class="row">
+  <section class="panel">
+    <div class="panel-hd"><span class="n">Detail A</span><h2>The servo cycle</h2><span class="sub">control.c:209-277</span></div>
+    <div class="panel-bd">
+      <div class="ring-wrap">
+        <svg viewBox="0 0 260 260" width="100%" style="max-width:270px;margin:0 auto" role="img" aria-label="Ring of the 18 steps of the servo cycle">
+          <g id="ring" transform="translate(130,130)"></g>
+          <text class="ring-c1" x="130" y="112" text-anchor="middle">servo period</text>
+          <text class="ring-c2" x="130" y="140" text-anchor="middle">1 ms</text>
+          <text class="ring-c3" x="130" y="158" text-anchor="middle" id="ringStep">—</text>
+        </svg>
+        <ol class="steps" id="steps"></ol>
+      </div>
+    </div>
+    <div class="key" style="border-top:1px solid var(--edge)">
+      <span><b style="color:var(--amber)">head++</b> on entry, <b style="color:var(--amber)">tail = head</b> on exit — the seqlock that lets user space read without ever blocking real time.</span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-hd"><span class="n">Detail B</span><h2>The seven position representations</h2><span class="sub">after the official Code Notes</span></div>
+    <div class="panel-bd">
+      <svg viewBox="0 0 860 470" width="100%" role="img" aria-label="The seven position forms and their transformations, as a closed loop">
+        <text class="band-lbl" x="16" y="20" fill="#8A7038">Command — descending</text>
+        <text class="band-lbl" x="590" y="20" fill="#1B818C">Measurement — climbing</text>
+        <path class="pos-arr cmd" d="M 165 78 L 165 116"/><polygon class="arrow" points="165,124 160,112 170,112"/>
+        <path class="pos-arr cmd" d="M 165 176 L 165 214"/><polygon class="arrow" points="165,222 160,210 170,210"/>
+        <path class="pos-arr cmd" d="M 165 274 L 165 312"/><polygon class="arrow" points="165,320 160,308 170,308"/>
+        <path class="pos-arr cmd" d="M 165 372 L 165 404 L 300 404"/><polygon class="arrow" points="308,404 296,399 296,409"/>
+        <path class="pos-arr fb" d="M 695 372 L 695 334"/><polygon class="arrow-r" points="695,326 690,338 700,338"/>
+        <path class="pos-arr fb" d="M 695 274 L 695 236"/><polygon class="arrow-r" points="695,228 690,240 700,240"/>
+        <path class="pos-arr fb" d="M 695 176 L 695 138"/><polygon class="arrow-r" points="695,130 690,142 700,142"/>
+        <path class="pos-arr fb" d="M 560 404 L 695 404 L 695 372"/>
+        <path class="pos-arr fb" d="M 615 55 L 250 55"/><polygon class="arrow-r" points="242,55 254,50 254,60"/>
+        <rect x="308" y="386" width="252" height="36" fill="#0B1418" stroke="#2E4148"/>
+        <text x="434" y="403" text-anchor="middle" style="font-size:10.5px;font-weight:600;fill:#E4F1F4">PID → HAL → motor → encoder</text>
+        <text x="434" y="416" text-anchor="middle" style="font-size:8.5px;fill:#5A6E77">physical loop, outside the controller</text>
+        <text class="pos-x hi" x="176" y="102">inverse kinematics</text>
+        <text class="pos-x hi" x="176" y="200">cubic interpolator · cubic.c</text>
+        <text class="pos-x hi" x="176" y="298">+ backlash, screw comp, home offset</text>
+        <text class="pos-x" x="706" y="356">− offset, comp, backlash</text>
+        <text class="pos-x" x="706" y="258">forward kinematics</text>
+        <text class="pos-x" x="706" y="160">encoder read</text>
+        <text class="pos-x" x="300" y="46">next setpoint — trajectory planner</text>
+        <g id="pos7"></g>
+      </svg>
+    </div>
+    <div class="key" style="border-top:1px solid var(--edge)">
+      <span><b style="color:var(--amber)">Items 1, 2 and 7</b> advance at the trajectory rate; <b style="color:var(--amber)">3 to 6</b> at every servo period. The cubic interpolator is what bridges the two.</span>
+    </div>
+  </section>
+</div>
+
+<section class="panel">
+  <div class="panel-hd"><span class="n">Detail C</span><h2>Actual buffer capacities</h2><span class="sub">linear scale · values read from the headers</span></div>
+  <div class="panel-bd">
+    <div class="cap" id="cap"></div>
+    <div class="cap-ax"><div class="t"><span>0</span><span>512 KiB</span><span>1 MiB</span><span>1.5 MiB</span><span>2 MiB</span></div></div>
+    <p style="margin-top:16px;font-size:11.5px;color:var(--dim);max-width:80ch;line-height:1.6">
+      The spread is the point: the trajectory queue and the HAL block each weigh a thousand times the NML
+      channels. The dialogue between operator and machine fits in a few kilobytes; it is looking ahead of
+      the motion that costs memory.
+    </p>
+  </div>
+</section>
+
+<footer>
+  <span><b>LinuxCNC</b> GPL-2.0</span>
+  <span>established by reading the source — <b>no recalled values</b></span>
+  <span>official diagrams consulted: <b>docs/src/code/code-notes.adoc</b></span>
+  <span>companion knowledge base: <b>LINUXCNC-FINDINGS.md</b></span>
+  <span>HEAD caa13ca6 (2026-07-30) · audited 2026-08-03</span>
+</footer>
+</div>
+
+<script>
+(() => {
+"use strict";
+const NS="http://www.w3.org/2000/svg";
+const el=(t,a={})=>{const n=document.createElementNS(NS,t);for(const k in a)n.setAttribute(k,a[k]);return n;};
+
+const B=[
+ {x:700,y:66,w:210,h:46,cls:"us",t1:"GUI",t2:"axis · gmoccapy · qtvcp",
+  d:"The operator's interface. It issues motion through NML only — but it is not sealed off from real time: AXIS is itself a HAL component (axis.py:3950 hal.component(\"axisui\")), and any pyvcp/gladevcp panel creates pins. A GUI never runs inside a real-time thread; it does read and write HAL data.",s:"src/emc/usr_intf/",cap:"—"},
+ {x:930,y:66,w:300,h:46,cls:"us",t1:"NML — 3 channels",t2:"emcCommand · emcStatus · emcError",
+  d:"All messaging between the interfaces and the task. linuxcncsvr owns the segments and exposes them on TCP 5005.",s:"configs/common/linuxcnc.nml",cap:"36 864 B",cap2:"8192 + 20480 + 8192"},
+ {x:190,y:128,w:104,h:68,cls:"us",t1:".ngc",t2:"program",
+  d:"The G-code file on disk. Nothing but text: all the intelligence is downstream.",s:"nc_files/",cap:"—"},
+ {x:316,y:128,w:152,h:68,cls:"us",t1:"Interp",t2:"rs274ngc · 48 files",
+  d:"The RS-274/NGC interpreter. It reads, checks and converts each block into canonical calls. It runs far ahead of the machine.",s:"src/emc/rs274ngc/",cap:"—"},
+ {x:490,y:128,w:152,h:68,cls:"us",t1:"canon",t2:"emccanon.cc",
+  d:"The canonical layer: STRAIGHT_FEED, ARC_FEED, SET_SPINDLE_SPEED(int spindle, double r). It applies units, work offsets and tool offsets.",s:"src/emc/nml_intf/canon.hh",cap:"—"},
+ {x:664,y:128,w:148,h:68,cls:"us q",t1:"interp_list",t2:"std::deque<NMLmsg>",t3:"queue",
+  d:"The queue that absorbs how far the interpreter runs ahead. Unbounded. A command needing the machine's real state forces emcTaskPlanSynch, which drains it.",s:"src/emc/nml_intf/interpl.hh",cap:"unbounded",cap2:"process heap"},
+ {x:834,y:128,w:160,h:68,cls:"us",t1:"task",t2:"emctaskmain.cc",
+  d:"The task loop: one message popped per iteration. On master it also owns the 14 iocontrol.0.* HAL pins — commit 764655eb4d, 2023-05-16. That commit carries no tag: in released 2.9.x, iocontrol is still a separate process.",s:"src/emc/task/emctaskmain.cc",cap:"—"},
+ {x:1016,y:128,w:152,h:68,cls:"us",t1:"usrmotintf",t2:"translation",
+  d:"Translates the NML message into emcmot_command_t and runs the handshake with real time, timeout included.",s:"src/emc/motion/usrmotintf.cc",cap:"—"},
+ {x:1150,y:226,w:370,h:56,cls:"rt slot",t1:"emcmot_command_t",t2:"mutex + commandNum ▸ commandNumEcho",t3:"single slot",
+  d:"THE answer to the official diagram's \"FIFOS?\": this is not a queue. One slot, guarded by command_mutex. The task writes, increments commandNum, then waits for the echo in status. One command at a time, 1 s timeout.",s:"src/emc/motion/motion.h",cap:"1 command",cap2:"EMCMOT_COMM_ERROR_TIMEOUT"},
+ {x:24,y:218,w:118,h:74,cls:"shm",t1:"emcmot_status_t",t2:"seqlock head/tail",
+  d:"Controller state. Real time increments head on entry, writes, then sets tail = head. A reader seeing head ≠ tail starts over. Real time never waits.",s:"src/emc/motion/motion.h",cap:"1 state",cap2:"+ config, internal"},
+ {x:24,y:306,w:118,h:74,cls:"shm q",t1:"emcmot_error_t",t2:"MPSC ring",t3:"queue",
+  d:"Lock-free multi-producer, single-consumer ring: write_reserve reserves, write_commit publishes, read_seq consumes. When the ring is full the producer returns -1 and the NEWEST message is discarded — the older ones survive (emcmotutil.c:66-68). Either way the real-time producer never blocks.",s:"src/emc/motion/emcmotutil.c:20-88",cap:"32 768 B",cap2:"32 × 1024"},
+ {x:190,y:320,w:200,h:80,cls:"rt",t1:"motion-command-handler",t2:"command.c",
+  d:"A HAL function exported by motmod. It decodes the command, checks it is admissible in the current state, then returns the echo.",s:"src/emc/motion/command.c",cap:"—"},
+ {x:412,y:320,w:180,h:80,cls:"rt",t1:"tpAddLine / tpAddCircle",t2:"segment decomposition",
+  d:"Turns the command into TC_STRUCT segments and pushes them. This is where motion becomes a sequence of plannable pieces.",s:"src/emc/tp/tp.c",cap:"—"},
+ {x:614,y:320,w:168,h:80,cls:"rt q",t1:"TC_QUEUE",t2:"ring start/end/allFull",t3:"queue · 2000",
+  d:"The real motion queue. 2000 segments of lookahead: this is what allows corner blending and anticipated deceleration. It also holds a reverse history for run-in-reverse.",s:"src/emc/tp/tcq.c",cap:"≈ 1 MiB",cap2:"2000 × ~512 B"},
+ {x:804,y:320,w:180,h:80,cls:"rt",t1:"tpRunCycle",t2:"cruckig · blendmath",
+  d:"Advances the planner by one period. On master, cruckig — a 34-file pure-C port of Ruckig — brings finite jerk.",s:"src/emc/tp/tp.c:tpRunCycle",cap:"—"},
+ {x:1006,y:320,w:180,h:80,cls:"rt",t1:"kinematicsInverse",t2:"19 modules available",
+  d:"Cartesian → joints. The module is chosen at load time: trivkins, corexykins, genserkins, pumakins, lineardeltakins… switchkins even allows switching at runtime.",s:"src/emc/kinematics/",cap:"—"},
+ {x:1208,y:320,w:160,h:80,cls:"rt",t1:"output_to_hal",t2:"+ update_status",
+  d:"Writes the setpoints onto HAL pins, then copies state into the shared segment and closes the seqlock.",s:"src/emc/motion/control.c:1874",cap:"—"},
+ {x:190,y:532,w:180,h:80,cls:"hw",t1:"pid.N",t2:"do-pid-calcs",
+  d:"Position servo loop, one per joint. An ordinary HAL component: structurally nothing distinguishes it from an and2.",s:"src/hal/components/pid.c",cap:"—"},
+ {x:402,y:532,w:180,h:80,cls:"hw",t1:"stepgen / pwmgen",t2:"setpoint generation",
+  d:"Step pulse or PWM generation. In software these functions live in the base-thread, far faster than the servo-thread.",s:"src/hal/components/",cap:"—"},
+ {x:614,y:532,w:170,h:80,cls:"hw",t1:"hm2_….write",t2:"hostmot2 · 42 files",
+  d:"Transfer to the card: PCI, Ethernet or SPI. The FPGA carries the counters and generators, which frees the base-thread.",s:"src/hal/drivers/mesa-hostmot2/",cap:"—"},
+ {x:816,y:532,w:190,h:80,cls:"hw",t1:"Mesa FPGA / parport",t2:"physical layer",
+  d:"The electronics. Depending on the card: hm2_pci, hm2_eth, hm2_spi, or simply hal_parport for a modest machine. A third path exists that this repository does not ship: EtherCAT, via the out-of-tree lcec driver (linuxcnc-ethercat/linuxcnc-ethercat, GPL-2.0, v1.42.1). LinuxCNC contributes only the initf hook that lets lcec activate its master in real-time context, keeping the frame clear of SYNC0.",s:"src/hal/drivers/ · external: linuxcnc-ethercat",cap:"—"},
+ {x:1038,y:532,w:170,h:80,cls:"hw",t1:"motor",t2:"stepper or drive",
+  d:"The actuator. End point of the command chain.",s:"—",cap:"—"},
+ {x:1240,y:532,w:180,h:80,cls:"hw",t1:"encoder",t2:"or resolver",
+  d:"The measurement. It climbs back through HAL into process_inputs, then forward kinematics reconstructs the real Cartesian position.",s:"src/hal/drivers/mesa-hostmot2/encoder.c",cap:"—"}
+];
+
+const gB=document.getElementById("blocks");
+const boxes=[];
+B.forEach((b)=>{
+  const g=el("g",{class:"blk "+b.cls,tabindex:"0",role:"button"});
+  g.appendChild(el("rect",{class:"glow",x:b.x-4,y:b.y-4,width:b.w+8,height:b.h+8}));
+  g.appendChild(el("rect",{class:"body",x:b.x,y:b.y,width:b.w,height:b.h}));
+  const cx=b.x+b.w/2, isQ=b.cls.includes("q"), isShm=b.cls.includes("shm");
+  let ty=b.h<=60 ? b.y+27 : (isQ ? b.y+18 : (isShm ? b.y+22 : b.y+30));
+  const t1=el("text",{class:"t1",x:cx,y:ty,"text-anchor":"middle"});t1.textContent=b.t1;g.appendChild(t1);
+  const t2=el("text",{class:"t2",x:cx,y:ty+13,"text-anchor":"middle"});t2.textContent=b.t2;g.appendChild(t2);
+  if(b.t3){const t3=el("text",{class:"t3",x:cx,y:b.y+b.h-7,"text-anchor":"middle"});t3.textContent=b.t3;g.appendChild(t3);}
+  if(isQ&&b.h>60){
+    const n=12,w0=(b.w-24)/n;
+    for(let k=0;k<n;k++)g.appendChild(el("rect",{class:"cell",x:b.x+12+k*w0+1,y:b.y+38,width:w0-2,height:8}));
+  }
+  gB.appendChild(g);
+  boxes.push({...b,g,cells:[...g.querySelectorAll(".cell")],glow:g.querySelector(".glow")});
+  const show=()=>{
+    document.querySelectorAll(".blk.sel").forEach(e=>e.classList.remove("sel"));
+    g.classList.add("sel");
+    roName.textContent=b.t1; roDesc.textContent=b.d;
+    roSrc.textContent=b.s==="—"?"":b.s;
+    roCap.textContent=b.cap||"—"; roCap2.textContent=b.cap2||"";
+  };
+  g.addEventListener("mouseenter",show); g.addEventListener("focus",show);
+});
+const roName=document.getElementById("roName"),roDesc=document.getElementById("roDesc"),
+      roSrc=document.getElementById("roSrc"),roCap=document.getElementById("roCap"),roCap2=document.getElementById("roCap2");
+
+const gP=document.getElementById("pulses");
+const mkPath=(id,color,n,dur,r)=>{
+  const p=document.getElementById(id),L=p.getTotalLength(),dots=[];
+  for(let i=0;i<n;i++){
+    const c=el("circle",{r:r,fill:color,opacity:".95"});
+    const h=el("circle",{r:r*3.2,fill:color,opacity:".13"});
+    gP.appendChild(h);gP.appendChild(c);
+    dots.push({c,h,t:i/n});
+  }
+  return {p,L,dots,dur};
+};
+const tracks=[
+  mkPath("pF","#F2A62B",4,17000,4.2),
+  mkPath("pS","#3ECAD6",3,6500,3.2),
+  mkPath("pB","#3ECAD6",3,5200,3.2)
+];
+
+let playing=true, speed=1, last=performance.now();
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+if(reduce)playing=false;
+
+function frame(now){
+  const dt=Math.min(now-last,80); last=now;
+  if(playing){
+    tracks.forEach(tr=>{
+      tr.dots.forEach(d=>{
+        d.t=(d.t+dt*speed/tr.dur)%1;
+        const pt=tr.p.getPointAtLength(d.t*tr.L);
+        d.c.setAttribute("cx",pt.x);d.c.setAttribute("cy",pt.y);
+        d.h.setAttribute("cx",pt.x);d.h.setAttribute("cy",pt.y);
+      });
+    });
+    boxes.forEach(b=>{
+      let hot=0;
+      for(const tr of tracks)for(const d of tr.dots){
+        const x=+d.c.getAttribute("cx"),y=+d.c.getAttribute("cy");
+        if(x>=b.x-6&&x<=b.x+b.w+6&&y>=b.y-6&&y<=b.y+b.h+6){hot=1;break;}
+      }
+      const cur=+(b.glow.getAttribute("opacity")||0);
+      b.glow.setAttribute("opacity",(hot?0.20:Math.max(0,cur-dt/900)).toFixed(3));
+    });
+    const ph=now/1000;
+    boxes.forEach((b,i)=>{
+      if(!b.cells.length)return;
+      const base=b.t1==="TC_QUEUE"?0.72:0.55;
+      const lvl=base+0.26*Math.sin(ph*(b.t1==="TC_QUEUE"?0.55:0.9)+i);
+      b.cells.forEach((c,k)=>c.classList.toggle("on",k/b.cells.length<lvl));
+    });
+    stepRing(now);
+  }
+  requestAnimationFrame(frame);
+}
+
+const STEPS=[
+ ["head++","open the seqlock",245,1],
+ ["read_homing_in_pins","homing inputs",248],
+ ["handle_kinematicsSwitch","kinematics switchover",249],
+ ["process_inputs","read HAL pins",250],
+ ["do_forward_kins","joints → Cartesian",251],
+ ["process_probe_inputs","probe",252],
+ ["check_for_faults","following error, limits",253],
+ ["set_operating_mode","FREE / TELEOP / COORD",254],
+ ["handle_jjogwheels","joint jogwheels",256],
+ ["axis_handle_jogwheels","Cartesian jogwheels",259],
+ ["do_homing","provided by homemod",262],
+ ["get_pos_cmds","tpRunCycle + kinematicsInverse",266],
+ ["compute_screw_comp","screw and backlash",267],
+ ["axis_plan_external_offsets","external offsets",268],
+ ["output_to_hal","write the setpoints",269],
+ ["write_homing_out_pins","homing outputs",270],
+ ["update_status","copy into shmem",271],
+ ["tail = head","close the seqlock",275,1]
+];
+const gR=document.getElementById("ring"),segs=[];
+const N=STEPS.length, R1=78, R2=104, GAP=0.016;
+for(let i=0;i<N;i++){
+  const a0=-Math.PI/2+(i/N)*2*Math.PI+GAP, a1=-Math.PI/2+((i+1)/N)*2*Math.PI-GAP;
+  const p=`M ${R2*Math.cos(a0)} ${R2*Math.sin(a0)} A ${R2} ${R2} 0 0 1 ${R2*Math.cos(a1)} ${R2*Math.sin(a1)} L ${R1*Math.cos(a1)} ${R1*Math.sin(a1)} A ${R1} ${R1} 0 0 0 ${R1*Math.cos(a0)} ${R1*Math.sin(a0)} Z`;
+  const s=el("path",{class:"seg",d:p});gR.appendChild(s);segs.push(s);
+}
+const gSteps=document.getElementById("steps"),lis=[];
+STEPS.forEach((s,i)=>{
+  const li=document.createElement("li");
+  if(s[3])li.className="edge";
+  li.innerHTML=`<span class="i">${s[3]?"·":i}</span><span><b style="font-weight:600">${s[0]}</b> <span style="opacity:.7">${s[2]}</span></span>`;
+  gSteps.appendChild(li);lis.push(li);
+});
+let ringI=-1,ringT=0;
+const ringStep=document.getElementById("ringStep");
+function stepRing(now){
+  if(now-ringT<420)return; ringT=now;
+  ringI=(ringI+1)%N;
+  segs.forEach((s,i)=>{s.classList.toggle("on",i===ringI);s.classList.toggle("past",i<ringI);});
+  lis.forEach((l,i)=>l.classList.toggle("on",i===ringI));
+  ringStep.textContent=STEPS[ringI][0];
+}
+
+const P7=[
+ [1,"carte_pos_cmd","Cartesian · trajectory rate",20,44,"cmd"],
+ [2,"coarse_pos","joint · before interpolation",20,142,"cmd"],
+ [3,"pos_cmd","joint · servo rate",20,240,"cmd"],
+ [4,"motor_pos_cmd","motor · to HAL",20,338,"cmd"],
+ [5,"motor_pos_fb","motor · from HAL",550,338,"fb"],
+ [6,"pos_fb","joint · actual",550,240,"fb"],
+ [7,"carte_pos_fb","Cartesian · actual",550,142,"fb"]
+];
+const g7=document.getElementById("pos7");
+P7.forEach(([n,nm,un,x,y,cls])=>{
+  const g=el("g",{class:"pos-node "+cls});
+  g.appendChild(el("rect",{x,y,width:290,height:34}));
+  const a=el("text",{class:"no",x:x+12,y:y+22});a.textContent=n;g.appendChild(a);
+  const b=el("text",{class:"nm",x:x+30,y:y+16});b.textContent=nm;g.appendChild(b);
+  const c=el("text",{class:"un",x:x+30,y:y+28});c.textContent=un;g.appendChild(c);
+  g7.appendChild(g);
+});
+
+const CAP=[
+ ["HAL — shared block","hal_priv.h · HAL_SIZE",2097152,"2 MiB"],
+ ["TC_QUEUE — trajectory","tcq.c · 2000 × ~512 B",1024000,"≈ 1 MiB"],
+ ["emcmot_error_t","32 × 1024 B",32768,"32 KiB"],
+ ["emcStatus (NML)","linuxcnc.nml",20480,"20 KiB"],
+ ["emcCommand (NML)","linuxcnc.nml",8192,"8 KiB"],
+ ["emcError (NML)","linuxcnc.nml",8192,"8 KiB"]
+];
+const MAX=2097152, ramp=["#F2A62B","#D68F22","#B87A16","#8E5F13","#6B470F","#4A3208"];
+const gc=document.getElementById("cap");
+CAP.forEach(([k,s,v,lbl],i)=>{
+  const pct=v/MAX*100, inside=pct>55;
+  const pos=inside?`right:calc(${100-pct}% + 8px);color:#120E06;font-weight:700;padding-left:0`:`left:${pct}%`;
+  const row=document.createElement("div");row.className="cap-row";
+  row.innerHTML=`<div class="k">${k}<s>${s}</s></div>
+    <div class="cap-bar"><div class="cap-fill" style="width:0;background:${ramp[i]}"></div>
+    <div class="cap-val" style="${pos}">${lbl}</div></div>`;
+  gc.appendChild(row);
+  requestAnimationFrame(()=>{row.querySelector(".cap-fill").style.width=pct+"%";});
+});
+
+const btn=document.getElementById("btnPlay");
+btn.addEventListener("click",()=>{
+  playing=!playing;btn.setAttribute("aria-pressed",playing);
+  btn.textContent=playing?"❚❚ Pause":"▶ Play";last=performance.now();
+});
+if(reduce){btn.setAttribute("aria-pressed","false");btn.textContent="▶ Play";}
+document.querySelectorAll(".spd").forEach(b=>b.addEventListener("click",()=>{
+  speed=+b.dataset.s;
+  document.querySelectorAll(".spd").forEach(o=>o.setAttribute("aria-pressed",o===b));
+}));
+
+/* Resting state: the sheet must read fully when paused, or under
+   prefers-reduced-motion, where requestAnimationFrame never advances it. */
+function paintStatic(){
+  tracks.forEach(tr=>tr.dots.forEach(d=>{
+    const pt=tr.p.getPointAtLength(d.t*tr.L);
+    d.c.setAttribute("cx",pt.x);d.c.setAttribute("cy",pt.y);
+    d.h.setAttribute("cx",pt.x);d.h.setAttribute("cy",pt.y);
+  }));
+  boxes.forEach(b=>{
+    if(!b.cells.length)return;
+    const lvl=b.t1==="TC_QUEUE"?0.78:0.55;
+    b.cells.forEach((c,k)=>c.classList.toggle("on",k/b.cells.length<lvl));
+  });
+  ringI=11;
+  segs.forEach((s,i)=>{s.classList.toggle("on",i===ringI);s.classList.toggle("past",i<ringI);});
+  lis.forEach((l,i)=>l.classList.toggle("on",i===ringI));
+  ringStep.textContent=STEPS[ringI][0];
+}
+paintStatic();
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
