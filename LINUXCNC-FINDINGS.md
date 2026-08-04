@@ -529,7 +529,7 @@ src/
 ├── emc/                    the machine controller
 │   ├── motion/             motmod — control.c, command.c, axis.c, homing.c, homemod.c
 │   ├── tp/                 planners — tp.c, tcq.c, blendmath.c, sp_scurve.c, cruckig/ (34 files)
-│   ├── kinematics/         26 joints↔axes modules
+│   ├── kinematics/         19 joints↔axes modules
 │   ├── rs274ngc/           G-code interpreter, 48 files incl. Python bindings
 │   ├── task/               milltask + linuxcncsvr
 │   ├── nml_intf/           message definitions — emc.hh, canon.hh, interpl.hh
@@ -584,7 +584,7 @@ Two useful dates for erratum 3: `iotaskintf.cc` was dropped from the task `Subma
 | 5 | `PID SERVO`, `D/A CONVERTER`, `ENCODER COUNTER`, `LIMIT SWITCHES` inside EMCMOT | All moved out; they are independent HAL components wired in a `.hal` file. `control.c:180` says the final motor position goes *"to the HAL (which routes it to the PID"*. Nothing in `src/emc/motion/` computes a PID. | `control.c:180`, `hal/components/pid.c` |
 | 6 | `AXIS 1 … AXIS N` | These are **joints**, not axes. `EMCMOT_MAX_JOINTS 16` vs `EMCMOT_MAX_AXIS 9`. | `emcmotcfg.h:25,31` |
 | 7 | `SPINDLE CONTROLLER` inside EMCIO (non-real-time) | The spindle moved **into** real time. `motmod` exports `spindle.N.on`, `speed-out`, `at-speed`, `index-enable`, `orient`… for 8 spindles. Threading and rigid tapping require servo-rate sync. | `motion.c:709-734`, `emcmotcfg.h:33` |
-| 8 | Planner, kinematics, homing as fixed blocks | Separately loaded modules: `tpmod`, `homemod`, one of 26 `*kins`. | `tp/tpmod.c`, `motion/homemod.c` |
+| 8 | Planner, kinematics, homing as fixed blocks | Separately loaded modules: `tpmod`, `homemod`, one of 19 `*kins`. | `tp/tpmod.c`, `motion/homemod.c` |
 | 9 | `NON-REALTIME / REALTIME` line implies a kernel boundary | By default it is not. `uspace` on `PREEMPT_RT` runs "real-time" components as `SCHED_FIFO` user-space threads in `rtapi_app`. It is a **scheduling** boundary. | `rtapi/uspace_posix.cc` |
 | 10 | No queue shown anywhere | The two real queues are absent: `interp_list` and `TC_QUEUE` (2000 segments ≈ 1 MB). | `interpl.hh:46`, `tp/tcq.h`, `emcmotcfg.h:70` |
 
@@ -888,6 +888,18 @@ repository.
 - **The individual lcec device drivers.** The registration mechanism, the parser and the generator are
   now understood (§5.7); the per-device PDO mappings inside the 60 files are not, and auditing them
   without the corresponding hardware would be sterile.
+- **`LinuxCNC-motion-controller-small.png` — not audited. This is a gap in coverage, not a
+  judgement that the diagram is sound.** `code-notes.adoc` renders three images (`:103`, `:154`,
+  `:167`); Part 3 covers the first and the third only. The middle one is the motion-controller
+  diagram, and there is already an **open upstream issue about a factual error in it**:
+  [#3843](https://github.com/LinuxCNC/linuxcnc/issues/3843), opened by andypugh — the drawing
+  attributes the HAL code to `EXTINTF.C`. Verified here: no `extintf*` file exists anywhere under
+  `src/`, and HAL is implemented in `src/hal/hal_lib.c`, `hal_lib_extra.c` and `hal_lib_query.c`
+  among others. A fix existed — PR [#3967](https://github.com/LinuxCNC/linuxcnc/pull/3967), which
+  corrected the caption in **both** the full and `-small` variants — but it was closed unmerged "upon
+  acceptance of #3718", and #3718 has been a draft since 2026-01-20 with no activity since
+  2026-04-27. So the error is still shipping. Auditing this diagram properly means reading pixels,
+  which the citation verifier cannot check; treat any finding here as prose evidence only.
 - **`LCNC_Architecture_C1.drawio`** — a C4 *context* diagram. Deliberately coarse, makes no
   falsifiable claim about internals. Low value to audit.
 - **Other files in `docs/src/code/`** — style guide, building, writing tests. Process documents, not
@@ -985,6 +997,7 @@ It has not been one for a long time.
 
 | Date | Change |
 |---|---|
+| 2026-08-04 | **Triggered by reading upstream PR [#3718](https://github.com/LinuxCNC/linuxcnc/pull/3718)** (a live effort to redraw the same block diagram). Two findings, both about *this* file. **(1) Two stale counts corrected**: §2.10's repository map and erratum 8 still read "26" kinematics modules after the 2026-08-03 audit had corrected the figure to 19 — the correction reached §1's table and the changelog but not those two places. **(2) The consistency claim below, dated 2026-08-03, was overstated.** Pass A asserts that "every shared figure (… 19 kins …) agrees across all seven documents"; it did not — two occurrences survived. The entry is left as written, since a changelog records what was concluded at the time, but it should be read with this correction attached. Method note: the citation verifier passed 111/111 throughout and *structurally cannot* catch this class of error — it matches cited source lines, never figures asserted in prose. A number repeated in several places needs a different oracle from a citation. Coverage gap also recorded in *Still open*: `LinuxCNC-motion-controller-small.png` was never audited, and carries an open upstream issue. Errata count unchanged at 27; no claim about LinuxCNC was affected. |
 | 2026-07-30 | Initial version. Parts 1–5 established from a full clone at HEAD `caa13ca6ae`. Errata 1–21 verified. |
 | 2026-08-03 | Errata HTML snapshot refreshed to `_20260803_1811` (old `_1450` deleted): errata 22–27 added, PAUSE semantics row updated from “accurate” to “incomplete”, new Part 4 for the G-code reference with the phantom-error oracles, scope note rewritten (two limits lifted), prepared-fixes note added. Browser-verified: 27 rows, no gaps/duplicates, no stale strings. Scope divergence noted in the previous entry is closed. |
 | 2026-08-03 | **Two further verification passes, two new methods.** *Pass A — cross-document consistency*: every shared figure (76/73/3, 19 kins, 48 files, 124+25, ~260, 2 MiB) agrees across all seven documents; errata numbering 1–27 complete, no gaps; all 73 handler lines in `motion-commands-reference.md` machine-matched against `command.c` in **both directions** (no missing, no extra, no drift). One scope divergence noted, not an error: the dated errata HTML snapshot stops at 21 corrections while this living file is at 27. *Pass B — adversarial*: all three patches `git apply --check` cleanly on pristine master; the two phantom-error claims re-attacked through **independent oracles** — the `NCE_*` catalog, every `_()` string in the interpreter, and all 26 `.po` translation catalogs: no trace, so the phantom errors were never real messages in any translated release either. The dead-commands claim came back **stronger**: a whole-tree search shows the three appear only in `motion.h` and `motion-logger.c` — nothing even emits them. Zero errors found by either pass. |
