@@ -67,13 +67,18 @@ git -C linuxcnc-ethercat checkout 87a72a8
 powershell -File linuxcnc-audit/tools/verify-citations.ps1
 ```
 
-Expected: `111 pass, 0 fail`. On a later HEAD a FAIL usually means the line
+Expected: `126 pass, 0 fail`. On a later HEAD a FAIL usually means the line
 moved — re-anchor the citation rather than assume the finding broke.
 
-The same discipline was turned on this work itself: four verification passes,
-the first two of which found and corrected twelve of its own errors before any
-of this was published. They are recorded, with the original wording preserved,
-in the findings file's changelog.
+The same discipline was turned on this work itself. Every verification pass is
+recorded in the findings file's changelog, with the original wording preserved
+where a correction reversed it — including the passes that found errors in the
+audit rather than in LinuxCNC. There have been several: the first two corrected
+twelve of their own findings before any of this was published, and later ones
+caught a count that had gone stale in two places and an overstated claim about
+motion. The changelog is the authority on how many and what they found; it is
+deliberately not summarised as a number here, for exactly the reason recorded
+in the 2026-08-04 entry.
 
 ---
 

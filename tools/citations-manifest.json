@@ -115,6 +115,22 @@
     { "repo": "linuxcnc", "file": "src/emc/rs274ngc/interp_convert.cc", "line": 5087, "match": "1e30", "claim": "G96 without D: no limit" },
     { "repo": "linuxcnc", "file": "src/emc/rs274ngc/interp_check.cc", "line": 372, "match": "NCE_S_WORD_MISSING_WITH_G96", "claim": "G96 requires S" },
     { "repo": "linuxcnc", "file": "src/emc/motion/command.c", "line": 1475, "match": "enable off", "claim": "stale in-code comment (PROBE)" },
-    { "repo": "linuxcnc", "file": "src/emc/motion/command.c", "line": 1966, "match": "SET_AXIS_ACC_LOCKING_JOINT", "claim": "wrong debug name" }
+    { "repo": "linuxcnc", "file": "src/emc/motion/command.c", "line": 1966, "match": "SET_AXIS_ACC_LOCKING_JOINT", "claim": "wrong debug name" },
+
+    { "repo": "linuxcnc", "file": "docs/src/code/code-notes.adoc", "line": 154, "match": "LinuxCNC-motion-controller-small\\.png", "claim": "3.2 the image under audit" },
+    { "repo": "linuxcnc", "file": "src/emc/motion/motion.c", "line": 753, "match": "joint\\.%d\\.motor-pos-cmd", "claim": "erratum 29: motion emits a position command, not a drive signal" },
+    { "repo": "linuxcnc", "file": "src/emc/motion/control.c", "line": 180, "match": "which routes it to the PID", "claim": "erratum 29: the code says the PID is in HAL" },
+    { "repo": "linuxcnc", "file": "src/hal/components/pid.c", "line": 384, "match": "error = \\*pid->command - \\*pid->feedback", "claim": "erratum 35: the loop-closing subtraction lives in HAL" },
+    { "repo": "linuxcnc", "file": "src/emc/motion/control.c", "line": 467, "match": "ferror = joint->pos_cmd - joint->pos_fb", "claim": "erratum 35: motion's own subtraction" },
+    { "repo": "linuxcnc", "file": "src/emc/motion/control.c", "line": 486, "match": "abs_ferror > joint->ferror_limit", "claim": "erratum 35: ...which only raises a flag" },
+    { "repo": "linuxcnc", "file": "src/emc/motion/control.c", "line": 2043, "match": "joint->motor_pos_cmd =", "claim": "erratum 30: joint->motor transform, forward" },
+    { "repo": "linuxcnc", "file": "src/emc/motion/control.c", "line": 460, "match": "joint->pos_fb = joint->motor_pos_fb", "claim": "erratum 30: the same transform, reversed" },
+    { "repo": "linuxcnc", "file": "src/hal/components/stepgen.c", "line": 360, "match": "pos_scale", "claim": "erratum 30: unit scaling is HAL's, not motion's" },
+    { "repo": "linuxcnc", "file": "src/emc/motion/motion.h", "line": 598, "match": "carte_pos_cmd", "claim": "erratum 36: cartesian position is a status field" },
+    { "repo": "linuxcnc", "file": "src/emc/motion/motion_struct.h", "line": 25, "match": "emcmot_error_t\\s+error", "claim": "erratum 37: the error ring the diagram omits" },
+    { "repo": "linuxcnc", "file": "src/emc/motion/homemod.c", "line": 23, "match": "rtapi_app_main", "claim": "erratum 33: homing is a loadable module" },
+    { "repo": "linuxcnc", "file": "src/emc/motion/motion.h", "line": 482, "match": "CUBIC_STRUCT cubic", "claim": "3.2 confirmed: the per-joint interpolator is real" },
+    { "repo": "linuxcnc", "file": "src/emc/motion/control.c", "line": 1398, "match": "cubicInterpolate", "claim": "3.2 confirmed: and it is called" },
+    { "repo": "linuxcnc", "file": "src/emc/motion/control.c", "line": 251, "match": "do_forward_kins", "claim": "3.2 confirmed: forward kinematics run in motion" }
   ]
 }

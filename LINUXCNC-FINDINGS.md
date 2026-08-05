@@ -588,7 +588,58 @@ Two useful dates for erratum 3: `iotaskintf.cc` was dropped from the task `Subma
 | 9 | `NON-REALTIME / REALTIME` line implies a kernel boundary | By default it is not. `uspace` on `PREEMPT_RT` runs "real-time" components as `SCHED_FIFO` user-space threads in `rtapi_app`. It is a **scheduling** boundary. | `rtapi/uspace_posix.cc` |
 | 10 | No queue shown anywhere | The two real queues are absent: `interp_list` and `TC_QUEUE` (2000 segments ≈ 1 MB). | `interpl.hh:46`, `tp/tcq.h`, `emcmotcfg.h:70` |
 
-### 3.2 Joint controller diagram (`emc2-motion-joint-controller-block-diag.png`)
+### 3.2 Motion controller diagram (`LinuxCNC-motion-controller-small.png`)
+
+**Audited 2026-08-05**, at the same HEADs as the rest of this file. This is the
+**second** of the three images in `code-notes.adoc` (`:103`, `:154`, `:167`).
+The original pass covered the first and the third only; Part 3 has been
+reordered to follow the document's own sequence, so that a missing diagram now
+shows as a gap in the numbering rather than hiding between two sections.
+
+*Method.* The PNG was read directly and every block, label and arrow
+transcribed, then each claim tested against the source. Two verification passes
+followed: a machine read-back of all fifteen citations (15/15), then an
+adversarial pass that attacked each finding with an independent oracle. That
+second pass **broke one of the findings below** — erratum 30, which originally
+overstated its case — and turned erratum 28 from a bare "this is wrong" into a
+dated fact. The corrected finding was then re-verified on its own.
+
+**Provenance.** The image entered the repository in the same 2012 commit as the
+overall diagram (`b60c20198e`, 2012-11-19) and has never been modified since.
+Its content is older still: `extintf.h` and `exthalmot.c`, which its caption
+names, were deleted on **2005-11-05** (`7ed547ea17`, *"removed obsolete hal_intf
+files"*). **The caption was already wrong on the day the image was committed** —
+by seven years.
+
+| # | The diagram says | The code says | Evidence |
+|---|---|---|---|
+| 28 | HAL is *"DEFINED IN 'EXTINTF.H' AND IMPLEMENTED IN 'EXT????.C'"* | Neither exists. HAL is `hal_lib.c`, `hal_lib_extra.c`, `hal_lib_query.c`, behind `hal.h`. **This is open upstream issue [#3843](https://github.com/LinuxCNC/linuxcnc/issues/3843).** | `7ed547ea17`; no `extintf*` anywhere under `src/` |
+| 29 | `PID SERVO` inside each axis, inside EMCMOT | No PID in motion. Motion writes `joint.N.motor-pos-cmd`, and the comment over `output_to_hal()` says the position goes *"to the HAL (which routes it to the PID loop)"*. | `motion.c:753`, `control.c:180`, `hal/components/pid.c` |
+| 30 | Two `UNIT CONVERT` blocks, one per path | **Right place, wrong operation.** Motion *does* transform joint↔motor, symmetrically: `motor_pos_cmd = pos_cmd + backlash_filt + motor_offset`, and the reverse on feedback. But it is **additive** — backlash, screw comp and motor offset. No scaling occurs in motion at all; unit scale is `stepgen`'s `position-scale`. | `control.c:2043-2044`, `:459-461`, `stepgen.c:360` |
+| 31 | `AXIS 1 … AXIS N` | Joints, not axes — 16 against 9. Same root cause as erratum 6. | `emcmotcfg.h:25,31` |
+| 32 | `EMCIO` as a fourth block with its own NML `CMD`/`STAT`/`ERR` | The process is gone, and the whole system defines **three** NML buffers — `emcCommand`, `emcStatus`, `emcError` — identical across all four `.nml` files, serving task. There is no EMCIO triplet. | `task/Submakefile:13`, `configs/common/linuxcnc.nml:9-11` |
+| 33 | `TRAJECTORY PLANNER` and `LIMIT & HOME STATUS` as fixed blocks | Separately loaded modules — `tpmod` and `homemod`. Same root cause as erratum 8. | `homemod.c:23` |
+| 34 | *(the image as a whole)* | **The prose introducing it contradicts it.** Fifteen lines above the image, the document describes `motmod` controlling hardware *via HAL*, and `tpmod`/`homemod` as swappable loadable modules — then displays a figure that attributes HAL to `EXTINTF.H` and draws both as fixed blocks. | `code-notes.adoc:138-154` |
+| 35 | `⊗` summing junction feeding `PID SERVO` | **Two subtractions exist and the diagram merges them in the wrong place.** Motion computes `ferror = pos_cmd - pos_fb`, but that result only raises the following-error flag and is copied to status — it drives nothing. The subtraction that closes the servo loop is `error = *pid->command - *pid->feedback`, inside the HAL component. | `control.c:467`, `:486-490`, `:2145`, `pid.c:384` |
+| 36 | `CARTESIAN POSITION` drawn as a flow beside `STATUS` | It is a field *inside* `emcmot_status_t`: the struct opens at `:580`, `carte_pos_cmd` sits at `:598`. One flow, not two. | `motion.h:580,598` |
+| 37 | Three flows across the shared segment | The segment holds six members: `command_mutex`, `command`, `status`, `config`, `error`, `internal`. The error ring and the config block are not drawn at all. | `motion_struct.h:19-26` |
+| 38 | `ENCODER COUNTER` and `D/A CONVERTER` below the HAL line, inside `HARDWARE` | These are canonical HAL **components**: `encoder.c` calls itself *"Encoder Counter for EMC HAL"*, `pwmgen.c` *"PWM/PDM Generator for EMC HAL"*. Only the encoder and the amplifier are hardware. | `hal/components/encoder.c`, `hal/components/pwmgen.c` |
+
+**What holds up — and it is more than expected.**
+
+The `INTERPOLATOR` per axis is live code, not a relic. Every joint carries a
+`CUBIC_STRUCT cubic`, `cubicInterpolate()` is called each cycle, and the rate is
+computed as the nearest integer to the traj/servo ratio. The block is right;
+only the `AXIS` label wrapping it is wrong — it is `joints[t].cubic`.
+`FORWARD KINEMATICS` and `INVERSE KINEMATICS` hold too: `do_forward_kins()` and
+`kinematicsForward()` both run inside motion. And the three `?` marks on the
+arrows are the 2012 author's own hedges — the same honesty as the `"FIFOS?"` on
+the overall diagram, and worth preserving rather than resolving wrongly.
+
+Evidence: `motion.h:482`, `control.c:1398`, `motion.c:1091-1096`,
+`control.c:251`, `control.c:333`.
+
+### 3.3 Joint controller diagram (`emc2-motion-joint-controller-block-diag.png`)
 
 **Verdict: this one aged well.** All ten pins it shows still exist — `pos-lim-sw-in`, `neg-lim-sw-in`,
 `home-sw-in`, `amp-enable-out`, `amp-fault-in`, `motor-pos-cmd`, `motor-pos-fb`, `pos-fb`,
@@ -599,7 +650,7 @@ Two useful dates for erratum 3: `iotaskintf.cc` was dropped from the task `Subma
 | 11 | pin `index-pulse-in` | It is `joint.N.index-enable`, and it is **bidirectional** (`HAL_IO`) — a handshake where the encoder driver clears it when the index is seen. It is created by **`homemod`**, not `motmod`. | `homing.c:254-255,113,537` |
 | 12 | no notion of axes | The whole `axis.L.*` family is missing — `axis.x.pos-cmd`, `axis.x.teleop-vel-cmd`, external offsets. Same root cause as erratum 6. | `motion.c`, `axis.c` |
 
-### 3.3 Command list, libnml, tool table
+### 3.4 Command list, libnml, tool table
 
 | # | The document says | The code says | Evidence |
 |---|---|---|---|
@@ -611,7 +662,7 @@ Two useful dates for erratum 3: `iotaskintf.cc` was dropped from the task `Subma
 | 25 | `PAUSE` — *"It has no effect in free or teleop mode"*, and *"I don't know if it pauses all motion immediately, or if it completes the current move"* | Answered, and one omission is a safety fact. The machine **decelerates to a stop mid-segment** at that segment's accel/jerk limits — neither instant nor at the end of the move. And **pause is silently ignored during threading and rigid tapping** (`TC_SYNC_POSITION`): `tpGetFeedScale()` returns `1.0` there, bypassing pause and feed override alike. Nothing in the chapter mentions this. See §5.6. | `tp.c:243-252, 2782-2787, 4083` |
 | 24 | TELEOP requires all joints homed | True only when `kinType != KINEMATICS_IDENTITY`. On a `trivkins` machine teleop needs **no** homing. The requirement is stated unconditionally. See §5.1. | `motion.c:173-178` |
 
-### 3.4 Command semantics
+### 3.5 Command semantics
 
 Of the 19 surviving commands, 4 are contradicted, 3 have no handler, 4 have no description at all
 ("*(More later)*"), and 8 hold up.
@@ -657,6 +708,21 @@ An audit that only found faults would be dishonest. Sixteen points hold:
 ## Part 5 — Agenda: closed, open, and unreachable
 
 Not verified. Do not assert any of this without reading the source first.
+
+### Closed on 2026-08-05
+
+| Was open | Outcome |
+|---|---|
+| `LinuxCNC-motion-controller-small.png` never audited — a coverage gap recorded on 2026-08-04, not a judgement that the diagram was sound | **Resolved** — see §3.2. Eleven errata (28–38), and rather more than expected still holds. Upstream issue [#3843](https://github.com/LinuxCNC/linuxcnc/issues/3843) is erratum 28, now dated: the caption was already wrong when the image was committed. Part 3 was reordered so the three diagrams follow the source document's own sequence — a missing one would now leave a visible hole. |
+
+**Note on what this gap cost.** It went unnoticed through four verification
+passes because every one of them checked the claims that *were* made. Nothing
+checked the perimeter — whether the set of audited objects matched the set of
+objects in the source document. That question is answerable in one line
+(`grep 'image::' code-notes.adoc`), and it was never asked. The lesson pairs
+with the one in the 2026-08-04 changelog entry: verification confirms what is
+present, and is structurally blind to what is absent. Coverage needs its own
+check, derived from the source, not from our own table of contents.
 
 ### Closed on 2026-08-03
 
@@ -888,18 +954,6 @@ repository.
 - **The individual lcec device drivers.** The registration mechanism, the parser and the generator are
   now understood (§5.7); the per-device PDO mappings inside the 60 files are not, and auditing them
   without the corresponding hardware would be sterile.
-- **`LinuxCNC-motion-controller-small.png` — not audited. This is a gap in coverage, not a
-  judgement that the diagram is sound.** `code-notes.adoc` renders three images (`:103`, `:154`,
-  `:167`); Part 3 covers the first and the third only. The middle one is the motion-controller
-  diagram, and there is already an **open upstream issue about a factual error in it**:
-  [#3843](https://github.com/LinuxCNC/linuxcnc/issues/3843), opened by andypugh — the drawing
-  attributes the HAL code to `EXTINTF.C`. Verified here: no `extintf*` file exists anywhere under
-  `src/`, and HAL is implemented in `src/hal/hal_lib.c`, `hal_lib_extra.c` and `hal_lib_query.c`
-  among others. A fix existed — PR [#3967](https://github.com/LinuxCNC/linuxcnc/pull/3967), which
-  corrected the caption in **both** the full and `-small` variants — but it was closed unmerged "upon
-  acceptance of #3718", and #3718 has been a draft since 2026-01-20 with no activity since
-  2026-04-27. So the error is still shipping. Auditing this diagram properly means reading pixels,
-  which the citation verifier cannot check; treat any finding here as prose evidence only.
 - **`LCNC_Architecture_C1.drawio`** — a C4 *context* diagram. Deliberately coarse, makes no
   falsifiable claim about internals. Low value to audit.
 - **Other files in `docs/src/code/`** — style guide, building, writing tests. Process documents, not
@@ -997,6 +1051,7 @@ It has not been one for a long time.
 
 | Date | Change |
 |---|---|
+| 2026-08-05 | **Third diagram audited — the coverage gap closed. Errata 27 → 38.** New §3.2 covers `LinuxCNC-motion-controller-small.png`, the middle of the three images in `code-notes.adoc`, which the original pass had skipped. Eleven errata: the `EXTINTF.H` caption (upstream issue #3843), `PID SERVO` and `UNIT CONVERT` drawn inside EMCMOT, `AXIS` for joints, `EMCIO` with a phantom NML triplet, planner and homing as fixed blocks, the summing junction, `CARTESIAN POSITION` as a separate flow, three flows where the segment has six members, and encoder/DAC placed below the HAL line. **Erratum 34 is the document contradicting itself across fifteen lines** — correct prose about `motmod`/`tpmod`/`homemod`, then a figure that denies it. More held up than expected: the per-axis cubic interpolator is live code, and both kinematics blocks are real. Part 3 was **reordered** to follow `code-notes.adoc`'s own sequence (§3.2 inserted, old §3.2–3.4 shifted to §3.3–3.5); the `§3.x` labels are referenced nowhere, so nothing broke. *Two passes, as before.* Pass 1, machine read-back: 15/15. Pass 2, adversarial: **it broke erratum 30** — I had claimed motion performs no joint↔motor conversion, but `control.c:2043` and `:459-461` do exactly that, symmetrically; the conversion is *additive* (backlash, screw comp, motor offset), and it is the *scaling* that belongs to HAL. The corrected finding was then re-verified alone. The same pass turned erratum 28 from "this is wrong" into a dated fact: `extintf.h` was deleted on 2005-11-05, **seven years before the image was committed**. |
 | 2026-08-04 | **Triggered by reading upstream PR [#3718](https://github.com/LinuxCNC/linuxcnc/pull/3718)** (a live effort to redraw the same block diagram). Two findings, both about *this* file. **(1) Two stale counts corrected**: §2.10's repository map and erratum 8 still read "26" kinematics modules after the 2026-08-03 audit had corrected the figure to 19 — the correction reached §1's table and the changelog but not those two places. **(2) The consistency claim below, dated 2026-08-03, was overstated.** Pass A asserts that "every shared figure (… 19 kins …) agrees across all seven documents"; it did not — two occurrences survived. The entry is left as written, since a changelog records what was concluded at the time, but it should be read with this correction attached. Method note: the citation verifier passed 111/111 throughout and *structurally cannot* catch this class of error — it matches cited source lines, never figures asserted in prose. A number repeated in several places needs a different oracle from a citation. Coverage gap also recorded in *Still open*: `LinuxCNC-motion-controller-small.png` was never audited, and carries an open upstream issue. Errata count unchanged at 27; no claim about LinuxCNC was affected. |
 | 2026-07-30 | Initial version. Parts 1–5 established from a full clone at HEAD `caa13ca6ae`. Errata 1–21 verified. |
 | 2026-08-03 | Errata HTML snapshot refreshed to `_20260803_1811` (old `_1450` deleted): errata 22–27 added, PAUSE semantics row updated from “accurate” to “incomplete”, new Part 4 for the G-code reference with the phantom-error oracles, scope note rewritten (two limits lifted), prepared-fixes note added. Browser-verified: 27 rows, no gaps/duplicates, no stale strings. Scope divergence noted in the previous entry is closed. |
