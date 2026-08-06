@@ -93,4 +93,49 @@ Write-Host ""
 Write-Host ("{0} pass, {1} fail, {2} total" -f $pass, $fail, ($pass + $fail)) `
     -ForegroundColor $(if ($fail -eq 0) { "Green" } else { "Red" })
 
-exit $(if ($fail -eq 0) { 0 } else { 1 })
+# ---------------------------------------------------------------------------
+# Self-consistency: does every document that tells a reader what to expect
+# still name the right number?
+#
+# This exists because it went wrong twice. The manifest grew from 111 to 126 to
+# 134 to 139, and each time the count was updated where it was remembered and
+# left stale where it was not — once in a README that ships to readers, who
+# would run this script, get one number and read another.
+#
+# Only forward-looking statements are checked: "Expected: `N pass". Changelog
+# entries record what was true at the time and are left alone deliberately.
+# ---------------------------------------------------------------------------
+
+$total = $pass + $fail
+$claims = @()
+Get-ChildItem $repoRoot -Recurse -Include *.md -File |
+    Where-Object { $_.FullName -notmatch '\\\.git\\' } | ForEach-Object {
+        $rel = $_.FullName.Substring($repoRoot.Length + 1)
+        $n = 0
+        foreach ($line in (Get-Content $_.FullName)) {
+            $n++
+            foreach ($m in [regex]::Matches($line, 'Expected:\s*`?(\d+)\s+pass')) {
+                $claims += [pscustomobject]@{
+                    File = $rel; Line = $n; Claimed = [int]$m.Groups[1].Value
+                }
+            }
+        }
+    }
+
+$stale = @($claims | Where-Object { $_.Claimed -ne $total })
+
+Write-Host ""
+if ($claims.Count -eq 0) {
+    Write-Host "no document states an expected count" -ForegroundColor DarkGray
+} elseif ($stale.Count -eq 0) {
+    Write-Host ("{0} document(s) state an expected count, all agree with {1}" -f $claims.Count, $total) `
+        -ForegroundColor Green
+} else {
+    foreach ($s in $stale) {
+        Write-Host ("STALE COUNT {0}:{1}  says {2}, actual is {3}" -f $s.File, $s.Line, $s.Claimed, $total) `
+            -ForegroundColor Red
+    }
+    Write-Host "  a reader running this script would get a number the docs deny" -ForegroundColor DarkYellow
+}
+
+exit $(if ($fail -eq 0 -and $stale.Count -eq 0) { 0 } else { 1 })

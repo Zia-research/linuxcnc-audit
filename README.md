@@ -67,8 +67,14 @@ git -C linuxcnc-ethercat checkout 87a72a8
 powershell -File linuxcnc-audit/tools/verify-citations.ps1
 ```
 
-Expected: `126 pass, 0 fail`. On a later HEAD a FAIL usually means the line
+Expected: `139 pass, 0 fail`. On a later HEAD a FAIL usually means the line
 moved — re-anchor the citation rather than assume the finding broke.
+
+The script also checks itself against the documents: if any file here tells you
+to expect a number the manifest no longer holds, it says so and exits non-zero.
+That check exists because the mistake was made twice — the count grew, and was
+updated where it was remembered and left stale where it was not, including in
+this README.
 
 The same discipline was turned on this work itself. Every verification pass is
 recorded in the findings file's changelog, with the original wording preserved
