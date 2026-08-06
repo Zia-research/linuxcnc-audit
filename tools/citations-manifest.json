@@ -144,8 +144,19 @@
 
     { "repo": "linuxcnc", "file": "src/emc/nml_intf/emccfg.h", "line": 51, "match": "DEFAULT_TRAJ_MAX_JERK 0\\.0", "claim": "pause: MAX_JERK defaults to zero" },
     { "repo": "linuxcnc", "file": "src/emc/nml_intf/emccfg.h", "line": 87, "match": "DEFAULT_AXIS_MAX_JERK 0\\.0", "claim": "pause: ...for axes too" },
-    { "repo": "linuxcnc", "file": "src/emc/tp/ruckig_wrapper.c", "line": 236, "match": "max_jerk <= 0\\.0", "claim": "pause: the wrapper refuses to plan with zero jerk" },
-    { "repo": "linuxcnc", "file": "src/emc/tp/tp.c", "line": 3688, "match": "revert to T-shaped", "claim": "pause: and tp.c reverts to trapezoidal, in its own words" },
-    { "repo": "linuxcnc", "file": "src/emc/tp/tp.c", "line": 43, "match": "ruckig_wrapper\\.h", "claim": "pause: cruckig lives inside tpmod, not beside it" }
+    { "repo": "linuxcnc", "file": "src/emc/tp/ruckig_wrapper.c", "line": 236, "match": "max_jerk <= 0\\.0", "claim": "pause: third guard — the wrapper also refuses a zero-jerk plan" },
+    { "repo": "linuxcnc", "file": "src/emc/tp/tp.c", "line": 3688, "match": "revert to T-shaped", "claim": "pause: the in-branch fallback, in tp.c's own words" },
+    { "repo": "linuxcnc", "file": "src/emc/tp/tp.c", "line": 43, "match": "ruckig_wrapper\\.h", "claim": "pause: cruckig lives inside tpmod, not beside it" },
+
+    { "repo": "linuxcnc", "file": "src/emc/nml_intf/emccfg.h", "line": 57, "match": "DEFAULT_TRAJ_PLANNER_TYPE 0", "claim": "pause: the planner selector defaults to trapezoidal" },
+    { "repo": "linuxcnc", "file": "src/emc/ini/initraj.cc", "line": 157, "match": "PLANNER_TYPE", "claim": "pause: PLANNER_TYPE is read from the INI, default 0" },
+    { "repo": "linuxcnc", "file": "src/emc/ini/initraj.cc", "line": 159, "match": "planner_type == 1 && jerk < 1\\.0", "claim": "pause: S-curve is silently downgraded when jerk is invalid" },
+    { "repo": "linuxcnc", "file": "src/emc/ini/inihal.cc", "line": 320, "match": "planner_type == 1 && NEW\\(traj_max_jerk\\) < 1\\.0", "claim": "pause: the same rule on the runtime HAL pin" },
+    { "repo": "linuxcnc", "file": "src/emc/tp/tp.c", "line": 3664, "match": "planner_type != 1", "claim": "pause: the S-curve branch is entered only for type 1" },
+    { "repo": "linuxcnc", "file": "src/emc/motion/simple_tp.c", "line": 23, "match": "GET_TRAJ_PLANNER_TYPE\\(\\) == 0", "claim": "pause: same gate on the jog/home planner" },
+    { "repo": "linuxcnc", "file": "src/emc/motion/command.c", "line": 1223, "match": "planner_type != 0 && emcmotCommand->planner_type != 1", "claim": "pause: SET_PLANNER_TYPE validates only 0/1" },
+
+    { "repo": "lcec", "file": "src/Makefile", "line": 62, "match": "Rules for building RTAI", "claim": "rtai: the driver's RTAI build rules are disabled" },
+    { "repo": "lcec", "file": "src/Makefile", "line": 82, "match": "realtime: lcec\\.so", "claim": "rtai: the only live realtime target is userspace" }
   ]
 }

@@ -1,4 +1,4 @@
-From 1797ff6c0c6823bbf2b4980252bbdbdcbdc72ad4 Mon Sep 17 00:00:00 2001
+From 2db9813f64bd4f22d0c4974c2bb4172bc365c15c Mon Sep 17 00:00:00 2001
 From: Zia-research <309084419+Zia-research@users.noreply.github.com>
 Date: Mon, 3 Aug 2026 19:23:31 +0200
 Subject: [PATCH 2/3] docs: code-notes - correct stale and self-contradictory
@@ -22,12 +22,14 @@ Seven corrections, each verified against the current source:
   within the current segment at that segment's acceleration limit, and
   the exception that pause is bypassed during position-synchronized
   (threading / rigid tapping) segments. (tp.c:243-252,2782-2787)
-  The run-down is jerk-limited only where MAX_JERK is set non-zero:
-  it defaults to 0 (emccfg.h:51,70,87), ruckig_plan_position then
-  refuses the plan (ruckig_wrapper.c:236), tpCalculateSCurveAccel
-  returns TP_SCURVE_ACCEL_ERROR and tp.c reverts to a trapezoidal
-  profile (tp.c:3687-3709). Thanks to grandixximo for catching the
-  earlier wording, which implied jerk limiting always applies.
+  The run-down is jerk-limited only where the S-curve planner is
+  selected: [TRAJ]PLANNER_TYPE defaults to 0 = trapezoidal
+  (emccfg.h:57, initraj.cc:157) and is forced back to 0 when jerk is
+  below 1.0 (initraj.cc:159-162), while MAX_JERK itself defaults to 0
+  (emccfg.h:51,70,87). tp.c enters the S-curve branch only for type 1
+  (tp.c:3660,3664), so a stock machine never plans one. Thanks to
+  grandixximo for catching the earlier wording, which implied jerk
+  limiting always applies.
 
 - ENABLE / STEP Requirements: neither is "always accepted". ENABLE is
   rejected while the motion.enable HAL pin is low (command.c:1366);
@@ -47,7 +49,7 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
  1 file changed, 63 insertions(+), 34 deletions(-)
 
 diff --git a/docs/src/code/code-notes.adoc b/docs/src/code/code-notes.adoc
-index 0b12d11b40..30125e0232 100644
+index 0b12d11b40..6a8bbaad92 100644
 --- a/docs/src/code/code-notes.adoc
 +++ b/docs/src/code/code-notes.adoc
 @@ -240,10 +240,12 @@ There are approximately 44 commands - this list is still under
@@ -95,9 +97,9 @@ index 0b12d11b40..30125e0232 100644
 +planner treats pause as a request to bring the feed to zero, so the
 +machine decelerates to a stop within the current segment, at that
 +segment's acceleration limit, and halts wherever the deceleration ramp
-+ends. The run-down is jerk-limited only where MAX_JERK is configured
-+non-zero; it defaults to 0, and the planner then falls back to a
-+trapezoidal profile.
++ends. The run-down is jerk-limited only on machines configured for the
++S-curve planner ([TRAJ]PLANNER_TYPE = 1 with a non-zero MAX_JERK); both
++default to off, so a stock machine decelerates on a trapezoidal profile.
 +
 +Pause is ignored while the active segment is position-synchronized with
 +the spindle (spindle-synchronized motion such as G33 threading and

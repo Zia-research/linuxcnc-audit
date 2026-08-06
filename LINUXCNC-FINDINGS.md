@@ -432,9 +432,17 @@ one (`src/rtapi/rtai_rtapi.c:903-916`) and the uspace one (`src/rtapi/uspace_rta
 `src/rtapi/uspace_rtapi_main.cc:1676` implements it. The RTAI stub's own comment explains the
 reasoning: *"The primary consumer (EtherCAT init via initf) runs on the uspace backend."*
 
-> **Practical consequence, worth flagging to anyone building an EtherCAT machine:** under RTAI the
-> period re-anchoring silently does not happen. The SYNC0 phase guarantee described above is a
-> `uspace` feature only. Not verified experimentally — this is what the source says.
+> **Scope of this hole, corrected 2026-08-06 after review.** Under RTAI the period re-anchoring does
+> not happen, so the SYNC0 phase guarantee described above is a `uspace` feature only. But it is a gap
+> in the LinuxCNC core, **not a hazard a machine builder can walk into: lcec does not build for RTAI
+> at all.** Its kbuild rules are commented out under the note *"Currently disabled, and needs updated
+> to work"* (`linuxcnc-ethercat/src/Makefile:62-76`); the only live `realtime` target links a userspace
+> `lcec.so` (`:82,104`); `src/Kbuild` survives but is stale, naming three common objects against the
+> Makefile's six; and the driver deprecated RTAI in release 0.9.3, March 2018 (`debian/changelog`).
+> So the stub is **unreachable through lcec today** rather than a degraded mode in service — latent
+> if RTAI EtherCAT support were ever restored, which the stub's own comment anticipates (*"If RTAI
+> support is needed, store period_counts per task…"*). Not verified experimentally — this is what the
+> source says.
 
 #### 2.9.2 Mentions with no code behind them
 
@@ -500,9 +508,11 @@ So there are two activation paths:
 | ships `initf` | deferred activation from RT context via the `lcec.activate` funct | clean from the first cycle |
 | lacks `initf` | legacy inline activation in `rtapi_app_main` | **trimmed afterwards by a PLL** |
 
-Combined with §2.9.1, this yields a practical ranking for anyone building an EtherCAT machine:
-`uspace` + a LinuxCNC with `initf` gives clean DC phasing; **RTAI cannot**, because
-`rtapi_task_self_resync()` is a no-op there, whatever the driver does.
+Combined with §2.9.1: `uspace` + a LinuxCNC with `initf` gives clean DC phasing. RTAI does not enter
+the comparison at all — **not because `rtapi_task_self_resync()` is a no-op there, but because lcec
+does not build for RTAI** (`linuxcnc-ethercat/src/Makefile:62-76`). The core stub is a second-order
+fact about a configuration that cannot currently be assembled; giving it as the reason put the causes
+in the wrong order. Corrected 2026-08-06, see §2.9.1.
 
 The DC parameters the LinuxCNC core comment alludes to are configured at `lcec_main.c:307`:
 `ecrt_slave_config_dc(config, assignActivate, sync0Cycle, sync0Shift, sync1Cycle, sync1Shift)`.
@@ -675,7 +685,7 @@ Evidence: `motion.h:482`, `control.c:1398`, `motion.c:1091-1096`,
 | 15 | buffer types "SHMEM, LOCMEM, FILEMEM, PHANTOM, or GLOBMEM" | Two of the five do not exist. **`FILEMEM` and `GLOBMEM` are recognised nowhere** — `GLOBMEM` survives only in a comment on the `buffer_type` field declaration. Only **three** types actually construct an object: `PHANTOM`, `SHMEM`, `LOCMEM`. A fourth string, `RTLMEM`, is recognised solely in order to be **refused** with `"RTLMEM not supported."`. See §5.2. | `cms_cfg.cc:729,819,844,849` |
 | 22 | *"see the treatment of axes in `initraj.cc:loadTraj()`"* — offered as a live example of a joints/axes bug | **Fixed.** `initraj.cc:203-205` now reads *"originally, this code would only set axes X, Y and Z … Now all axes are set"*. Second instance of the document preserving a bug report past its repair. See §5.3. | `initraj.cc:203-205` |
 | 23 | The block diagram shows EMCIO as a fourth process | The prose chapter says the opposite — *"The I/O Controller is part of TASK"* (`:756`) — then goes on to describe an "iocontrol main loop process" anyway. **The document contradicts itself**, independently of whether either version matches the code. | `code-notes.adoc:754-767` |
-| 25 | `PAUSE` — *"It has no effect in free or teleop mode"*, and *"I don't know if it pauses all motion immediately, or if it completes the current move"* | Answered, and one omission is a safety fact. The machine **decelerates to a stop mid-segment** at that segment's acceleration limit — neither instant nor at the end of the move. The run-down is jerk-limited only where `MAX_JERK` is set non-zero; it defaults to `0.0`, and the planner then reverts to a trapezoidal profile. See §5.6. And **pause is silently ignored during threading and rigid tapping** (`TC_SYNC_POSITION`): `tpGetFeedScale()` returns `1.0` there, bypassing pause and feed override alike. Nothing in the chapter mentions this. See §5.6. | `tp.c:243-252, 2782-2787, 4083` |
+| 25 | `PAUSE` — *"It has no effect in free or teleop mode"*, and *"I don't know if it pauses all motion immediately, or if it completes the current move"* | Answered, and one omission is a safety fact. The machine **decelerates to a stop mid-segment** at that segment's acceleration limit — neither instant nor at the end of the move. The run-down is jerk-limited only where the S-curve planner is selected — `[TRAJ]PLANNER_TYPE = 1` **and** a non-zero `MAX_JERK`, both off by default — so a stock machine runs down on a trapezoidal profile. See §5.6. And **pause is silently ignored during threading and rigid tapping** (`TC_SYNC_POSITION`): `tpGetFeedScale()` returns `1.0` there, bypassing pause and feed override alike. Nothing in the chapter mentions this. See §5.6. | `tp.c:243-252, 2782-2787, 4083` |
 | 24 | TELEOP requires all joints homed | True only when `kinType != KINEMATICS_IDENTITY`. On a `trivkins` machine teleop needs **no** homing. The requirement is stated unconditionally. See §5.1. | `motion.c:173-178` |
 
 ### 3.5 Command semantics
@@ -897,23 +907,41 @@ limit. It neither stops instantly nor finishes the move: it halts wherever the d
 ends, mid-segment. `tpHandleAbort()` (`tp.c:4083`) then returns `TP_ERR_STOPPED` once velocity
 reaches zero.
 
-> **Correction, 2026-08-05, prompted by an external reviewer.** An earlier revision said the run-down
-> happens at *"that segment's acceleration and jerk limits"*, and the upstream patch carried
-> *"acceleration (and jerk) limits"*. grandixximo, reviewing the patches on PR #3718, pointed out
-> that jerk limiting is not the default. Verified, and the mechanism is sharper than "it defaults to
-> off" — the jerk-limited path **fails and the planner explicitly reverts**:
+> **Correction, 2026-08-05, prompted by an external reviewer — and corrected again 2026-08-06.**
+> An earlier revision said the run-down happens at *"that segment's acceleration and jerk limits"*,
+> and the upstream patch carried *"acceleration (and jerk) limits"*. grandixximo, reviewing the
+> patches on PR #3718, pointed out that jerk limiting is not the default. He is right.
+>
+> **The first correction then got the mechanism wrong**, and it is recorded here rather than
+> quietly replaced. It claimed the jerk-limited path is attempted, fails, and the planner reverts.
+> Re-reading the source shows the path is never attempted. Jerk limiting is gated by an explicit
+> planner selector:
 >
 > | Step | Evidence |
 > |---|---|
+> | `[TRAJ]PLANNER_TYPE` chooses the planner — `0` trapezoidal, `1` S-curve — and defaults to `0` | `emccfg.h:57`, `initraj.cc:157` |
+> | a configuration asking for `1` with a jerk below `1.0` is silently forced back to `0` | `initraj.cc:159-162`, carrying its own `// FIXME: Should write a warning message to the user`; the runtime HAL-pin route applies the same rule at `inihal.cc:320-321` |
 > | `MAX_JERK` defaults to `0.0` for traj, joints and axes | `emccfg.h:51,70,87` — the INI docs list `MAX_JERK = 0.0` too |
-> | with `max_jerk <= 0` the Ruckig wrapper refuses to plan and returns `-1` | `ruckig_wrapper.c:236-241` |
-> | `tpCalculateSCurveAccel()` then returns `TP_SCURVE_ACCEL_ERROR` | `sp_scurve.h:50`, `tp.c:2762` |
-> | and `tp.c` reverts — the code comment says so outright: *"If the calculation fails, revert to T-shaped acceleration/deceleration."* | `tp.c:3687-3709` |
+> | the coordinated planner enters the S-curve branch only when the type is `1` | `tp.c:3660,3664` |
+> | the jogging and homing planner carries the same double gate | `simple_tp.c:23` |
 >
-> So a stock configuration decelerates on a **trapezoidal** profile. One nuance the reviewer's own
-> wording missed, worth carrying into the reply: **cruckig is not a separate planner.** It lives
+> So on a stock configuration `tpCalculateSCurveAccel()` is **never called**. The deceleration is
+> trapezoidal because no other profile was ever selected — not because one was tried and failed.
+>
+> The fallback the earlier revision described does exist, one level in: `tp.c:2759-2762` returns
+> `TP_SCURVE_ACCEL_ERROR` when the effective jerk is `<= 1`, and `tp.c:3688` then reverts, in its
+> own comment's words, *"to T-shaped acceleration/deceleration."* `ruckig_wrapper.c:236-241`
+> refuses a zero-jerk plan further in still. These are defence in depth — reachable because
+> `EMCMOT_SET_PLANNER_TYPE` (`command.c:1218-1227`) does not carry the jerk guard the INI and HAL
+> routes apply — and they are not what makes a default machine trapezoidal.
+>
+> Two figures: of the 324 `.ini` files under `configs/`, exactly two set `MAX_JERK`, and the same
+> two set `PLANNER_TYPE` — `configs/sim/axis/axis_9axis_scurve.ini` and `axis_mm_scurve.ini`.
+>
+> One nuance the reviewer's own wording missed: **cruckig is not a separate planner.** It lives
 > inside `tpmod` — `tp.c:43` includes `ruckig_wrapper.h` and `tp.c:2795` instantiates a planner per
-> segment. It is the same planner throughout; jerk limiting is a setting, not a different module.
+> segment, with the sources under `src/emc/tp/cruckig/`. Jerk limiting is a setting, not a
+> different module.
 
 > **The exception the Code Notes never mention, and it is a safety fact.**
 > Pause is **ignored** while the segment is position-synchronized to the spindle
@@ -1100,6 +1128,7 @@ steps. The instances:
 | A citation | machine read-back of the cited line | 2026-08-03: two off-by-ones, invisible to eye inspection |
 | A live page | fetch it over HTTP; a matching git hash is not a served page | 2026-08-04 |
 | **Coverage** | derive the expected set from the **source document**, not from your own table of contents | 2026-08-05: four passes missed a diagram because all of them checked the claims that *were* made |
+| **A causal claim** | verify the **gate**, not only the destination — a citation proves a line exists, never that control flow reaches it | 2026-08-06: a four-step mechanism, every line correctly cited, describing a path that is never entered |
 
 **The last line is the one that took longest to learn.** Verification confirms what is present and
 is structurally blind to what is absent. The citation verifier passed 111/111 throughout the period
@@ -1117,6 +1146,8 @@ would be worse than none.
 
 | Date | Change |
 |---|---|
+| 2026-08-06 | **§2.9's RTAI framing withdrawn — the second gate-check failure of the day, from the same reviewer. Citations 146 → 148.** grandixximo filed issue #1 against §2.9: framing the RTAI resync stub as a practical consequence implies a configuration that cannot be built. **Verified, and the evidence is harder than the issue states.** lcec does not build for RTAI — the kbuild branch is commented out under *"Rules for building RTAI. Currently disabled, and needs updated to work"* (`linuxcnc-ethercat/src/Makefile:62-76`), and the only live `realtime` target links a userspace `lcec.so` (`:82,104`). `src/Kbuild` survives but is **stale**, naming three common objects (`:3`) against the Makefile's six (`:18`), so uncommenting would not even link — a point neither side had made. **One claim in the issue does not hold:** RTAI was not absent from the driver's history, it was *deprecated* — the rules exist in comment form, and `debian/changelog` retires them in release 0.9.3, March 2018. **One claim could not be checked:** that the packaged IgH master lacks RTAI support concerns an external Debian package present in neither audited repository, so it is not repeated as established. Rewritten in §2.9.1 and §2.9.4, and in `ETHERCAT-NOTES.md` §1 and §5 (retitled *"RTAI: a closed door, not a trap"*). The narrow finding stands unchanged: the primitive is a no-op on both RTAI backends and implemented only in `uspace_rtapi_main.cc:1676`. Two citations added on the driver's build system, chosen as tripwires against a future re-enabling; the changelog line was deliberately **not** cited — that file is newest-first, so the line drifts on every release and would fail for reasons unrelated to the claim. **This is the same error as the jerk correction, hours apart:** a consequence asserted without checking that the configuration exercising it is reachable. A sweep of the remaining *practical consequence* claims found one more worth testing — pause bypassed during threading — and its path checks out end to end (`interp_convert.cc:5505,5520,5644,5651,5656` → `emccanon.cc:1503` → `command.c:1019` → `tp.c:4160-4164`, mode 0 giving `TC_SYNC_POSITION`, exempted from pause and feed override at `tp.c:243,251-252`). |
+| 2026-08-06 | **The 2026-08-05 correction was itself wrong, and re-verification replaced its mechanism. Citations 139 → 146.** The conclusion held — jerk limiting applies only where it is configured, and a stock machine decelerates on a trapezoidal profile — but the *reason* given is not what the code does. The entry below has the jerk-limited path being attempted, `ruckig_plan_position()` refusing, `tpCalculateSCurveAccel()` returning `TP_SCURVE_ACCEL_ERROR`, and `tp.c` reverting. **That path is never entered.** Jerk limiting is gated by a selector: `[TRAJ]PLANNER_TYPE` defaults to `0` = trapezoidal (`emccfg.h:57`, `initraj.cc:157`); a configuration asking for `1` with a jerk below `1.0` is silently forced back to `0` (`initraj.cc:159-162`, and `inihal.cc:320-321` on the HAL-pin route); and `tp.c` enters the S-curve branch only for type `1` (`tp.c:3660,3664`), as does the jog/home planner (`simple_tp.c:23`). So `tpCalculateSCurveAccel()` is **never called** on a default machine, and the guards at `tp.c:2759-2762` and `ruckig_wrapper.c:236-241` are defence in depth — reachable only because `EMCMOT_SET_PLANNER_TYPE` (`command.c:1218-1227`) omits the jerk guard the INI and HAL routes apply. Of the 324 `.ini` files under `configs/`, exactly two set `MAX_JERK` and the same two set `PLANNER_TYPE`. Corrected in erratum 25, §5.6, the manifest, `README.md`, and patch `0002` (regenerated from the branch, not edited); the two sheets were already correct and were completed to name `PLANNER_TYPE` beside `MAX_JERK`. **The entry below is left exactly as written**, as the 2026-08-04 entry was: a changelog records what was concluded at the time. **The rule this earned** is now in *Verification rules earned from this audit* — the verifier passed 139/139 while attesting a mechanism that does not run, because a citation proves a cited line exists and says what it was said to say, never that control flow reaches it. Where a claim is causal, the gate needs verifying as well as the destination. |
 | 2026-08-05 | **First correction from an external reviewer. Citations 134 → 139.** grandixximo, reviewing the three patches on PR #3718, reported that he had checked the claims at the cited locations — buffer types, the `OVERRIDE_LIMITS` mask, the 76/73 count, the `ENABLE`/`STEP` rejections, the G33/G33.1/G64/G96 checks — and that *"everything I verified was exact"*, and that the `lcec.0.activate` line in the HAL manual was his own. He raised one defect: the PAUSE paragraph's *"(and jerk)"* holds only where jerk limiting is configured. **He is right, and verification made the point sharper than he put it.** `MAX_JERK` defaults to `0.0` (`emccfg.h:51,70,87`); with a zero jerk `ruckig_plan_position()` refuses the plan and returns −1 (`ruckig_wrapper.c:236-241`); `tpCalculateSCurveAccel()` returns `TP_SCURVE_ACCEL_ERROR`; and `tp.c` reverts, in its own comment's words, *"to T-shaped acceleration/deceleration"* (`tp.c:3687-3709`). So it is not that jerk limiting is merely off by default — the jerk path **fails and the planner falls back**. One nuance his wording missed: **cruckig is not a separate planner**, it sits inside `tpmod` (`tp.c:43`, `:2795`); jerk limiting is a setting, not a different module. Corrected in five places — patch `0002` (regenerated from the branch, since editing the `.patch` body directly corrupted its hunk header), erratum 25, §5.6 with an inline correction block, and both sheets. All three patches re-checked with `git apply --check` on pristine master: clean. Five citations added so the corrected claim is machine-checked like the rest. |
 | 2026-08-05 | **`ETHERCAT-NOTES.md` created; §2.9 extended in three places. Citations 126 → 134.** The new file is the integration-facing document — what someone building an EtherCAT machine needs — while §2.9 stays the audit trail; a pointer at the head of §2.9 says so, and the counts and sizes stay recorded once, there. Three findings were new enough to belong here rather than only in the new file. **(1)** The init cycle is *unconditional*: the test is `threads_running > 0 && !init_done`, with nothing about the list being non-empty, so every LinuxCNC machine gives up its first servo pass — the mechanism is general even though its reason is EtherCAT. **(2)** `rtapi_task_self_resync()` is a no-op on **both** RTAI backends, `rtai_rtapi.c:903-916` *and* `uspace_rtai.cc:190`; the earlier entry named only the first. **(3)** `lcec.write-all` exists beside `read-all`, and those globals are what shipped configurations actually use — and **no example under `linuxcnc-ethercat/examples/` contains an `initf` line**, nor does the driver's own documentation mention it, which makes the wrong funct name in LinuxCNC's HAL manual the only user-facing description of a facility nobody exercises. Also established, and kept in the new file as integration material rather than audit: the real `addf` order from a shipped machine config, identical to the Mesa bracket, and the DC monitoring pins with their default threshold of `app_time_period / 25`. |
 | 2026-08-05 | **Third diagram audited — the coverage gap closed. Errata 27 → 38.** New §3.2 covers `LinuxCNC-motion-controller-small.png`, the middle of the three images in `code-notes.adoc`, which the original pass had skipped. Eleven errata: the `EXTINTF.H` caption (upstream issue #3843), `PID SERVO` and `UNIT CONVERT` drawn inside EMCMOT, `AXIS` for joints, `EMCIO` with a phantom NML triplet, planner and homing as fixed blocks, the summing junction, `CARTESIAN POSITION` as a separate flow, three flows where the segment has six members, and encoder/DAC placed below the HAL line. **Erratum 34 is the document contradicting itself across fifteen lines** — correct prose about `motmod`/`tpmod`/`homemod`, then a figure that denies it. More held up than expected: the per-axis cubic interpolator is live code, and both kinematics blocks are real. Part 3 was **reordered** to follow `code-notes.adoc`'s own sequence (§3.2 inserted, old §3.2–3.4 shifted to §3.3–3.5); the `§3.x` labels are referenced nowhere, so nothing broke. *Two passes, as before.* Pass 1, machine read-back: 15/15. Pass 2, adversarial: **it broke erratum 30** — I had claimed motion performs no joint↔motor conversion, but `control.c:2043` and `:459-461` do exactly that, symmetrically; the conversion is *additive* (backlash, screw comp, motor offset), and it is the *scaling* that belongs to HAL. The corrected finding was then re-verified alone. The same pass turned erratum 28 from "this is wrong" into a dated fact: `extintf.h` was deleted on 2005-11-05, **seven years before the image was committed**. |
