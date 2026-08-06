@@ -397,7 +397,7 @@ footer{border-top:1px solid var(--rule);padding-top:14px;margin-top:10px;font-fa
         <td class="ev">motion.c:709-734<br>emcmotcfg.h:33</td></tr>
       <tr><td class="no">8</td>
         <td class="was"><em>Planner, kinematics and homing as fixed blocks</em>Three functions welded into EMCMOT.</td>
-        <td class="is">They are <b>separately loaded modules</b>: <code>tpmod</code>, <code>homemod</code>, and one kinematics module out of 19. Each can be replaced by a custom implementation without recompiling the rest. In master, <code>cruckig</code> — a 34-file pure-C port of Ruckig — brings a finite-jerk planner.</td>
+        <td class="is">They are <b>separately loaded modules</b>: <code>tpmod</code>, <code>homemod</code>, and one kinematics module out of 19. Each can be replaced by a custom implementation without recompiling the rest. In master, <code>cruckig</code> — a 34-file pure-C port of Ruckig — sits <i>inside</i> <code>tpmod</code> and makes finite-jerk planning available; it takes effect only where <code>MAX_JERK</code> is set non-zero.</td>
         <td class="ev">tp/tpmod.c<br>motion/homemod.c<br>tp/cruckig/</td></tr>
       <tr><td class="no">9</td>
         <td class="was"><em>The “NON-REALTIME / REALTIME” line</em>Implies a kernel boundary.</td>
@@ -869,7 +869,7 @@ footer{border-top:1px solid var(--rule);padding-top:14px;margin-top:10px;font-fa
         <td class="ev">motion.c:173-178</td></tr>
       <tr><td class="no">25</td>
         <td class="was"><em>PAUSE — “I don't know if it pauses all motion immediately, or if it completes the current move”</em>The document's own open question, plus “Requirements: None”.</td>
-        <td class="is">Neither. The machine <b>decelerates to a stop mid-segment</b> at that segment's accel/jerk limits. And the omission that matters: <b>pause is silently ignored while the segment is position-synchronized to the spindle</b> — threading (G33) and rigid tapping — because <code>tpGetFeedScale()</code> forces <code>1.0</code> there, bypassing pause <i>and</i> feed override. Pressing pause during a G33 does nothing until the synchronized move ends. Nothing in the chapter says so.</td>
+        <td class="is">Neither. The machine <b>decelerates to a stop mid-segment</b> at that segment's acceleration limit — jerk-limited only where <code>MAX_JERK</code> is set non-zero, which is not the default, so a stock machine runs down on a trapezoidal profile. And the omission that matters: <b>pause is silently ignored while the segment is position-synchronized to the spindle</b> — threading (G33) and rigid tapping — because <code>tpGetFeedScale()</code> forces <code>1.0</code> there, bypassing pause <i>and</i> feed override. Pressing pause during a G33 does nothing until the synchronized move ends. Nothing in the chapter says so.</td>
         <td class="ev">tp.c:243-252<br>tp.c:2782-2787</td></tr>
     </tbody>
   </table>

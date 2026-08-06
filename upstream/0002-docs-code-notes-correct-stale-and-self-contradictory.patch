@@ -1,4 +1,4 @@
-From 7cb5e7642398b6895cbc9bd4024a1ee2a035aed0 Mon Sep 17 00:00:00 2001
+From 1797ff6c0c6823bbf2b4980252bbdbdcbdc72ad4 Mon Sep 17 00:00:00 2001
 From: Zia-research <309084419+Zia-research@users.noreply.github.com>
 Date: Mon, 3 Aug 2026 19:23:31 +0200
 Subject: [PATCH 2/3] docs: code-notes - correct stale and self-contradictory
@@ -19,9 +19,15 @@ Seven corrections, each verified against the current source:
   same three commands still lack handlers).
 
 - PAUSE: documented the actual semantics - deceleration to a stop
-  within the current segment at that segment's limits, and the
-  exception that pause is bypassed during position-synchronized
+  within the current segment at that segment's acceleration limit, and
+  the exception that pause is bypassed during position-synchronized
   (threading / rigid tapping) segments. (tp.c:243-252,2782-2787)
+  The run-down is jerk-limited only where MAX_JERK is set non-zero:
+  it defaults to 0 (emccfg.h:51,70,87), ruckig_plan_position then
+  refuses the plan (ruckig_wrapper.c:236), tpCalculateSCurveAccel
+  returns TP_SCURVE_ACCEL_ERROR and tp.c reverts to a trapezoidal
+  profile (tp.c:3687-3709). Thanks to grandixximo for catching the
+  earlier wording, which implied jerk limiting always applies.
 
 - ENABLE / STEP Requirements: neither is "always accepted". ENABLE is
   rejected while the motion.enable HAL pin is low (command.c:1366);
@@ -37,11 +43,11 @@ Seven corrections, each verified against the current source:
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 ---
- docs/src/code/code-notes.adoc | 95 ++++++++++++++++++++++-------------
- 1 file changed, 61 insertions(+), 34 deletions(-)
+ docs/src/code/code-notes.adoc | 97 +++++++++++++++++++++++------------
+ 1 file changed, 63 insertions(+), 34 deletions(-)
 
 diff --git a/docs/src/code/code-notes.adoc b/docs/src/code/code-notes.adoc
-index 0b12d11b40..05a780660d 100644
+index 0b12d11b40..30125e0232 100644
 --- a/docs/src/code/code-notes.adoc
 +++ b/docs/src/code/code-notes.adoc
 @@ -240,10 +240,12 @@ There are approximately 44 commands - this list is still under
@@ -74,7 +80,7 @@ index 0b12d11b40..05a780660d 100644
  
  ==== Results
  
-@@ -500,10 +504,22 @@ future.
+@@ -500,10 +504,24 @@ future.
  
  === PAUSE
  
@@ -88,8 +94,10 @@ index 0b12d11b40..05a780660d 100644
 +The machine neither stops instantly nor completes the current move: the
 +planner treats pause as a request to bring the feed to zero, so the
 +machine decelerates to a stop within the current segment, at that
-+segment's acceleration (and jerk) limits, and halts wherever the
-+deceleration ramp ends.
++segment's acceleration limit, and halts wherever the deceleration ramp
++ends. The run-down is jerk-limited only where MAX_JERK is configured
++non-zero; it defaults to 0, and the planner then falls back to a
++trapezoidal profile.
 +
 +Pause is ignored while the active segment is position-synchronized with
 +the spindle (spindle-synchronized motion such as G33 threading and
@@ -101,7 +109,7 @@ index 0b12d11b40..05a780660d 100644
  
  ==== Requirements
  
-@@ -512,7 +528,10 @@ accepted.
+@@ -512,7 +530,10 @@ accepted.
  
  ==== Results
  
@@ -113,7 +121,7 @@ index 0b12d11b40..05a780660d 100644
  
  === RESUME
  
-@@ -531,15 +550,15 @@ The trajectory planner resumes.
+@@ -531,15 +552,15 @@ The trajectory planner resumes.
  === STEP
  
  The STEP command restarts the trajectory planner if it is paused, and
@@ -135,7 +143,7 @@ index 0b12d11b40..05a780660d 100644
  
  ==== Results
  
-@@ -577,10 +596,12 @@ accepted. (I think it should only work in free mode.)
+@@ -577,10 +598,12 @@ accepted. (I think it should only work in free mode.)
  
  ==== Results
  
@@ -152,7 +160,7 @@ index 0b12d11b40..05a780660d 100644
  
  === HOME
  
-@@ -761,10 +782,14 @@ iocontrol. These are relatively low speed events, high speed coordinated I/O is
+@@ -761,10 +784,14 @@ iocontrol. These are relatively low speed events, high speed coordinated I/O is
  
  emctaskmain.cc sends I/O commands via taskclass.cc.
  
@@ -170,7 +178,7 @@ index 0b12d11b40..05a780660d 100644
  
  == User Interfaces
  
-@@ -887,7 +912,10 @@ The original NIST format of the buffer line is:
+@@ -887,7 +914,10 @@ The original NIST format of the buffer line is:
  * 'B name type host size neut RPC# buffer# max_procs key [type specific configs]'
  * 'B' - identifies this line as a Buffer configuration.
  * 'name' - is the identifier of the buffer.
@@ -182,7 +190,7 @@ index 0b12d11b40..05a780660d 100644
  * 'host' - is either an IP address or host name for the NML server
  * 'size' - is the size of the buffer
  * 'neut' - a boolean to indicate if the data in the buffer is encoded in a
-@@ -945,12 +973,10 @@ The original NIST format of the process line is:
+@@ -945,12 +975,10 @@ The original NIST format of the process line is:
  === Configuration Comments
  
  Some of the configuration combinations are invalid, whilst others
@@ -199,7 +207,7 @@ index 0b12d11b40..05a780660d 100644
  
  The neut option is only of use in a multi-processor system where
  different (and incompatible) architectures are sharing a block of
-@@ -1387,9 +1413,10 @@ FIXME: `axis_mask` and `axes` overspecify the number of axes
+@@ -1387,9 +1415,10 @@ FIXME: `axis_mask` and `axes` overspecify the number of axes
    An array of `EMCMOT_MAX_JOINTS` joint structures.
    `joint[0]` through `joint[joints-1]` are valid, the others do not exist on this machine and must be ignored.
  

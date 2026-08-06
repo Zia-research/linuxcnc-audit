@@ -378,6 +378,10 @@ is unavailable in kernel context.
 
 ### 2.9 EtherCAT
 
+> The integration-facing material — the real `addf` order, the two activation paths side by side,
+> the DC monitoring pins, and what to do about the RTAI hole — lives in **`ETHERCAT-NOTES.md`**.
+> This section stays the audit trail: what the source says, and where.
+
 **Headline: there is no EtherCAT driver in the LinuxCNC repository.** No source file speaks the
 protocol, and no file name contains `ethercat` or `lcec`. The driver is a separate project. What the
 repository *does* contain is a set of deliberate accommodations for that external driver — which is
@@ -413,14 +417,20 @@ component prefix is `lcec`.
    *"lands the next wakeup at a clean period boundary (used to keep **EtherCAT send clear of
    SYNC0**)"*.
 
+**The init cycle is unconditional.** The test is `hal_data->threads_running > 0 && !thread->init_done`
+— nothing about the init list being non-empty. So *every* LinuxCNC machine gives up its first servo
+pass, EtherCAT or not; with no `initf` registered the cycle simply runs an empty list and re-anchors.
+The mechanism is general. The reason it exists is not.
+
 That is a distributed-clocks concern: DC slaves latch I/O on the SYNC0 pulse, so the master's frame
 transmission must keep a clean phase relationship to it. After the init pass the list is drained back
 to the free pool and `init_done` is latched.
 
 **`rtapi_task_self_resync()` — and its RTAI hole.** This is the primitive that performs the
-re-anchoring. On the RTAI backend it is a **stub that warns once and does nothing**
-(`src/rtapi/rtai_rtapi.c:903-916`). Its own comment explains the reasoning:
-*"The primary consumer (EtherCAT init via initf) runs on the uspace backend."*
+re-anchoring. It is a **stub that warns once and does nothing on _both_ RTAI backends** — the kernel
+one (`src/rtapi/rtai_rtapi.c:903-916`) and the uspace one (`src/rtapi/uspace_rtai.cc:190`). Only
+`src/rtapi/uspace_rtapi_main.cc:1676` implements it. The RTAI stub's own comment explains the
+reasoning: *"The primary consumer (EtherCAT init via initf) runs on the uspace backend."*
 
 > **Practical consequence, worth flagging to anyone building an EtherCAT machine:** under RTAI the
 > period re-anchoring silently does not happen. The SYNC0 phase guarantee described above is a
@@ -508,9 +518,15 @@ rtapi_snprintf(name, HAL_NAME_LEN, "%s.activate", LCEC_MODULE_NAME);
 ```
 
 Only the cyclic functs are per-master — `"%s.%s.read"` and `"%s.%s.write"` give
-`lcec.<master>.read` / `.write`, so `lcec.0.read` is right while `lcec.0.activate` is not. There is
-also a global `lcec.read-all` (`lcec_main.c:416`). A user copying the LinuxCNC manual's example into
-a `.hal` file gets a funct that does not exist.
+`lcec.<master>.read` / `.write`, so `lcec.0.read` is right while `lcec.0.activate` is not. There are
+also global `lcec.read-all` (`lcec_main.c:416`) and `lcec.write-all` (`:422`), and **those are the
+ones shipped configurations actually use**. A user copying the LinuxCNC manual's example into a
+`.hal` file gets a funct that does not exist.
+
+**And nobody exercises the path anyway.** No example under `linuxcnc-ethercat/examples/` contains an
+`initf` line, and the driver's own `documentation/` never mentions the facility. The clean activation
+path therefore exists on both sides, is reachable, and is used by nobody — which makes the wrong
+funct name in the LinuxCNC manual the *only* user-facing description of it.
 
 > This one is worth reporting upstream. It is a one-word fix in `basic-hal.adoc` and in
 > `docs/src/man/man1/halcmd.1.adoc`.
@@ -659,7 +675,7 @@ Evidence: `motion.h:482`, `control.c:1398`, `motion.c:1091-1096`,
 | 15 | buffer types "SHMEM, LOCMEM, FILEMEM, PHANTOM, or GLOBMEM" | Two of the five do not exist. **`FILEMEM` and `GLOBMEM` are recognised nowhere** — `GLOBMEM` survives only in a comment on the `buffer_type` field declaration. Only **three** types actually construct an object: `PHANTOM`, `SHMEM`, `LOCMEM`. A fourth string, `RTLMEM`, is recognised solely in order to be **refused** with `"RTLMEM not supported."`. See §5.2. | `cms_cfg.cc:729,819,844,849` |
 | 22 | *"see the treatment of axes in `initraj.cc:loadTraj()`"* — offered as a live example of a joints/axes bug | **Fixed.** `initraj.cc:203-205` now reads *"originally, this code would only set axes X, Y and Z … Now all axes are set"*. Second instance of the document preserving a bug report past its repair. See §5.3. | `initraj.cc:203-205` |
 | 23 | The block diagram shows EMCIO as a fourth process | The prose chapter says the opposite — *"The I/O Controller is part of TASK"* (`:756`) — then goes on to describe an "iocontrol main loop process" anyway. **The document contradicts itself**, independently of whether either version matches the code. | `code-notes.adoc:754-767` |
-| 25 | `PAUSE` — *"It has no effect in free or teleop mode"*, and *"I don't know if it pauses all motion immediately, or if it completes the current move"* | Answered, and one omission is a safety fact. The machine **decelerates to a stop mid-segment** at that segment's accel/jerk limits — neither instant nor at the end of the move. And **pause is silently ignored during threading and rigid tapping** (`TC_SYNC_POSITION`): `tpGetFeedScale()` returns `1.0` there, bypassing pause and feed override alike. Nothing in the chapter mentions this. See §5.6. | `tp.c:243-252, 2782-2787, 4083` |
+| 25 | `PAUSE` — *"It has no effect in free or teleop mode"*, and *"I don't know if it pauses all motion immediately, or if it completes the current move"* | Answered, and one omission is a safety fact. The machine **decelerates to a stop mid-segment** at that segment's acceleration limit — neither instant nor at the end of the move. The run-down is jerk-limited only where `MAX_JERK` is set non-zero; it defaults to `0.0`, and the planner then reverts to a trapezoidal profile. See §5.6. And **pause is silently ignored during threading and rigid tapping** (`TC_SYNC_POSITION`): `tpGetFeedScale()` returns `1.0` there, bypassing pause and feed override alike. Nothing in the chapter mentions this. See §5.6. | `tp.c:243-252, 2782-2787, 4083` |
 | 24 | TELEOP requires all joints homed | True only when `kinType != KINEMATICS_IDENTITY`. On a `trivkins` machine teleop needs **no** homing. The requirement is stated unconditionally. See §5.1. | `motion.c:173-178` |
 
 ### 3.5 Command semantics
@@ -877,9 +893,27 @@ bool pausing = tp->pausing && (tc->synchronized == TC_SYNC_NONE || tc->synchroni
 | `tpCalculateSCurveAccel()` — `tp.c:2782-2787` | sets `use_velocity_control`, so Ruckig plans a controlled run-down to zero |
 
 So the machine **decelerates to a stop inside the current segment**, at that segment's acceleration
-and jerk limits. It neither stops instantly nor finishes the move: it halts wherever the deceleration
-ramp ends, mid-segment. `tpHandleAbort()` (`tp.c:4083`) then returns `TP_ERR_STOPPED` once velocity
+limit. It neither stops instantly nor finishes the move: it halts wherever the deceleration ramp
+ends, mid-segment. `tpHandleAbort()` (`tp.c:4083`) then returns `TP_ERR_STOPPED` once velocity
 reaches zero.
+
+> **Correction, 2026-08-05, prompted by an external reviewer.** An earlier revision said the run-down
+> happens at *"that segment's acceleration and jerk limits"*, and the upstream patch carried
+> *"acceleration (and jerk) limits"*. grandixximo, reviewing the patches on PR #3718, pointed out
+> that jerk limiting is not the default. Verified, and the mechanism is sharper than "it defaults to
+> off" — the jerk-limited path **fails and the planner explicitly reverts**:
+>
+> | Step | Evidence |
+> |---|---|
+> | `MAX_JERK` defaults to `0.0` for traj, joints and axes | `emccfg.h:51,70,87` — the INI docs list `MAX_JERK = 0.0` too |
+> | with `max_jerk <= 0` the Ruckig wrapper refuses to plan and returns `-1` | `ruckig_wrapper.c:236-241` |
+> | `tpCalculateSCurveAccel()` then returns `TP_SCURVE_ACCEL_ERROR` | `sp_scurve.h:50`, `tp.c:2762` |
+> | and `tp.c` reverts — the code comment says so outright: *"If the calculation fails, revert to T-shaped acceleration/deceleration."* | `tp.c:3687-3709` |
+>
+> So a stock configuration decelerates on a **trapezoidal** profile. One nuance the reviewer's own
+> wording missed, worth carrying into the reply: **cruckig is not a separate planner.** It lives
+> inside `tpmod` — `tp.c:43` includes `ruckig_wrapper.h` and `tp.c:2795` instantiates a planner per
+> segment. It is the same planner throughout; jerk limiting is a setting, not a different module.
 
 > **The exception the Code Notes never mention, and it is a safety fact.**
 > Pause is **ignored** while the segment is position-synchronized to the spindle
@@ -1051,6 +1085,8 @@ It has not been one for a long time.
 
 | Date | Change |
 |---|---|
+| 2026-08-05 | **First correction from an external reviewer. Citations 134 → 139.** grandixximo, reviewing the three patches on PR #3718, reported that he had checked the claims at the cited locations — buffer types, the `OVERRIDE_LIMITS` mask, the 76/73 count, the `ENABLE`/`STEP` rejections, the G33/G33.1/G64/G96 checks — and that *"everything I verified was exact"*, and that the `lcec.0.activate` line in the HAL manual was his own. He raised one defect: the PAUSE paragraph's *"(and jerk)"* holds only where jerk limiting is configured. **He is right, and verification made the point sharper than he put it.** `MAX_JERK` defaults to `0.0` (`emccfg.h:51,70,87`); with a zero jerk `ruckig_plan_position()` refuses the plan and returns −1 (`ruckig_wrapper.c:236-241`); `tpCalculateSCurveAccel()` returns `TP_SCURVE_ACCEL_ERROR`; and `tp.c` reverts, in its own comment's words, *"to T-shaped acceleration/deceleration"* (`tp.c:3687-3709`). So it is not that jerk limiting is merely off by default — the jerk path **fails and the planner falls back**. One nuance his wording missed: **cruckig is not a separate planner**, it sits inside `tpmod` (`tp.c:43`, `:2795`); jerk limiting is a setting, not a different module. Corrected in five places — patch `0002` (regenerated from the branch, since editing the `.patch` body directly corrupted its hunk header), erratum 25, §5.6 with an inline correction block, and both sheets. All three patches re-checked with `git apply --check` on pristine master: clean. Five citations added so the corrected claim is machine-checked like the rest. |
+| 2026-08-05 | **`ETHERCAT-NOTES.md` created; §2.9 extended in three places. Citations 126 → 134.** The new file is the integration-facing document — what someone building an EtherCAT machine needs — while §2.9 stays the audit trail; a pointer at the head of §2.9 says so, and the counts and sizes stay recorded once, there. Three findings were new enough to belong here rather than only in the new file. **(1)** The init cycle is *unconditional*: the test is `threads_running > 0 && !init_done`, with nothing about the list being non-empty, so every LinuxCNC machine gives up its first servo pass — the mechanism is general even though its reason is EtherCAT. **(2)** `rtapi_task_self_resync()` is a no-op on **both** RTAI backends, `rtai_rtapi.c:903-916` *and* `uspace_rtai.cc:190`; the earlier entry named only the first. **(3)** `lcec.write-all` exists beside `read-all`, and those globals are what shipped configurations actually use — and **no example under `linuxcnc-ethercat/examples/` contains an `initf` line**, nor does the driver's own documentation mention it, which makes the wrong funct name in LinuxCNC's HAL manual the only user-facing description of a facility nobody exercises. Also established, and kept in the new file as integration material rather than audit: the real `addf` order from a shipped machine config, identical to the Mesa bracket, and the DC monitoring pins with their default threshold of `app_time_period / 25`. |
 | 2026-08-05 | **Third diagram audited — the coverage gap closed. Errata 27 → 38.** New §3.2 covers `LinuxCNC-motion-controller-small.png`, the middle of the three images in `code-notes.adoc`, which the original pass had skipped. Eleven errata: the `EXTINTF.H` caption (upstream issue #3843), `PID SERVO` and `UNIT CONVERT` drawn inside EMCMOT, `AXIS` for joints, `EMCIO` with a phantom NML triplet, planner and homing as fixed blocks, the summing junction, `CARTESIAN POSITION` as a separate flow, three flows where the segment has six members, and encoder/DAC placed below the HAL line. **Erratum 34 is the document contradicting itself across fifteen lines** — correct prose about `motmod`/`tpmod`/`homemod`, then a figure that denies it. More held up than expected: the per-axis cubic interpolator is live code, and both kinematics blocks are real. Part 3 was **reordered** to follow `code-notes.adoc`'s own sequence (§3.2 inserted, old §3.2–3.4 shifted to §3.3–3.5); the `§3.x` labels are referenced nowhere, so nothing broke. *Two passes, as before.* Pass 1, machine read-back: 15/15. Pass 2, adversarial: **it broke erratum 30** — I had claimed motion performs no joint↔motor conversion, but `control.c:2043` and `:459-461` do exactly that, symmetrically; the conversion is *additive* (backlash, screw comp, motor offset), and it is the *scaling* that belongs to HAL. The corrected finding was then re-verified alone. The same pass turned erratum 28 from "this is wrong" into a dated fact: `extintf.h` was deleted on 2005-11-05, **seven years before the image was committed**. |
 | 2026-08-04 | **Triggered by reading upstream PR [#3718](https://github.com/LinuxCNC/linuxcnc/pull/3718)** (a live effort to redraw the same block diagram). Two findings, both about *this* file. **(1) Two stale counts corrected**: §2.10's repository map and erratum 8 still read "26" kinematics modules after the 2026-08-03 audit had corrected the figure to 19 — the correction reached §1's table and the changelog but not those two places. **(2) The consistency claim below, dated 2026-08-03, was overstated.** Pass A asserts that "every shared figure (… 19 kins …) agrees across all seven documents"; it did not — two occurrences survived. The entry is left as written, since a changelog records what was concluded at the time, but it should be read with this correction attached. Method note: the citation verifier passed 111/111 throughout and *structurally cannot* catch this class of error — it matches cited source lines, never figures asserted in prose. A number repeated in several places needs a different oracle from a citation. Coverage gap also recorded in *Still open*: `LinuxCNC-motion-controller-small.png` was never audited, and carries an open upstream issue. Errata count unchanged at 27; no claim about LinuxCNC was affected. |
 | 2026-07-30 | Initial version. Parts 1–5 established from a full clone at HEAD `caa13ca6ae`. Errata 1–21 verified. |

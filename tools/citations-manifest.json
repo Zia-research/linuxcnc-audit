@@ -131,6 +131,21 @@
     { "repo": "linuxcnc", "file": "src/emc/motion/homemod.c", "line": 23, "match": "rtapi_app_main", "claim": "erratum 33: homing is a loadable module" },
     { "repo": "linuxcnc", "file": "src/emc/motion/motion.h", "line": 482, "match": "CUBIC_STRUCT cubic", "claim": "3.2 confirmed: the per-joint interpolator is real" },
     { "repo": "linuxcnc", "file": "src/emc/motion/control.c", "line": 1398, "match": "cubicInterpolate", "claim": "3.2 confirmed: and it is called" },
-    { "repo": "linuxcnc", "file": "src/emc/motion/control.c", "line": 251, "match": "do_forward_kins", "claim": "3.2 confirmed: forward kinematics run in motion" }
+    { "repo": "linuxcnc", "file": "src/emc/motion/control.c", "line": 251, "match": "do_forward_kins", "claim": "3.2 confirmed: forward kinematics run in motion" },
+
+    { "repo": "linuxcnc", "file": "src/rtapi/uspace_rtai.cc", "line": 190, "match": "no-op on the RTAI uspace", "claim": "ethercat: the second RTAI backend is also a no-op" },
+    { "repo": "linuxcnc", "file": "src/rtapi/uspace_rtapi_main.cc", "line": 1676, "match": "void rtapi_task_self_resync", "claim": "ethercat: only uspace implements the re-anchoring" },
+    { "repo": "linuxcnc", "file": "configs/by_interface/mesa/hm2-servo/hm2-servo.hal", "line": 52, "match": "addf hm2_.*\\.read\\s+servo-thread", "claim": "ethercat: the driver read opens the servo pass" },
+    { "repo": "lcec", "file": "src/lcec_main.c", "line": 422, "match": "%s\\.write-all", "claim": "ethercat: lcec.write-all exists alongside read-all" },
+    { "repo": "lcec", "file": "src/lcec_main.c", "line": 77, "match": "dc_sync_diff", "claim": "ethercat: the DC error monitoring pin" },
+    { "repo": "lcec", "file": "src/lcec_main.c", "line": 378, "match": "dc_sync_max = .*app_time_period", "claim": "ethercat: default DC threshold is period/25" },
+    { "repo": "lcec", "file": "examples/swm-fm45a/swm-fm45a.hal", "line": 43, "match": "addf lcec\\.read-all\\s+servo-thread", "claim": "ethercat: real machine config opens with the driver read" },
+    { "repo": "lcec", "file": "examples/swm-fm45a/swm-fm45a.hal", "line": 52, "match": "addf lcec\\.write-all\\s+servo-thread", "claim": "ethercat: ...and closes with the driver write" },
+
+    { "repo": "linuxcnc", "file": "src/emc/nml_intf/emccfg.h", "line": 51, "match": "DEFAULT_TRAJ_MAX_JERK 0\\.0", "claim": "pause: MAX_JERK defaults to zero" },
+    { "repo": "linuxcnc", "file": "src/emc/nml_intf/emccfg.h", "line": 87, "match": "DEFAULT_AXIS_MAX_JERK 0\\.0", "claim": "pause: ...for axes too" },
+    { "repo": "linuxcnc", "file": "src/emc/tp/ruckig_wrapper.c", "line": 236, "match": "max_jerk <= 0\\.0", "claim": "pause: the wrapper refuses to plan with zero jerk" },
+    { "repo": "linuxcnc", "file": "src/emc/tp/tp.c", "line": 3688, "match": "revert to T-shaped", "claim": "pause: and tp.c reverts to trapezoidal, in its own words" },
+    { "repo": "linuxcnc", "file": "src/emc/tp/tp.c", "line": 43, "match": "ruckig_wrapper\\.h", "claim": "pause: cruckig lives inside tpmod, not beside it" }
   ]
 }
