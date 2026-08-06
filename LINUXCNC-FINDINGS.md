@@ -1081,6 +1081,38 @@ It has not been one for a long time.
 
 ---
 
+## Verification rules earned from this audit
+
+Not principles chosen in advance. Every line below is the residue of a specific failure in this
+work, and the changelog entry that records it is named.
+
+**The general rule.** Verify at the level where the failure would hurt, and choose a second check
+that fails *differently* from the first. Two checks sharing one blind spot are one check with extra
+steps. The instances:
+
+| Object | The check that counts | Learned from |
+|---|---|---|
+| A patch | apply it **and read the produced text** — `git apply --check` validates the diff's mechanics, never its meaning | 2026-08-05: a patch can apply cleanly and say the wrong thing |
+| A published file | read the blob back **from the remote**, not the local copy | 2026-08-03: mojibake shipped for a day, invisible locally |
+| A figure | a geometric test — does a connector cross a box it should route around | 2026-08-05: two lines cut through boxes, invisible by eye |
+| A number repeated across documents | extract **every** value attached to the concept and look for variants; never confirm the one you expect | 2026-08-04: two stale counts survived a pass that asserted consistency |
+| An execution order | read the **shipped configuration**, not the source — in LinuxCNC the order is config data | 2026-08-05: a whole cycle step was missing from a figure |
+| A citation | machine read-back of the cited line | 2026-08-03: two off-by-ones, invisible to eye inspection |
+| A live page | fetch it over HTTP; a matching git hash is not a served page | 2026-08-04 |
+| **Coverage** | derive the expected set from the **source document**, not from your own table of contents | 2026-08-05: four passes missed a diagram because all of them checked the claims that *were* made |
+
+**The last line is the one that took longest to learn.** Verification confirms what is present and
+is structurally blind to what is absent. The citation verifier passed 111/111 throughout the period
+when two of its own figures were stale and a third of the document's diagrams had never been looked
+at. Coverage needs its own oracle, and it must come from outside the work being checked.
+
+**Where none of this reaches.** Everything above is a software check. Nothing in it crosses into
+hardware: the SYNC0 phase behaviour in §2.9 and `ETHERCAT-NOTES.md` is what the source says, and it
+would take a machine and a scope to say more. A verification discipline that obscured that boundary
+would be worse than none.
+
+---
+
 ## Changelog
 
 | Date | Change |
