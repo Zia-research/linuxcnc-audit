@@ -1,12 +1,12 @@
 # Upstream patches — prepared from the audit
 
-Patches generated from the `audit-fixes` branch of the local clone (based on
-`master` at `caa13ca6ae`). Every change corrects a statement that the audit in
+Patches generated from the `docs-audit-fixes` branch — byte-for-byte the three
+commits submitted upstream as
+[PR #4349](https://github.com/LinuxCNC/linuxcnc/pull/4349) on 2026-08-06
+(`5ac93bb4b2` · `d152953a4d` · `859c1710f8`, based on `dd8d0be15b`). Every
+change corrects a statement that the audit in
 [`../LINUXCNC-FINDINGS.md`](../LINUXCNC-FINDINGS.md) verified against the source;
 the commit messages carry the `file:line` evidence.
-
-**Submission is yours to do** — under your own GitHub identity, as agreed.
-Nothing here has been sent anywhere.
 
 ## Contents
 
@@ -46,8 +46,11 @@ Notes against the source"*. Points worth making in the description:
 
 ## Caveats before submitting
 
-- Patches are against `master` (`caa13ca6ae`, 2026-07-30). Rebase if master has
-  moved: `git fetch && git rebase origin/master` on the branch.
+- The commits are based on `dd8d0be15b` (master, 2026-08-06). They also apply
+  cleanly on the audited `caa13ca6ae` — the three target files are identical at
+  both bases, and `git patch-id` is identical before and after the rebase.
+  Verified both ways: `git apply --check`, then a real apply with the produced
+  text read back.
 - The PAUSE and command-count wording describes **master** behaviour. If the
   docs team wants 2.9-applicable wording, the command-count note (76/73) is the
   only figure that differs — check `cmd_code_t` on the 2.9 branch first.

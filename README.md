@@ -4,7 +4,7 @@
 learning the system before a first machine build, and shared in case it helps
 someone else arriving here.
 
-Two self-contained HTML sheets, plus the verification work that backs them:
+Three self-contained HTML sheets, plus the verification work that backs them:
 everything shown was read in the source, and every claim carries a `file:line`
 citation that a script re-checks.
 
@@ -18,8 +18,8 @@ citation that a script re-checks.
 
 ## The sheets
 
-Both are single HTML files with no dependencies — download and open in any
-browser. *(GitHub shows HTML as source rather than rendering it; use
+All three are single HTML files with no dependencies — download and open in
+any browser. *(GitHub shows HTML as source rather than rendering it; use
 **Download raw file**, or clone the repository.)*
 
 ### [`sheets/linuxcnc-command-flow.html`](sheets/linuxcnc-command-flow.html)
@@ -51,6 +51,16 @@ The architecture diagram from the Code Notes redrawn as published, next to a
 corrected version reflecting the current source, with the joint-controller
 diagram audited alongside.
 
+### [`sheets/linuxcnc-context-diagram.html`](sheets/linuxcnc-context-diagram.html)
+
+The C4 context diagram merged by LinuxCNC PR #3781, in three states: as
+published, with its two connection errors corrected in red — the terminal
+tools' only link points at the core when two of the three are HAL clients, and
+the embedded panels lack the HAL link that is their entire purpose — and
+rebuilt from the source. The page records its own verification passes and the
+corrections they forced on it, including one error of exactly the class it
+criticises.
+
 ---
 
 ## The verification behind them
@@ -67,7 +77,7 @@ git -C linuxcnc-ethercat checkout 87a72a8
 powershell -File linuxcnc-audit/tools/verify-citations.ps1
 ```
 
-Expected: `148 pass, 0 fail`. On a later HEAD a FAIL usually means the line
+Expected: `173 pass, 0 fail`. On a later HEAD a FAIL usually means the line
 moved — re-anchor the citation rather than assume the finding broke.
 
 The script also checks itself against the documents: if any file here tells you
@@ -102,9 +112,9 @@ Most are harmless; a few would bite someone.
 - [`motion-commands-reference.md`](motion-commands-reference.md) — all 76
   motion commands read from `command.c`, with handler locations and rejection
   conditions. The Code Notes document 27 of them.
-- [`upstream/`](upstream/) — three small documentation patches for the
-  actionable items, applying cleanly on the audited master. Not submitted
-  upstream.
+- [`upstream/`](upstream/) — the three documentation patches submitted as
+  [LinuxCNC PR #4349](https://github.com/LinuxCNC/linuxcnc/pull/4349), exactly
+  as sent.
 
 Two examples of the kind of thing found: the HAL manual's `initf` example names
 a funct the EtherCAT driver doesn't export, and pause is silently bypassed

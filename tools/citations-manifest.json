@@ -157,6 +157,32 @@
     { "repo": "linuxcnc", "file": "src/emc/motion/command.c", "line": 1223, "match": "planner_type != 0 && emcmotCommand->planner_type != 1", "claim": "pause: SET_PLANNER_TYPE validates only 0/1" },
 
     { "repo": "lcec", "file": "src/Makefile", "line": 62, "match": "Rules for building RTAI", "claim": "rtai: the driver's RTAI build rules are disabled" },
-    { "repo": "lcec", "file": "src/Makefile", "line": 82, "match": "realtime: lcec\\.so", "claim": "rtai: the only live realtime target is userspace" }
+    { "repo": "lcec", "file": "src/Makefile", "line": 82, "match": "realtime: lcec\\.so", "claim": "rtai: the only live realtime target is userspace" },
+
+    { "repo": "linuxcnc", "file": "src/hal/utils/halcmd.c", "line": 107, "match": "hal_init\\(comp_name\\)", "claim": "context: halcmd is a HAL component" },
+    { "repo": "linuxcnc", "file": "tcl/bin/halshow.tcl", "line": 825, "match": "own halcmd show", "claim": "context: halshow drives halcmd for its show pane" },
+    { "repo": "linuxcnc", "file": "tcl/bin/halshow.tcl", "line": 1224, "match": "watchLoop submits these to halcmd", "claim": "context: ...and for its watch loop" },
+    { "repo": "linuxcnc", "file": "lib/python/pyvcp_widgets.py", "line": 205, "match": "newpin\\(halparam", "claim": "context: pyvcp widgets export HAL pins" },
+    { "repo": "linuxcnc", "file": "lib/python/gladevcp/hal_widgets.py", "line": 44, "match": "self\\.hal\\.newpin", "claim": "context: gladevcp widgets export HAL pins" },
+    { "repo": "linuxcnc", "file": "lib/python/gladevcp/makepins.py", "line": 55, "match": "widget\\.hal_init", "claim": "context: panel pins are created when the panel loads" },
+    { "repo": "linuxcnc", "file": "src/emc/usr_intf/axis/scripts/axis.py", "line": 3978, "match": "hal\\.component\\(\"pyvcp\"\\)", "claim": "context: AXIS creates the embedded pyvcp HAL component" },
+    { "repo": "linuxcnc", "file": "src/emc/motion/motion.c", "line": 1030, "match": "motion-controller", "claim": "context: motion-controller is an exported HAL funct" },
+    { "repo": "linuxcnc", "file": "src/emc/motion/motion.c", "line": 1037, "match": "motion-command-handler", "claim": "context: motion-command-handler likewise" },
+    { "repo": "linuxcnc", "file": "src/emc/motion/motion.c", "line": 1013, "match": "servo_base_ratio > 1", "claim": "context: base thread exists only when the ratio exceeds 1" },
+    { "repo": "linuxcnc", "file": "src/emc/motion/homemod.c", "line": 23, "match": "int rtapi_app_main", "claim": "context: homemod is its own module" },
+    { "repo": "linuxcnc", "file": "configs/common/linuxcnc.nml", "line": 9, "match": "emcCommand\\s+SHMEM.*8192.*queue", "claim": "context: emcCommand 8192, queued" },
+    { "repo": "linuxcnc", "file": "configs/common/linuxcnc.nml", "line": 10, "match": "emcError\\s+SHMEM.*8192.*queue", "claim": "context: emcError 8192, queued" },
+    { "repo": "linuxcnc", "file": "configs/common/linuxcnc.nml", "line": 11, "match": "emcStatus\\s+SHMEM.*20480", "claim": "context: emcStatus 20480 - and no queue flag on that line" },
+    { "repo": "linuxcnc", "file": "src/emc/motion/emcmotcfg.h", "line": 49, "match": "DEFAULT_SHMEM_KEY 100", "claim": "context: the emcmot segment key is 100" },
+    { "repo": "linuxcnc", "file": "src/emc/motion/emcmotcfg.h", "line": 42, "match": "EMCMOT_ERROR_NUM 32", "claim": "context: the error ring holds 32 slots" },
+    { "repo": "linuxcnc", "file": "src/emc/motion/emcmotutil.c", "line": 66, "match": "w - r >= \\(unsigned long long\\)EMCMOT_ERROR_NUM", "claim": "context: the ring refuses the newest message when full" },
+    { "repo": "linuxcnc", "file": "src/hal/hal_priv.h", "line": 120, "match": "HAL_KEY\\s+0x48414C32", "claim": "context: the HAL shared-memory key" },
+    { "repo": "linuxcnc", "file": "src/hal/hal_priv.h", "line": 122, "match": "2\\*256\\*4096", "claim": "context: HAL shared memory is 2 MiB" },
+    { "repo": "linuxcnc", "file": "scripts/linuxcnc.in", "line": 795, "match": "owns/creates the NML buffers", "claim": "context: linuxcncsvr owns the NML channels" },
+    { "repo": "linuxcnc", "file": "scripts/linuxcnc.in", "line": 678, "match": "linuxcncsvr milltask", "claim": "context: svr and task are separate processes" },
+    { "repo": "linuxcnc", "file": "src/emc/task/taskclass.cc", "line": 41, "match": "Task::iocontrol_hal_init", "claim": "context: iocontrol pins live in task" },
+    { "repo": "linuxcnc", "file": "src/hal/components/pid.c", "line": 966, "match": "do-pid-calcs", "claim": "context: the pid funct name as drawn" },
+    { "repo": "linuxcnc", "file": "src/hal/components/stepgen.c", "line": 44, "match": "stepgen\\.make-pulses", "claim": "context: the stepgen funct names as drawn" },
+    { "repo": "linuxcnc", "file": "configs/sim/axis/axis.ini", "line": 140, "match": "KINEMATICS = trivkins", "claim": "context: kins are chosen by INI and loaded via loadrt" }
   ]
 }

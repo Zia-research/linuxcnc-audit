@@ -1,0 +1,465 @@
+<meta charset="utf-8">
+<title>LinuxCNC context diagram — as published vs corrected</title>
+<style>
+  :root { --ink:#1a1d21; --muted:#5b636b; --line:#d8dde2; --bg:#f4f6f8; --card:#fff; --red:#c0392b; }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:28px 20px 60px; background:var(--bg); color:var(--ink);
+         font:15px/1.55 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; }
+  .wrap { max-width:1060px; margin:0 auto; }
+  h1 { font-size:21px; margin:0 0 4px; letter-spacing:-.01em; }
+  .sub { color:var(--muted); font-size:13.5px; margin:0 0 22px; }
+  .bar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:16px; }
+  button { font:600 13px/1 inherit; padding:9px 16px; border-radius:7px; border:1px solid var(--line);
+           background:var(--card); color:var(--ink); cursor:pointer; }
+  button.on { background:var(--ink); color:#fff; border-color:var(--ink); }
+  .hint { color:var(--muted); font-size:12.5px; }
+  .stage { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:8px;
+           overflow-x:auto; }
+  svg { display:block; width:100%; height:auto; min-width:760px; }
+  .box { stroke-width:1; }
+  .thick { stroke-width:3; }
+  .dash { stroke-dasharray:3 3; }
+  text { font:11px/1.25 'Open Sans',Segoe UI,Helvetica,Arial,sans-serif; text-anchor:middle;
+         fill:#000; stroke:none; }
+  .sm { font-size:10px; fill:#333; }
+  .ln { stroke:#000; fill:none; }
+  .fixln { stroke:var(--red); fill:none; stroke-width:2; }
+  .fixtx { fill:var(--red); font-weight:700; }
+  .badge { fill:var(--red); }
+  .badge-t { fill:#fff; font-weight:700; font-size:10px; }
+  body.orig .v-fix { display:none; }
+  body.fix  .v-orig { display:none; }
+  body.code #stage-ab { display:none; }
+  body:not(.code) #stage-c { display:none; }
+  body:not(.code) .only-code { display:none; }
+  body.code .only-ab { display:none; }
+  .notes { margin-top:26px; display:grid; gap:14px; }
+  .note { background:var(--card); border:1px solid var(--line); border-left:4px solid var(--red);
+          border-radius:8px; padding:14px 16px; }
+  .note h3 { margin:0 0 6px; font-size:14.5px; }
+  .note p { margin:0 0 8px; }
+  .note p:last-child { margin-bottom:0; }
+  code { background:#eef1f4; padding:1px 5px; border-radius:4px; font-size:12.5px;
+         font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+  .grey { border-left-color:#9aa3ab; }
+  .foot { margin-top:26px; color:var(--muted); font-size:12.5px; border-top:1px solid var(--line);
+          padding-top:14px; }
+</style>
+
+<div class="wrap">
+<h1>LinuxCNC context diagram — as published vs corrected</h1>
+<p class="sub">
+  <code>docs/src/getting-started/images/LCNC_Architecture_C1.drawio.svg</code>, merged by PR
+  <a href="https://github.com/LinuxCNC/linuxcnc/pull/3781">#3781</a> on 2026-03-01. The working
+  base of this page is their work: the diagram zz912 drew, shaped in review by smoe, c-morley and
+  BsAtHome in that thread, and merged by andypugh. Both states are
+  redrawn here from the same code, so the only differences between them are the corrections.
+  <strong>The three actor boxes — operator, developers, integrator — have been dropped from both
+  views</strong>, along with the thirteen arrows that started from them. The third view is not that
+  drawing at all: it is rebuilt from the source, cross-checked against the findings file, and its
+  structure differs because the published structure does not match the code. Third sheet of the
+  audit — the verification passes behind it, and the corrections they forced on this page itself,
+  are recorded in the closing notes.
+</p>
+
+<div class="bar">
+  <button id="b1" class="on">Published wiring</button>
+  <button id="b2">Corrected wiring</button>
+  <button id="b3">Rebuilt from the code</button>
+  <span class="hint">First two: same drawing, changes in red. Third: redrawn from scratch.</span>
+</div>
+
+<div class="stage" id="stage-ab">
+<svg viewBox="2 120 898 752" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="a" markerWidth="8" markerHeight="8" refX="6.5" refY="3" orient="auto-start-reverse">
+      <path d="M0,0 L7,3 L0,6 z" fill="#000"/></marker>
+    <marker id="ar" markerWidth="8" markerHeight="8" refX="6.5" refY="3" orient="auto-start-reverse">
+      <path d="M0,0 L7,3 L0,6 z" fill="#c0392b"/></marker>
+  </defs>
+
+  <!-- ============ SOLID LINES (mandatory) ============ -->
+  <g class="ln">
+    <path d="M249,267 H288" marker-end="url(#a)" marker-start="url(#a)"/>
+    <path d="M408,348 V377" marker-end="url(#a)" marker-start="url(#a)"/>
+    <path d="M548,417 V506" marker-end="url(#a)" marker-start="url(#a)"/>
+    <path d="M608,606 V666" marker-end="url(#a)" marker-start="url(#a)"/>
+    <path d="M248,507 V420" marker-end="url(#a)"/>
+    <path d="M138,507 V420" marker-end="url(#a)"/>
+    <path d="M102,507 V327 H285" marker-end="url(#a)"/>
+    <path d="M80,507 V310" marker-end="url(#a)"/>
+    <path d="M688,526 H652" marker-end="url(#a)"/>
+    <path d="M688,589 H652" marker-end="url(#a)"/>
+  </g>
+
+  <!-- ============ DASHED LINES (optional) ============ -->
+  <g class="ln dash">
+    <path d="M148,189 V224" marker-end="url(#a)" marker-start="url(#a)"/>
+    <path d="M488,607 V664" marker-end="url(#a)" marker-start="url(#a)"/>
+    <path d="M188,677 V659 H318 V610" marker-end="url(#a)"/>
+    <path d="M122,677 V610" marker-end="url(#a)"/>
+    <!-- Terminal <-> Core : as published, the box's only link -->
+    <path class="v-orig" d="M565,267 H532" marker-end="url(#a)" marker-start="url(#a)"/>
+    <!-- Corrected: only linuxcncrsh keeps this link -->
+    <path class="v-fix" d="M565,243 H532" marker-end="url(#a)" marker-start="url(#a)"/>
+  </g>
+
+  <!-- ============ BOXES ============ -->
+  <g class="box">
+    <rect x="88.5" y="128.5" width="120" height="60" rx="9" fill="#dae8fc" stroke="#6c8ebf" class="dash"/>
+    <rect x="48.5" y="227.5" width="200" height="80" rx="12" fill="#dae8fc" stroke="#6c8ebf"/>
+    <rect x="288.5" y="188.5" width="240" height="159" rx="24" fill="#d5e8d4" stroke="#82b366"/>
+    <rect x="118" y="377" width="520" height="40" fill="#ffe6cc" stroke="#d79b00" class="thick"/>
+    <rect x="37.5" y="507" width="171" height="99" rx="15" fill="#fff2cc" stroke="#d6b656"/>
+    <rect x="228.5" y="507.5" width="181" height="99" rx="15" fill="#fff2cc" stroke="#d6b656"/>
+    <rect x="448.5" y="506.5" width="200" height="100" rx="15" fill="#f8cecc" stroke="#b85450"/>
+    <rect x="688.5" y="509.5" width="200" height="40" rx="6" fill="#f8cecc" stroke="#b85450"/>
+    <rect x="688.5" y="566.5" width="200" height="40" rx="6" fill="#f8cecc" stroke="#b85450" class="dash"/>
+    <rect x="68.5" y="677" width="200" height="60" rx="9" fill="#e1d5e7" stroke="#9673a6" class="dash"/>
+    <rect x="368.5" y="666.5" width="160" height="80" rx="12" fill="#eee" stroke="#36393d" class="dash"/>
+    <rect x="568.5" y="666.5" width="160" height="81" rx="12" fill="#eee" stroke="#36393d"/>
+    <!-- Terminal, as published : one box, three tools -->
+    <rect class="v-orig" x="568.5" y="227.5" width="200" height="80" rx="12"
+          fill="#dae8fc" stroke="#6c8ebf" stroke-dasharray="3 3"/>
+    <!-- Terminal, corrected : split by which side of HAL they sit on -->
+    <rect class="v-fix" x="568.5" y="225" width="200" height="38" rx="9"
+          fill="#dae8fc" stroke="#6c8ebf" stroke-dasharray="3 3"/>
+    <rect class="v-fix" x="568.5" y="271" width="200" height="46" rx="9"
+          fill="#dae8fc" stroke="#c0392b" stroke-width="2" stroke-dasharray="3 3"/>
+  </g>
+
+  <!-- ============ CORRECTION LINES ============ -->
+  <g class="v-fix">
+    <!-- (1) halcmd / halshow attach to HAL, not to the core -->
+    <path class="fixln dash" d="M668,317 V397 H642" marker-end="url(#ar)"/>
+    <!-- (2) embedded panels export HAL pins -->
+    <path class="fixln dash" d="M88,158 H26 V397 H114" marker-end="url(#ar)"/>
+  </g>
+
+  <!-- ============ TEXT ============ -->
+  <g>
+    <text x="148" y="152">Embedded Tabs and</text><text x="148" y="166">Panels</text>
+    <text x="148" y="265">GUI</text><text x="148" y="279" class="sm">Gmoccapy / Axis / Qt</text>
+
+    <text x="408" y="225">LinuxCNC Core Runtime</text>
+    <text x="408" y="253" class="sm">Motion controller</text>
+    <text x="408" y="267" class="sm">Trajectory planner</text>
+    <text x="408" y="281" class="sm">Kinematics</text>
+    <text x="408" y="295" class="sm">Task controller</text>
+    <text x="408" y="309" class="sm">G-code interpreter</text>
+    <text x="408" y="323" class="sm">Status &amp; command IPC</text>
+
+    <text x="378" y="395">HAL Interface Boundary</text>
+    <text x="378" y="409" class="sm">Pins . Signals . Threads . Functions</text>
+
+    <text x="123" y="561">INI Configuration</text>
+    <text x="318" y="541">HAL Configuration</text>
+    <text x="318" y="555" class="sm">(.hal files, loadrt, nets)</text>
+    <text x="318" y="583" class="sm">Integrator-defined topology</text>
+    <text x="548" y="554">HAL Modules</text>
+    <text x="548" y="568" class="sm">(drivers, counters, stepgens, logic)</text>
+    <text x="788" y="534">HAL Components - Library</text>
+    <text x="788" y="591">HAL Components - Custom</text>
+    <text x="167" y="705">Wizards</text><text x="167" y="719" class="sm">PNCconf / Stepconf</text>
+    <text x="448" y="697">Machine Hardware</text>
+    <text x="448" y="711" class="sm">(Panels, buttons,</text><text x="448" y="725" class="sm">potentiometers)</text>
+    <text x="648" y="705">Machine Hardware</text><text x="648" y="719" class="sm">(axes, spindle, IO, safety)</text>
+
+    <!-- Terminal labels -->
+    <g class="v-orig">
+      <text x="668" y="266">Terminal</text>
+      <text x="668" y="280" class="sm">halcmd / halshow / linuxcncrsh</text>
+    </g>
+    <g class="v-fix">
+      <text x="668" y="248">linuxcncrsh</text>
+      <text x="668" y="291" class="fixtx">halcmd / halshow</text>
+      <text x="668" y="305" class="sm" fill="#c0392b">attach to HAL, not to the core</text>
+    </g>
+  </g>
+
+  <!-- ============ BADGES ============ -->
+  <g class="v-fix">
+    <circle class="badge" cx="656" cy="397" r="9"/><text class="badge-t" x="656" y="401">1</text>
+    <circle class="badge" cx="26" cy="278" r="9"/><text class="badge-t" x="26" y="282">2</text>
+  </g>
+
+  <!-- ============ LEGEND ============ -->
+  <g>
+    <path class="ln" d="M12,828 H92"/>
+    <path class="ln dash" d="M12,858 H92"/>
+    <text x="101" y="832" style="text-anchor:start">signals and components must be used for using LCNC</text>
+    <text x="101" y="862" style="text-anchor:start">signals and components are optional (LCNC can be used without them)</text>
+  </g>
+</svg>
+</div>
+
+<div class="stage" id="stage-c">
+<svg viewBox="0 20 1000 856" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="b" markerWidth="8" markerHeight="8" refX="6.5" refY="3" orient="auto-start-reverse">
+      <path d="M0,0 L7,3 L0,6 z" fill="#000"/></marker>
+  </defs>
+
+  <!-- containers -->
+  <rect class="container" x="190" y="40"  width="800" height="262" rx="10" fill="#f2f7fc" stroke="#6c8ebf"/>
+  <rect class="container" x="190" y="420" width="800" height="340" rx="10" fill="#f1f8f0" stroke="#82b366"/>
+  <rect class="container" x="212" y="452" width="756" height="292" rx="8"  fill="#fff6e9" stroke="#d79b00" stroke-width="2"/>
+  <rect class="container" x="232" y="500" width="400" height="224" rx="6"  fill="#fffdf5" stroke="#b0a06a"/>
+  <rect class="container" x="656" y="500" width="292" height="100" rx="6"  fill="#fffdf5" stroke="#b0a06a" stroke-dasharray="4 3"/>
+
+  <!-- lines -->
+  <g class="ln">
+    <path d="M330,164 V197" marker-end="url(#b)" marker-start="url(#b)"/>
+    <path d="M545,164 V197" marker-end="url(#b)" marker-start="url(#b)"/>
+    <path d="M260,288 V497" marker-end="url(#b)" marker-start="url(#b)" stroke-width="2"/>
+    <path d="M892,164 V449" marker-end="url(#b)" marker-start="url(#b)"/>
+    <path d="M230,164 H202 V452" marker-end="url(#b)"/>
+    <path d="M140,213 H212" marker-end="url(#b)"/>
+    <path d="M140,318 H175 V470 H209" marker-end="url(#b)"/>
+    <path d="M75,146 V177" marker-end="url(#b)"/>
+    <path d="M120,146 H160 V318 H143" marker-end="url(#b)"/>
+    <path d="M802,704 V770 H500 V790" marker-end="url(#b)" marker-start="url(#b)"/>
+    <path d="M428,545 H441" marker-end="url(#b)"/>
+    <path d="M428,583 H441" marker-end="url(#b)"/>
+    <path d="M417,230 V240" marker-end="url(#b)" marker-start="url(#b)"/>
+  </g>
+
+  <!-- boundary -->
+  <g>
+    <path d="M190,322 H990" stroke="#c0392b" stroke-width="2.5" stroke-dasharray="9 5" fill="none"/>
+    <text x="196" y="316" class="sm" style="text-anchor:start;fill:#c0392b;font-weight:700">
+      scheduling boundary — SCHED_FIFO threads inside rtapi_app, not a kernel boundary</text>
+  </g>
+
+  <!-- boxes -->
+  <g class="box">
+    <rect x="10"  y="90"  width="130" height="56" rx="8" fill="#e1d5e7" stroke="#9673a6" stroke-dasharray="3 3"/>
+    <rect x="10"  y="180" width="130" height="66" rx="8" fill="#fff2cc" stroke="#d6b656"/>
+    <rect x="10"  y="280" width="130" height="76" rx="8" fill="#fff2cc" stroke="#d6b656"/>
+    <rect x="215" y="82"  width="230" height="82" rx="9" fill="#dae8fc" stroke="#6c8ebf"/>
+    <rect x="470" y="82"  width="150" height="82" rx="9" fill="#dae8fc" stroke="#6c8ebf" stroke-dasharray="3 3"/>
+    <rect x="810" y="82"  width="165" height="82" rx="9" fill="#dae8fc" stroke="#6c8ebf" stroke-dasharray="3 3"/>
+    <rect x="215" y="200" width="405" height="30" rx="6" fill="#d5e8d4" stroke="#82b366"/>
+    <rect x="215" y="240" width="405" height="48" rx="6" fill="#d5e8d4" stroke="#82b366"/>
+    <rect x="300" y="328" width="350" height="72" rx="8" fill="#fdeaea" stroke="#c0392b"/>
+    <rect x="248" y="530" width="180" height="30" rx="5" fill="#d5e8d4" stroke="#82b366"/>
+    <rect x="248" y="568" width="180" height="30" rx="5" fill="#d5e8d4" stroke="#82b366"/>
+    <rect x="444" y="524" width="172" height="70" rx="5" fill="#d5e8d4" stroke="#82b366" stroke-dasharray="3 3"/>
+    <rect x="248" y="640" width="180" height="28" rx="5" fill="#f8cecc" stroke="#b85450"/>
+    <rect x="444" y="640" width="172" height="28" rx="5" fill="#f8cecc" stroke="#b85450"/>
+    <rect x="676" y="548" width="252" height="30" rx="5" fill="#f8cecc" stroke="#b85450"/>
+    <rect x="656" y="628" width="292" height="76" rx="6" fill="#f8cecc" stroke="#b85450"/>
+    <rect x="340" y="793" width="320" height="58" rx="9" fill="#eee" stroke="#36393d"/>
+  </g>
+
+  <!-- text -->
+  <g>
+    <text x="200" y="62"  class="sm" style="text-anchor:start;font-weight:700">NON-REALTIME — ordinary Linux processes, no timing guarantee</text>
+    <text x="200" y="442" class="sm" style="text-anchor:start;font-weight:700">rtapi_app — the realtime domain</text>
+
+    <text x="75"  y="112">Wizards</text><text x="75" y="130" class="sm">pncconf / stepconf</text>
+    <text x="75"  y="205">INI file</text><text x="75" y="221" class="sm">[KINS] · periods</text>
+    <text x="75"  y="235" class="sm">limits · which GUI</text>
+    <text x="75"  y="305">HAL files</text><text x="75" y="321" class="sm">loadrt · addf</text>
+    <text x="75"  y="335" class="sm">net · setp</text>
+
+    <text x="330" y="110">GUI</text>
+    <text x="330" y="127" class="sm">Axis / Gmoccapy / QtVCP</text>
+    <text x="330" y="147" class="sm">embedded tabs &amp; panels export HAL pins</text>
+    <text x="545" y="115">linuxcncrsh</text><text x="545" y="133" class="sm">NML over the network</text>
+    <text x="892" y="110">halcmd / halshow</text>
+    <text x="892" y="128" class="sm">HAL clients — hal_init()</text>
+    <text x="892" y="145" class="sm">they never touch NML</text>
+
+    <text x="640" y="180" class="sm" style="text-anchor:start;font-weight:700">NML — three channels</text>
+    <text x="640" y="195" class="sm" style="text-anchor:start">emcCommand 8192 queued · emcStatus 20480 overwritten</text>
+    <text x="640" y="209" class="sm" style="text-anchor:start">emcError 8192 queued</text>
+
+    <text x="417" y="219" class="sm">linuxcncsvr — its own process; owns the three NML channels</text>
+    <text x="417" y="259">milltask — the task process</text>
+    <text x="417" y="276" class="sm">task controller · rs274ngc · iocontrol HAL pins (no separate EMCIO)</text>
+
+    <text x="475" y="348" style="font-weight:700">emcmot shared segment — key 100</text>
+    <text x="475" y="366" class="sm">one command slot + mutex, commandNum → commandNumEcho, 1 s timeout</text>
+    <text x="475" y="382" class="sm">status seqlock (head / tail) · error ring 32 × 1024, newest lost when full</text>
+
+    <text x="590" y="472" class="sm" style="text-anchor:middle;font-weight:700">HAL — 2 MiB shared memory, key 0x48414C32</text>
+    <text x="590" y="488" class="sm">pins · signals · parameters · functions · threads</text>
+
+    <text x="432" y="518" class="sm" style="font-weight:700">servo-thread — servo_period_nsec</text>
+    <text x="338" y="549" class="sm">motion-command-handler</text>
+    <text x="338" y="587" class="sm">motion-controller</text>
+    <text x="530" y="543" class="sm">tpmod · homemod</text>
+    <text x="530" y="559" class="sm">one of 19 *kins</text>
+    <text x="530" y="580" class="sm">separate modules (loadrt),</text>
+    <text x="530" y="594" class="sm">called from motmod's functs</text>
+    <text x="338" y="618" class="sm" style="fill:#666">both exported by motmod via hal_export_funct()</text>
+    <text x="338" y="658" class="sm">pid.N.do-pid-calcs</text>
+    <text x="530" y="658" class="sm">encoder · stepgen.capture-position</text>
+    <text x="432" y="700" class="sm" style="fill:#666">members, not execution order — the pass opens with the driver read (addf order)</text>
+
+    <text x="802" y="522" class="sm" style="font-weight:700">base-thread</text>
+    <text x="802" y="538" class="sm">created only when servo_base_ratio &gt; 1</text>
+    <text x="802" y="567">stepgen.make-pulses</text>
+
+    <text x="802" y="650" class="sm" style="font-weight:700">hardware drivers, in these same threads</text>
+    <text x="802" y="668" class="sm">hostmot2 (Mesa) · lcec (EtherCAT)</text>
+    <text x="802" y="684" class="sm">parport · and the rest</text>
+
+    <text x="500" y="818">Machine hardware</text>
+    <text x="500" y="836" class="sm">drives · encoders · limit and home switches · spindle · field I/O</text>
+  </g>
+</svg>
+</div>
+
+<div class="notes">
+  <div class="note only-ab">
+    <h3>1 &nbsp;The terminal tools sit on the wrong side of the boundary</h3>
+    <p>As published, one box holds <code>halcmd / halshow / linuxcncrsh</code> and draws a single
+      link — to the Core Runtime. Two of those three attach to <strong>HAL</strong> instead:</p>
+    <p><code>halcmd.c:107</code> calls <code>hal_init(comp_name)</code> — halcmd <em>is</em> a HAL
+      component. <code>halshow</code>'s man page: <em>"a GUI interface to view and interact with a
+      running HAL session"</em>, and it drives <code>halcmd</code> internally
+      (<code>halshow.tcl:825, 1224</code>). Only <code>linuxcncrsh</code> commands the core —
+      <em>"text-mode interface for commanding LinuxCNC over the network"</em>.</p>
+    <p>This was raised in review and never resolved. smoe wrote: <em>"The Devs may also use command
+      line variants as a HAL interface … Examples are linuxcncrsh or halcmd."</em> The reply added a
+      Developers→Terminal arrow; the link to HAL was never drawn.</p>
+  </div>
+
+  <div class="note only-ab">
+    <h3>2 &nbsp;Embedded tabs and panels have no link to HAL</h3>
+    <p>Their entire purpose is to export HAL pins — <code>pyvcp_widgets.py:205,209</code> and
+      <code>gladevcp/hal_widgets.py:44-45</code> call <code>newpin()</code>. As published they
+      connect only to the GUI. On a diagram whose central organising line is the
+      <em>HAL Interface Boundary</em>, leaving out the HAL link of the one component that exists to
+      cross it is a real gap.</p>
+  </div>
+
+  <div class="note grey only-ab">
+    <h3>Left alone on purpose — debatable, not wrong</h3>
+    <p><strong>Kinematics and Trajectory planner inside "Core Runtime".</strong> Both are RT modules
+      loaded by <code>loadrt</code> (<code>loadrt trivkins</code>, chosen by
+      <code>[KINS]KINEMATICS</code> — <code>axis.ini:140</code>) — that is, by what the diagram
+      itself files under <em>HAL Configuration (.hal files, loadrt, nets)</em>. A defensible
+      functional grouping, but inconsistent with its own labelling.</p>
+    <p><strong>"HAL Components – Library / Custom" feeding "HAL Modules".</strong> LinuxCNC calls
+      both <em>components</em>; the split invents a hierarchy. Readable as source-versus-loaded, so
+      confusing rather than false.</p>
+    <p><strong>"Machine Hardware" labels two different boxes</strong> — panels and buttons on one
+      side, joints and spindles on the other.</p>
+    <p><strong>"Machine Hardware (axes, spindle, IO, safety)".</strong> The moving parts of a
+      machine are joints; "axes" here is the conflation the findings' erratum 6 documents
+      elsewhere. At context level, debatable — left as published.</p>
+    <p>The caption added during review also matters: <em>"It is not intended to help you understand
+      the functionality of LinuxCNC."</em> That covers the simplifications above. It does not cover
+      a wrong connection — showing who talks to what is precisely what this diagram sets out to do.</p>
+  </div>
+
+  <div class="note grey only-ab">
+    <h3>What dropping the three actor boxes changes</h3>
+    <p>Operator, Developers/Testers and Integrator were the <em>actors</em> of a C4 level-1 context
+      diagram — a system in its scope, with its users and neighbouring systems. Removing them, and
+      the thirteen arrows fanning out from them, turns this into something else: a map of the parts
+      and how they are wired. Nothing is orphaned by their removal; every remaining box still has at
+      least one connection.</p>
+    <p>That is a legitimate second diagram, and close to what c-morley kept asking for on both
+      threads — <em>"Keep it simple as it was and then build a different purpose built diagram for
+      interrogators [sic] or users or what ever your target audience is."</em> But it no longer answers the
+      question the original was built to answer. zz912's stated aim was <em>"to show how developers,
+      integrators and operators are involved in the project. That's all."</em> Judged as a technical
+      map this version is clearer; judged as what it was drawn to be, the actors were the content.</p>
+    <p>Worth keeping straight if any of this ever goes upstream: the two red corrections are defects
+      in the published figure, and this removal is a change of purpose. They should not travel in
+      the same sentence.</p>
+  </div>
+
+  <div class="note only-code">
+    <h3>What changed, and why — every point checked against the source</h3>
+    <p><strong>The motion controller moved down, inside HAL.</strong> It was drawn above the HAL
+      boundary, as a peer talking across it. It is a HAL <em>function</em>:
+      <code>motion.c:1030,1037</code> export <code>motion-controller</code> and
+      <code>motion-command-handler</code> through <code>hal_export_funct()</code>, and the config
+      file does <code>addf motion-controller servo-thread</code>. It does not talk across HAL — it
+      runs inside it. <code>tpmod</code>, <code>homemod</code> and the kinematics module are called
+      from within that function, so they moved with it. Homing was missing altogether and is now
+      shown: <code>homemod.c:23</code> has its own <code>rtapi_app_main</code>.</p>
+    <p><strong>The scheduling boundary is drawn.</strong> The published figure has none, and puts
+      task and motion in one box. They are different processes in different domains. The label says
+      <em>scheduling</em>, not kernel: on the default <code>uspace</code> build over
+      <code>PREEMPT_RT</code>, "realtime" components are <code>SCHED_FIFO</code> user threads inside
+      <code>rtapi_app</code>. That distinction is erratum 9 of the findings file.</p>
+    <p><strong>The two IPC mechanisms are separated.</strong> One label — "Status &amp; command
+      IPC" — covered both. Above the boundary, NML: three channels, <code>emcCommand</code> 8192
+      queued, <code>emcStatus</code> 20480 overwritten, <code>emcError</code> 8192 queued. Across
+      the boundary, something else entirely: the <code>emcmot</code> segment at key 100 — a
+      <em>single</em> command slot under a mutex, with a <code>commandNum</code> →
+      <code>commandNumEcho</code> handshake and a 1 s timeout, a seqlock for status, and a 32 × 1024
+      error ring that refuses the newest message when full. Not a queue, and not NML.</p>
+    <p><strong>The terminal tools are split.</strong> <code>halcmd</code> and <code>halshow</code>
+      attach to HAL and never touch NML; only <code>linuxcncrsh</code> speaks NML. Its line runs
+      from userspace straight down into the HAL block, which also shows something the original hid:
+      HAL shared memory is reachable from ordinary processes.</p>
+    <p><strong>Smaller ones.</strong> <code>linuxcncsvr</code> now appears — and as its own
+      process, which it is: the start script launches it before realtime is loaded
+      (<code>scripts/linuxcnc.in:803</code>, under the comment <em>"it owns/creates the NML
+      buffers"</em>, <code>:795</code>) and task separately later (<code>:824</code>); the kill
+      list names <code>linuxcncsvr milltask</code> side by side (<code>:678</code>). The milltask
+      box states that iocontrol's pins live there and that no separate EMCIO process exists. The base thread carries its
+      real condition, <code>servo_base_ratio &gt; 1</code>, not a non-zero period. HAL's label
+      includes parameters, which the original omitted.</p>
+    <p>Everything here traces to the findings file — errata 3, 5, 6, 8, 9, 29, 31, 32, 33, and the
+      §2 material on the shared segment, the seqlock and the servo cycle. Nothing was drawn from a
+      memory of how LinuxCNC ought to work.</p>
+  </div>
+
+  <div class="note">
+    <h3>Corrections to this page — 2026-08-06</h3>
+    <p>A verification pass — four passes, separate oracles: the cited lines re-read in the pinned
+      clone, the published <code>.drawio</code>'s edge graph extracted, adversarial greps on the
+      gates, the review-thread quotes re-read verbatim with <code>gh</code> — confirmed every code
+      claim above except one, and caught three fidelity slips. Recorded here rather than silently
+      repaired:</p>
+    <p><strong>1.</strong> The rebuilt view drew <code>linuxcncsvr</code> inside "The LinuxCNC task
+      process". It is a separate process — the start script runs it at step 4.3.1 (<em>"it
+      owns/creates the NML buffers"</em>, <code>scripts/linuxcnc.in:795</code>) and task at 4.3.7,
+      and the kill list names <code>linuxcncsvr milltask</code> side by side (<code>:678</code>).
+      The same class of error this page criticises — a process boundary drawn wrong. Now two
+      boxes.</p>
+    <p><strong>2.</strong> The c-morley quotation silently corrected his "interrogators" to
+      "integrators". Restored verbatim with [sic] — when quoting, the words bind.</p>
+    <p><strong>3.</strong> The as-published view wrote "(joints, spindles, IO, safety)" where the
+      merged file says "(axes, spindle, IO, safety)" — an unmarked correction, contradicting this
+      page's own promise that the only A/B differences are the flagged ones. Published wording
+      restored; the joints question moved to the "left alone" list.</p>
+    <p><strong>4.</strong> Wizard names: the A/B views now match the published
+      <code>PNCconf / Stepconf</code>; the rebuilt view uses the command names
+      <code>pncconf / stepconf</code> (<code>src/emc/usr_intf/pncconf/Submakefile:3</code>). Two
+      wording fixes besides: tpmod/homemod/kins are "separate modules (loadrt), called from
+      motmod's functs" — "linked into" was loose — and the servo-thread box now says its contents
+      are members, not execution order.</p>
+  </div>
+</div>
+
+<p class="foot">
+  Redrawn from the published SVG's own coordinates, so the layout matches closely enough to compare
+  by flipping. It is a faithful redraw, not a pixel copy — open the original alongside if precision
+  matters: <code>docs/src/getting-started/images/LCNC_Architecture_C1.drawio.svg</code>.
+  Everything else in the figure checked out: the role structure, the wizard flows, operator ↔ GUI
+  solid against operator ↔ physical panel dashed, integrator → hardware, HAL Modules ↔ Machine
+  Hardware, Core ↔ HAL boundary, and the solid/dashed legend applied consistently throughout.
+  Verified line by line against the pinned clone (<code>caa13ca6ae</code>) and corrected on
+  2026-08-06 — see the last note.
+</p>
+</div>
+
+<script>
+  const bs = ['b1','b2','b3'].map(id => document.getElementById(id));
+  const modes = ['orig','fix','code'];
+  const set = i => {
+    document.body.className = modes[i];
+    bs.forEach((b,j) => b.classList.toggle('on', i === j));
+  };
+  bs.forEach((b,i) => b.onclick = () => set(i));
+  set(0);
+</script>
