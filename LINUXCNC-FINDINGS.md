@@ -249,6 +249,16 @@ depth set at load time, with `underruns`/`overruns` counters. Keys: `STREAMER_SH
 Created by `motmod` with `DEFAULT_SHMEM_KEY` = 100 (`emcmotcfg.h:49`, `motion.c:44`; overridable via
 the `key` module parameter).
 
+**Both sides make the same call, and the first one wins.** It is tempting to describe this as one
+side *creating* and the other *attaching*, as two different operations. They are not: `motion.c:827`
+calls `rtapi_shmem_new(key, mot_comp_id, sizeof(emcmot_struct_t))` from the realtime module, and
+`usrmotintf.cc:578` calls `rtapi_shmem_new(SHMEM_KEY, module_id, sizeof(emcmot_struct_t))` from
+milltask — **the same function, with the same size**. Whichever runs first creates the segment; the
+second receives a mapping of it. The start order is what decides, not the code
+(`scripts/linuxcnc.in`). This matters for any figure that draws the segment straddling the
+scheduling boundary: the straddle is not a metaphor, it is two processes in different scheduling
+classes holding the same pages.
+
 Layout (`src/emc/motion/motion_struct.h`):
 
 ```c
@@ -322,6 +332,7 @@ The distinction matters — most of these are *not* FIFOs:
 | `emcmot_error_t` | **lock-free MPSC ring** | 32 × 1024 B | RT `emcmotErrorPutf()` → `emcmotErrorGet()` | atomics; newest lost when full |
 | `TC_QUEUE_STRUCT` | **ring** + reverse history | 2000 × ~512 B ≈ 1 MB | `tpAddLine`/`tpAddCircle` → `tpRunCycle` | none, servo thread |
 | `hal_stream_t` | **SPSC FIFO** | set at load | halstreamer ↔ RT ↔ halsampler | one reader, one writer |
+| **tool table** | **mmap'd FILE** — not RTAPI shm | `TOOL_MMAP_SIZE` | task creates → GUIs and halui attach | `PROT_READ\|PROT_WRITE` **both sides** + mutex |
 
 **Correction, 2026-08-07: `interp_list`'s capacity read `unbounded` here until today, and that
 was the wrong level of description.** The container has no limit — `append()`
@@ -338,6 +349,27 @@ fills it was not.
 `TC_QUEUE_STRUCT` (`src/emc/tp/tcq.h`) carries `start`/`end`/`allFull` plus `_rlen`/`rend` for the
 reverse-run history (`tcqBackStep`). Size from `DEFAULT_TC_QUEUE_SIZE` (`emcmotcfg.h:70`), whose
 comment reads *"a TC_STRUCT is about 512 bytes so this queue is about a megabyte."*
+
+**The tool table is a third shared region, and it was missing from this audit until 2026-08-07.**
+§2.2 and §2.3 cover the two that matter for motion — HAL's block and the `emcmot` segment — and
+the tool table is neither. It is a **file-backed `mmap`**, not RTAPI or SysV shared memory:
+
+| Step | Evidence |
+|---|---|
+| milltask creates it | `taskclass.cc:162` — `tool_mmap_creator(&emcioStatus.tool, random_toolchanger)` |
+| and immediately attaches as a user | `taskclass.cc:163` |
+| the GUI attaches | `emcmodule.cc:1010` — `tool_mmap_user()` |
+| **halui attaches too** | `halui.cc:2151` |
+| the standalone interpreter creates its own | `sai/driver.cc:571` |
+| both sides map **read-write** | `tooldata_mmap.cc:151-152` (creator) and `:186-187` (user), each `PROT_READ\|PROT_WRITE, MAP_SHARED` |
+| serialised by a mutex | `tooldata_mmap.cc:164` — `tool_mmap_mutex_give()` |
+
+Two things follow. **It is wholly non-realtime** — task, GUIs and halui, nothing below the
+scheduling boundary — so unlike the other two segments it never straddles that line. And the
+pairing is the same one the audit already uses to justify calling a region shared: **created on
+one side, attached from the other.** The declared users are named in the source itself,
+`tooldata_mmap.cc:167`: *"typ: milltask, guis (emcmodule,emcsh,...), halui"* — a comment, which is
+why each attachment above is cited at its call site instead.
 
 ### 2.5 The servo cycle
 
@@ -363,6 +395,57 @@ comment reads *"a TC_STRUCT is about 512 bytes so this queue is about a megabyte
 | 270 | `write_homing_out_pins` |
 | 271 | `update_status` |
 | 275 | `emcmotStatus->tail = head` — close the seqlock |
+
+#### 2.5.1 The order of the cycle is configuration — measured, 2026-08-07
+
+`motmod` exports exactly **two** thread functions — `motion-controller` (`motion.c:1030`) and
+`motion-command-handler` (`:1037`). A third export, `motion-traj-planner`, sits in a `#if 0` block
+at `:1044-1056` whose comment states the structure plainly: *"currently the traj planner is called
+from the controller / eventually it will be a separate function"*. It is dead code, and it is the
+source's own statement that `tpmod` is **not** a thread function: the controller calls it from
+inside its own execution (`tpRunCycle`, `control.c:1348`), while the command handler feeds it
+(`tpAddLine :1056`, `tpAddCircle :1118`, `tpSetVmax :1153`, all `command.c`).
+
+**Where the two functions run, and in what order, is not in the code at all** — the `.hal` file
+decides, one `addf` line at a time. Reading the file top to bottom is safe: `addf`'s optional
+third argument is a position, defaulting to **−1** (`halcmd_commands.cc:276`), and −1 means *from
+the tail* (`hal_lib.c:2930`, *"+N from head, −N from tail"*) — so functions are appended in the
+order the lines execute.
+
+#### The base thread and the servo thread hand over through memory that is neither a pin nor a signal
+
+`stepgen` exports three functions, and two of them run in **different threads**: `update-freq` in
+the servo thread, `make-pulses` in the base thread. What passes between them is not a HAL pin. The
+file's own header says so — *"'stepgen.update-freq' reads the position or frequency command and sets
+**internal variables** used by 'stepgen.make-pulses'"* (`stepgen.c:48-49`).
+
+Those internal variables are nonetheless **in HAL's shared memory block**: the per-channel array is
+allocated by `hal_malloc` (`stepgen.c:494`), and `hal_malloc` returns a pointer inside the shared
+block — `hal_lib.c:556` returns `SHMPTR(ref)`, and the header at `:109` states that the
+`shmalloc_xx()` family *"allocate blocks of shared memory"*.
+
+Two consequences. **A figure must draw the base thread as reaching HAL memory**, because that is
+where its state lives. And **it must not draw a direct servo → base arrow**: nothing passes between
+the threads except through that memory. The HAL box's own inventory — *pins · signals · params ·
+functions · threads* — does not name this category, and it is the one carrying the machine's step
+generation across a thread boundary.
+
+Measured across the **189 shipped `.hal` files** that contain `addf`:
+
+| | |
+|---|---|
+| configs where a hardware read **and** `motion-command-handler` are both `addf`'d | **55** |
+| read **before** the handler | **54** |
+| read **after** | **1** — `configs/by_interface/general_mechatronics/GM6-PCI/3-axis-servo.hal` |
+
+That file runs `motion-command-handler`, `motion-controller`, **then** `gm.0.read`, then the PIDs,
+then `gm.0.write`: it reads its board *after* the controller has already run. **So the read →
+handler → controller → PID → write bracket is a convention, followed by 54 configs out of 55, and
+it is not enforced by anything.** An earlier pass of this audit had inferred the bracket from two
+files and called it *"the same five-step bracket"*; that was true of those two and under-sampled.
+The measured form is both stronger and more useful: reorder the `addf` lines and you reorder the
+machine's cycle, including into something that reads stale feedback — and one shipped
+configuration already does.
 
 ### 2.6 The seven position representations
 
@@ -398,6 +481,21 @@ New in `master`: **`cruckig`** (`src/emc/tp/cruckig/`, 34 files) — a pure-C po
 finite-jerk planner. Pure C is a real-time constraint: no allocation, no exceptions, no STL.
 `debian/changelog` records *"Add a finite-jerk trajectory planner"*.
 
+**What `loadrt` actually is, and it is not a primitive.** On the uspace flavours — the default —
+`halcmd` does not load anything itself: it **runs a program**. `do_loadrt_cmd`
+(`halcmd_commands.cc:918`) branches on `#if defined(RTAPI_USPACE)` at `:922` and builds an argv of
+`EMC2_BIN_DIR "/rtapi_app", "load", <module>` at `:925-926`. Unload takes the same route
+(`:1154-1155`, `"unload"`), as do `newinst` (`:527`) and `debug` (`:197`). The `#else` branches
+load kernel modules instead — `:934` for the load path, and `:1157` hands unloading to
+`linuxcnc_module_helper`.
+
+So **`rtapi_app` is the process every realtime component lives in**, and a component is a shared
+object `dlopen`'d into it — `tpmod.c:31` says so in a comment on its own `hal_init` call:
+`hal_init("tpmod"); // dlopen(".../tpmod.so")`. The same figure element is therefore a *process*
+under uspace and a *kernel module loader* under RTAI-kernel; §2.8's table is what decides which.
+This is why the scheduling boundary is a scheduling boundary and not a kernel one — see the
+correction recorded there.
+
 ### 2.8 RTAPI flavours
 
 | Flavour | File | Execution context |
@@ -413,6 +511,19 @@ In `uspace` mode a "real-time" component is just a shared object `dlopen`-ed int
 
 The headers `rtapi_math.h`, `rtapi_string.h`, `rtapi_stdint.h`, `rtapi_atomic.h` exist because libc
 is unavailable in kernel context.
+
+**Erratum against our own published work, 2026-08-07.** `sheets/linuxcnc-system-overview.html`
+captioned the scheduling boundary *"a scheduling boundary, not a kernel boundary — **except under
+RTAI**"*, and shipped it. The table above shows why that is wrong: **RTAI has two backends and
+only one of them puts realtime in the kernel.** `uspace/RTAI` (`uspace_rtai.cc`) runs realtime as
+user-space threads, where the sentence's own claim still holds; only `RTAI kernel`
+(`rtai_rtapi.c` + `rtai_ulapi.c`) loads kernel modules. Naming the whole of RTAI as the exception
+overstated it by four flavours out of five. Corrected in the working copy to *"kernel modules only
+on the RTAI-**kernel** flavour — 1 of the 5 RTAPI flavours; uspace/RTAI is user space too"*.
+**Published 2026-08-08.** This repository has already been corrected in public
+once over an RTAI framing (issue #1, and the reporter was right); this one was found by asking
+whether a sentence was worth keeping, and the answer turned out to be about accuracy rather than
+economy.
 
 ### 2.9 EtherCAT
 
@@ -634,6 +745,34 @@ src/
 
 configs/    2 017 files      docs/  387 .adoc      lib/python/  hal.py, qtvcp/, rs274/, vismach.py
 ```
+
+### 2.11 HAL pins created by the GUIs — measured, 2026-08-07
+
+Every screen exports its own HAL pins, **and the count differs per screen**. Two, counted at the
+pinned HEAD:
+
+| Screen | Pins | Where |
+|---|---|---|
+| `axisui` | **16** | `axis.py:3950` creates the component, `:3951-3966` the pins |
+| `qtdragon` | **18** | `share/qtvcp/screens/qtdragon/qtdragon_handler.py`, `newPin(...)` |
+
+qtdragon's eighteen are `spindle-amps`, `spindle-volts`, `spindle-fault{,-u32}`,
+`spindle-modbus-errors{,-u32}`, `spindle-modbus-connection`, `spindle-inhibit`, `external-pause`,
+`eoffset-{enable,clear,spindle-count,is-active,value}`, `mpg-in`, `dialog-{ok,no,cancel}`. **None
+of them is a widget an integrator placed on the screen** — they are created in the shipped
+screen's handler code. Widget pins exist too and are additional: `qt_halobjects.py:150` wraps the
+ordinary `_hal.component.newpin`.
+
+This matters because a claim circulating about "modern" LinuxCNC GUIs is that they create *only*
+the pins of user-placed widgets, unlike AXIS. **The counts invert it**: the shipped qtdragon
+handler creates more fixed pins than AXIS does.
+
+**Two vocabulary traps in the same area, both verified by absence.** `qtvcp` is the framework and
+`qtdragon` is a screen built on it — listing them side by side as if both were GUIs is a category
+error, and this audit made a small version of it in its own figure until today. And **QtPyVCP is
+not in the tree**: `grep -r qtpyvcp src/` returns **0 files**, as does ProbeBasic. QtPyVCP is a
+separate third-party project; qtdragon is *not* built on it. Any description of "QtDragon's
+QtPyVCP architecture" is describing something that is not in this repository.
 
 ---
 
@@ -1303,6 +1442,10 @@ steps. The instances:
 | An execution order | read the **shipped configuration**, not the source — in LinuxCNC the order is config data | 2026-08-05: a whole cycle step was missing from a figure |
 | A citation | machine read-back of the cited line | 2026-08-03: two off-by-ones, invisible to eye inspection |
 | A live page | fetch it over HTTP; a matching git hash is not a served page | 2026-08-04 |
+| **A checker's own input set** | confirm it *has* an input — a filter that silently drops elements makes every rule below it vacuous | 2026-08-07: `ORTHO` in `diagram-check.js` had no `-?`, so **every path with a negative coordinate left the checked set without a word**. One connector in the system-overview sheet qualified — the one routing through the negative-x gutter the page argues for — and it had never been checked, for crossings or for landings, across every clean run ever reported. The tell was a persistent off-by-one between the checker's path count and a count taken outside it |
+| **A graph built from a drawing** | count the edges that *resolve to two boxes*, and separately the edges that exist — the difference is the defect | 2026-08-07: `emcmot ↔ servo-thread`, the thickest connector on the figure, had lost its target and was anchored to a fixed point. It looked correct. Every check that counted only edges with both endpoints skipped it in silence. Three further edges carried stale fallback points behind valid references — the same defect, dormant |
+| **A box in a diagram** | ask whether anything *reaches* it, not only whether arrows *land* on something | 2026-08-07: rule 3 had always asked the second question. Nothing asked the first, and the drivers and the machine sat as an island for as long as the figure existed. Implemented as `diagram-check.js` rule 7, on connected **components** rather than degree — a detached panel may be wired internally and still be off the machine graph |
+| **A check that FAILS** | scrutinise it exactly as hard as one that passes | 2026-08-07: a verification reported a caption absent from an export. The caption was there; the search string was wrong. A failing check that is itself wrong sends you to repair what is already correct |
 | **Coverage** | derive the expected set from the **source document**, not from your own table of contents | 2026-08-05: four passes missed a diagram because all of them checked the claims that *were* made |
 | **A causal claim** | verify the **gate**, not only the destination — a citation proves a line exists, never that control flow reaches it | 2026-08-06: a four-step mechanism, every line correctly cited, describing a path that is never entered |
 | **A quotation from a third party** | read the source with `gh`, never through a summarising fetch | 2026-08-06: a paraphrase dropped one word — *supported* — and would have produced a public correction of a claim never made |
@@ -1328,6 +1471,8 @@ would be worse than none.
 
 | Date | Change |
 |---|---|
+| 2026-08-08 (LCNC_04) | **The system-overview figure is no longer written by hand: it is generated from a `.drawio`, and the return trip is what this entry records.** The drawing moved into a real editor so the reader could move a box and see the result — ten passes of correction had been made by editing SVG, which put the only person who could change the layout in the position of not being able to see it. `drawio-to-svg.ps1` v2 takes **the geometry of the boxes from the model and the routing of the arrows from draw.io's own SVG export**, because draw.io has already solved routing and v1's naive Z-routes crossed thirty boxes; the render→model offset is *derived* by matching rectangles on (width, height), 100 % agreement on 26, so the pairing is checked rather than assumed. **Only the `<svg>` block is replaced**, so the page's prose and its footnoted evidence make no round trip and cannot be damaged by one. Verified: citations **190/190**; `diagramCheck` **4 errors on three consecutive runs = two layout defects counted twice each**, plus a third that no check here can see — the two boundary lines span the canvas and pass behind the legend panel, and boundaries are exempt from the connector check by design. All three are recorded on the sheet rather than carried quietly. **Four rules earned, each from something that went wrong.** *(1) A name collision can silence a function completely and change more than it appears to:* a helper named `SV` was shadowed by PowerShell's alias for `Set-Variable`, so every style lookup returned nothing — **all colours came out `none`, and so did every text alignment**, without one error message. The `diagramCheck` verdict taken before the fix therefore described a figure whose text was in the wrong place; **a verdict is only about the artefact that produced it.** *(2) A geometric check that involves text is only as reproducible as the font that loads:* a crossing was reported once and not again on the same file; measured directly with `getBBox` — an oracle that fails differently from the checker — the text's left edge is at x=825.5 and the connector at x=815, so it clears by ten units. Had it been trusted, a connector that touched nothing would have been moved. *(3) A generated document should reach a **fixed point**:* re-converting the published page must return the published page, and it does, to the character. *(4) The prose around a figure ages while the figure is worked on, and no script reads it.* Four statements on the sheet had become false without anyone touching them — the number of domain markers, the claim of *no containers*, the count of corrections, and a verification note quoting the counts of a figure that no longer existed. **Worse than a false statement is an argument that reverses:** footnote (9) had justified deleting the NML compartments with *"with no named compartment for an arrow to point at, the per-channel claim can no longer be made"*, and the reader then asked for the compartments back. The published argument contradicted the published figure. It is recorded as a reversal, with a **replacement guarantee that is checkable where the old one was structural** — *no connector lands on a compartment*, verified in the model, five NML edges out of five targeting the parent box. |
+| 2026-08-07 (LCNC_04) | **Four new facts, one erratum against our own published sheet, and four verification rules.** §2.4 gains the **tool table** as a third shared region — a file-backed `mmap`, created by milltask (`taskclass.cc:162`) and attached by the GUIs (`emcmodule.cc:1010`) and halui (`halui.cc:2151`), read-write on both sides (`tooldata_mmap.cc:151-152`, `:186-187`) under a mutex (`:164`), and **wholly non-realtime**, so unlike the other two it never straddles the scheduling boundary. §2.5 gains **§2.5.1**: `motmod` exports exactly two thread functions (`motion.c:1030`, `:1037`), a third sits dead in `#if 0` at `:1044-1056` whose comment states the structure — *"currently the traj planner is called from the controller"* — and the **execution order is configuration**, measured across the 189 shipped `.hal` files: of the 55 that `addf` both a hardware read and `motion-command-handler`, **54 put the read first and one does not** (`GM6-PCI/3-axis-servo.hal` reads its board after the controller). An earlier pass had inferred that bracket from two files; the measurement is stronger and names the exception. Reading file order is legitimate because `addf`'s position defaults to −1 (`halcmd_commands.cc:276`) and −1 means *from the tail* (`hal_lib.c:2930`). §2.7 gains what **`loadrt` actually is**: on uspace it runs a program — `rtapi_app load <mod>` (`halcmd_commands.cc:918`, `:922`, `:925`) — while the `#else` branches load kernel modules (`:934`, `:1157`); so `rtapi_app` is the process every realtime component is `dlopen`'d into (`tpmod.c:31`). §2.8 gains an **erratum against our own work**: the system-overview sheet shipped *"not a kernel boundary — except under RTAI"*, which overstates the exception by four flavours out of five — `uspace/RTAI` runs realtime in user space. Corrected, and **published 2026-08-08**. New **§2.11** counts GUI-created HAL pins — axisui **16** (`axis.py:3951-3966`), qtdragon **18** in its shipped handler, none of them integrator widgets — which inverts a circulating claim that modern GUIs create only widget pins; and records that **QtPyVCP and ProbeBasic are not in this tree at all** (0 files), qtdragon being a `qtvcp` screen. *Verification rules:* a checker's own input set must be confirmed non-empty (`ORTHO` silently dropped every path with a negative coordinate); a graph built from a drawing must count edges that *resolve*, not edges that exist (the figure's thickest connector had lost its target and was anchored to a point); a box must be asked whether anything **reaches** it, not only whether arrows land on something (now `diagram-check.js` rule 7, on connected components); and a check that **fails** deserves the same scrutiny as one that passes. |
 | 2026-08-07 | **`interp_list` was published as "unbounded" in three places, and that was the audit's own rule broken on itself.** A reader asked why the box had a different colour in the working figure; checking the colour led to checking the label, and the label was the wrong level of description. The container genuinely has no limit — `append()` (`interpl.cc:33`) validates the pointer, the type and a size below 4, and never checks capacity. **The producer does have one.** `emctaskmain.cc:493` reads further only while `interp_list.len() <= emc_task_interp_max_len`, `:692` returns early above it, `:613-615` resume only at two thirds of it, and the limit defaults to **1 000** (`emccfg.h:34`), set by `[TASK]INTERP_MAX_LEN` (`emctaskmain.cc:3151`). Nothing fills the deque past about a thousand entries. **Verify the gate, not only the destination** — the rule this project wrote after the jerk and RTAI corrections, and it had been broken here since publication. Corrected in all three published places: §2.4's capacity cell, the label at `linuxcnc-code-notes-errata.html:448`, and the description plus `cap`/`cap2` in `linuxcnc-command-flow.html:358`, whose prose knew one drain (`emcTaskPlanSynch`) and not the one that matters. §2.4 carries a correction note rather than a silent repair. **A second finding fell out of the same check:** `[TASK]INTERP_MAX_LEN` is read by task and appears nowhere in the documentation — recorded as §6.3.3, with the counter-proof that the `[TASK]` section itself exists at `ini-config.adoc:693`. **And a note on the colour that started it:** the amber was not invented, it was inherited badly. The errata sheet uses `#B06E12` as its accent for `.bx-q` and for numbered erratum markers, and the `interp_list` box there carries marker 10 — *"No queue shown anywhere"*. The working figure copied an approximation of that accent, `#b08a2e`, without the marker and without the errata list, into a page with no legend. A colour can carry meaning and lose it in transit. |
 | 2026-08-07 | **What `milltask` is made of, why EMCTASK appears in unrelated places, and a fossil in the start script.** Prompted by a reader asking both questions at once. `src/emc/task/Submakefile:14-26` lists twelve sources and `:32-35` the linked libraries; three of the libraries carry the architecture. **`librs274.so.0` means the interpreter is not inside milltask but shared**, and the same code runs in the GUI's previewer, told apart by one flag — `extern int _task; // zero in gcodemodule, 1 in milltask`, declared identically in three files (`interp_namedparams.cc:807`, `interpmodule.cc:39`, `pyparamclass.cc:28`). **`liblinuxcnchal.so.0` means milltask is a HAL component**, the mechanical confirmation of erratum 3: EMCIO is not a process, its work is here. And `usrmotintf.cc` being compiled in is a second confirmation that task attaches the `emcmot` segment itself rather than going through a server. Recorded in Part 1's process inventory, where the binary was already listed but not opened. **EMCTASK turned out to name three unrelated things** — the 2012 component name in the docs, a shell variable in `linuxcnc.in:522` carrying the value of INI key `[TASK]TASK` (all 285 shipped configs say `milltask`), and a former binary name. **The third produced a defect, §6.3.2:** `linuxcnc.in:524` renames `emctask` to `linuxcnctask`, and *both are dead* — `linuxcnctask` occurs exactly once in the repository, on the line that produces it, and `emctask` has no build target. A user with an old `TASK = emctask` is told *"Can't execute TASK program linuxcnctask"*, a name they never wrote. Low severity, and the fix is a deletion: the shim protects nothing. The figure gained the interpreter nuance in the same pass, since a box labelled *RS-274 interpreter* inside milltask implies the code lives only there. |
 | 2026-08-07 | **The networked NML configs instruct the reader to run software that no longer exists — recorded as §6.3.1, deliberately not numbered among the errata.** Errata 1–38 are against the Code Notes; these are config files, so the same rule that kept the context-diagram findings out of the numbering applies here. Three stale statements, each checked at `caa13ca6ae`: `client.nml` tells the reader to run `tcl/tkemc.tcl` and **`tkemc` is gone** (five matches repository-wide, all `.png` screenshots under `docs/`); both files say to edit `emc.ini` and **no such file is shipped** (zero matches — the `NML_FILE` variable itself is current, `ini-config.adoc:301`); both still call the project *emc2*. **The framing fact came from checking whether the erratum was worth writing at all:** `src/Makefile:745-746` installs only `linuxcnc.nml` and `linuxcnc_big.nml`, so **neither networked config is installed** — they exist only in the source tree, which is why nothing exercised them and nothing caught the drift. That reframes the severity rather than the facts, and it is stated as such. **The discipline this entry is meant to record:** the open action that produced it carried the condition *"check the rest of both files before writing it — an erratum that fixes one stale line and leaves three is worse than none."* The audit found three, not one, plus a fourth that is **not** asserted: the `emcStatus` buffer at 10240 bytes, which stays in Part 5 *Out of reach from source alone* because `sizeof(EMC_STAT)` was never measured. Writing three verified defects and withholding the fourth in the same pass is the point. |
