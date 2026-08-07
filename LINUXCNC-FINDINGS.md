@@ -98,6 +98,32 @@ Understanding LinuxCNC means understanding these three crossings and the queues 
 | `rtapi_app` | Hosts every "real-time" component in the `uspace` flavours | `src/rtapi/uspace_rtapi_app.cc` |
 | GUI | `axis`, `gmoccapy`, `qtvcp`, `touchy`, `gscreen`, `mdro` | `src/emc/usr_intf/` |
 
+**What `milltask` is made of, and the three different things called EMCTASK.** *Read 2026-08-07.*
+`src/emc/task/Submakefile:14-26` lists twelve sources — `emctask.cc`, `emctaskmain.cc`,
+`emccanon.cc`, `taskintf.cc`, `taskclass.cc`, `backtrace.cc`, `usrmotintf.cc`, `emcmotglb.c`,
+`emcmotutil.c`, `dbuf.c`, `stashf.c`, `mapini.cc` — and `:32-35` the libraries it links. Three of
+those say more than the source list:
+
+- **`librs274.so.0` — the interpreter is not *inside* milltask, it is a shared library.** The same
+  code runs in two places, told apart by one flag: `extern int _task; // zero in gcodemodule, 1 in
+  milltask`, declared identically at `interp_namedparams.cc:807`, `interpmodule.cc:39` and
+  `pyparamclass.cc:28`. When a GUI previews a program's path, that is this interpreter.
+- **`liblinuxcnchal.so.0` — milltask is a HAL component**, which is what its `iocontrol.0.*` pins
+  are, and the mechanical confirmation of erratum 3: EMCIO is not a process, its work is here.
+- `libtooldata.so.0` and `libpyplugin.so.0` — the tool table after the 2021 refactor, and the
+  Python support behind remap and named parameters.
+
+`usrmotintf.cc` being compiled *in* is the second confirmation that task attaches the `emcmot`
+segment itself rather than reaching it through a server.
+
+**EMCTASK names three unrelated things**, which is why it turns up in unrelated places. *(1)* In
+the documentation it is the architectural component name of the 2012 era, beside EMCMOT and EMCIO
+— `code-notes.adoc:97` and `:745`, `user-intro.adoc:28`. *(2)* In the start script it is a shell
+variable holding the *program name to run*: `scripts/linuxcnc.in:522` sets `EMCTASK=$retval` after
+`GetFromIni TASK TASK`, so it carries the value of the INI key `[TASK]TASK`. All 285 shipped
+configurations set that key to `milltask`. *(3)* It was once a binary name, and the fossil is still
+executable — see §6.3.2.
+
 **A GUI is not confined to NML.** It is tempting to say the GUI never touches the real-time domain —
 that is wrong. AXIS itself is a HAL component: `axis.py:3950` does `hal.component("axisui")`.
 `halui` is a HAL component by definition, and any embedded `pyvcp`/`gladevcp` panel creates pins.
@@ -287,7 +313,7 @@ The distinction matters — most of these are *not* FIFOs:
 
 | Object | Kind | Capacity | Producer → Consumer | Sync |
 |---|---|---|---|---|
-| `interp_list` | **FIFO** `std::deque<NMLmsg>` | unbounded | Interp/canon → task loop | none, single-threaded |
+| `interp_list` | **FIFO** `std::deque<NMLmsg>` | **≈1 000** — deque unbounded, producer throttled | Interp/canon → task loop | none, single-threaded |
 | `emcCommand` | **FIFO** (CMS) | 8 192 B | GUI/halui/rsh → task | CMS semaphore + ack |
 | `emcError` | **FIFO** (CMS) | 8 192 B | task → GUI | CMS semaphore |
 | `emcStatus` | snapshot | 20 480 B | task → GUI | overwrite |
@@ -296,6 +322,18 @@ The distinction matters — most of these are *not* FIFOs:
 | `emcmot_error_t` | **lock-free MPSC ring** | 32 × 1024 B | RT `emcmotErrorPutf()` → `emcmotErrorGet()` | atomics; newest lost when full |
 | `TC_QUEUE_STRUCT` | **ring** + reverse history | 2000 × ~512 B ≈ 1 MB | `tpAddLine`/`tpAddCircle` → `tpRunCycle` | none, servo thread |
 | `hal_stream_t` | **SPSC FIFO** | set at load | halstreamer ↔ RT ↔ halsampler | one reader, one writer |
+
+**Correction, 2026-08-07: `interp_list`'s capacity read `unbounded` here until today, and that
+was the wrong level of description.** The container has no limit — `append()`
+(`interpl.cc:33`) validates the pointer, the type and a size below 4, and never checks capacity.
+But the *producer* is throttled: `emctaskmain.cc:493` reads further only while
+`interp_list.len() <= emc_task_interp_max_len`, `:692` returns early above it, and `:613-615`
+resume only at **two thirds** of it. The limit defaults to **1 000**
+(`emccfg.h:34`) and is set by `[TASK]INTERP_MAX_LEN` (`emctaskmain.cc:3151`, and undocumented —
+§6.3.3). So nothing fills the deque past about a thousand entries, and a reader told only
+*"unbounded"* concludes something the machine never does. **This is the audit's own rule turned
+on itself**: verify the gate, not only the destination. The container was read; the code that
+fills it was not.
 
 `TC_QUEUE_STRUCT` (`src/emc/tp/tcq.h`) carries `start`/`end`/`allFull` plus `_rlen`/`rend` for the
 reverse-run history (`tcqBackStep`). Size from `DEFAULT_TC_QUEUE_SIZE` (`emcmotcfg.h:70`), whose
@@ -1151,6 +1189,57 @@ two files is *not* asserted here** — the `emcStatus` buffer at 10240 bytes —
 `sizeof(EMC_STAT)` was never measured. It is recorded in Part 5, *Out of reach from source
 alone*, with the command that settles it.
 
+#### 6.3.2 The start script renames a dead program to another dead program
+
+*Found 2026-08-07, while tracing where the name EMCTASK comes from.*
+
+```
+scripts/linuxcnc.in:524    if [ "$EMCTASK" = emctask ]; then EMCTASK=linuxcnctask; fi
+```
+
+A compatibility shim, translating an old value of the INI key `[TASK]TASK` into a newer one.
+**Both names are dead.** `linuxcnctask` occurs **exactly once in the whole repository — on that
+line, the line that produces it**; it is never built, never installed, never referenced anywhere
+else. `emctask` has no build target either. The only surviving `emctask` is the *source file*
+`src/emc/task/emctask.cc`, which is compiled into `milltask`.
+
+The consequence is a misleading error rather than a failure to run. A user whose INI still says
+`TASK = emctask` — copied from an old configuration, or from documentation of that vintage — is
+tested at `:825` and told at `:826`:
+
+```
+Can't execute TASK program linuxcnctask
+```
+
+naming a program they never wrote and cannot find anywhere in LinuxCNC, instead of the name they
+did write. **Severity: low, and the fix is a deletion.** The shim protects nothing, because the
+name it produces has not existed for as long as the name it replaces.
+
+#### 6.3.3 `[TASK]INTERP_MAX_LEN` is read by task and documented nowhere
+
+*Found 2026-08-07, while checking whether `interp_list` is really unbounded.*
+
+Task reads the key at `emctaskmain.cc:3151`:
+
+```c
+if (auto inival = inifile.findSInt("INTERP_MAX_LEN", "TASK")) {
+    emc_task_interp_max_len = *inival;
+```
+
+and it governs how far the interpreter may run ahead of the machine — `:493` and `:692` stop
+reading above it, `:613-615` resume at two thirds of it. The default is **1000**
+(`emccfg.h:34`, `DEFAULT_EMC_TASK_INTERP_MAX_LEN`).
+
+**It appears nowhere in the documentation.** A case-insensitive search of the whole `docs/`
+tree at `caa13ca6ae` returns nothing outside the translation catalogues. **Counter-proof:** the
+`[TASK]` section of the INI reference does exist, at `ini-config.adoc:693`, and does document
+`TASK = milltask` — so this is a missing entry in a section that is otherwise present, not a
+missing section.
+
+Consequence: the only tuning knob for interpreter look-ahead is invisible to anyone who has not
+read `emctaskmain.cc`. **Not numbered among the errata** — those are against the Code Notes, and
+this is the INI reference.
+
 ### 6.4 Work products
 
 | Artefact | What it is |
@@ -1239,6 +1328,8 @@ would be worse than none.
 
 | Date | Change |
 |---|---|
+| 2026-08-07 | **`interp_list` was published as "unbounded" in three places, and that was the audit's own rule broken on itself.** A reader asked why the box had a different colour in the working figure; checking the colour led to checking the label, and the label was the wrong level of description. The container genuinely has no limit — `append()` (`interpl.cc:33`) validates the pointer, the type and a size below 4, and never checks capacity. **The producer does have one.** `emctaskmain.cc:493` reads further only while `interp_list.len() <= emc_task_interp_max_len`, `:692` returns early above it, `:613-615` resume only at two thirds of it, and the limit defaults to **1 000** (`emccfg.h:34`), set by `[TASK]INTERP_MAX_LEN` (`emctaskmain.cc:3151`). Nothing fills the deque past about a thousand entries. **Verify the gate, not only the destination** — the rule this project wrote after the jerk and RTAI corrections, and it had been broken here since publication. Corrected in all three published places: §2.4's capacity cell, the label at `linuxcnc-code-notes-errata.html:448`, and the description plus `cap`/`cap2` in `linuxcnc-command-flow.html:358`, whose prose knew one drain (`emcTaskPlanSynch`) and not the one that matters. §2.4 carries a correction note rather than a silent repair. **A second finding fell out of the same check:** `[TASK]INTERP_MAX_LEN` is read by task and appears nowhere in the documentation — recorded as §6.3.3, with the counter-proof that the `[TASK]` section itself exists at `ini-config.adoc:693`. **And a note on the colour that started it:** the amber was not invented, it was inherited badly. The errata sheet uses `#B06E12` as its accent for `.bx-q` and for numbered erratum markers, and the `interp_list` box there carries marker 10 — *"No queue shown anywhere"*. The working figure copied an approximation of that accent, `#b08a2e`, without the marker and without the errata list, into a page with no legend. A colour can carry meaning and lose it in transit. |
+| 2026-08-07 | **What `milltask` is made of, why EMCTASK appears in unrelated places, and a fossil in the start script.** Prompted by a reader asking both questions at once. `src/emc/task/Submakefile:14-26` lists twelve sources and `:32-35` the linked libraries; three of the libraries carry the architecture. **`librs274.so.0` means the interpreter is not inside milltask but shared**, and the same code runs in the GUI's previewer, told apart by one flag — `extern int _task; // zero in gcodemodule, 1 in milltask`, declared identically in three files (`interp_namedparams.cc:807`, `interpmodule.cc:39`, `pyparamclass.cc:28`). **`liblinuxcnchal.so.0` means milltask is a HAL component**, the mechanical confirmation of erratum 3: EMCIO is not a process, its work is here. And `usrmotintf.cc` being compiled in is a second confirmation that task attaches the `emcmot` segment itself rather than going through a server. Recorded in Part 1's process inventory, where the binary was already listed but not opened. **EMCTASK turned out to name three unrelated things** — the 2012 component name in the docs, a shell variable in `linuxcnc.in:522` carrying the value of INI key `[TASK]TASK` (all 285 shipped configs say `milltask`), and a former binary name. **The third produced a defect, §6.3.2:** `linuxcnc.in:524` renames `emctask` to `linuxcnctask`, and *both are dead* — `linuxcnctask` occurs exactly once in the repository, on the line that produces it, and `emctask` has no build target. A user with an old `TASK = emctask` is told *"Can't execute TASK program linuxcnctask"*, a name they never wrote. Low severity, and the fix is a deletion: the shim protects nothing. The figure gained the interpreter nuance in the same pass, since a box labelled *RS-274 interpreter* inside milltask implies the code lives only there. |
 | 2026-08-07 | **The networked NML configs instruct the reader to run software that no longer exists — recorded as §6.3.1, deliberately not numbered among the errata.** Errata 1–38 are against the Code Notes; these are config files, so the same rule that kept the context-diagram findings out of the numbering applies here. Three stale statements, each checked at `caa13ca6ae`: `client.nml` tells the reader to run `tcl/tkemc.tcl` and **`tkemc` is gone** (five matches repository-wide, all `.png` screenshots under `docs/`); both files say to edit `emc.ini` and **no such file is shipped** (zero matches — the `NML_FILE` variable itself is current, `ini-config.adoc:301`); both still call the project *emc2*. **The framing fact came from checking whether the erratum was worth writing at all:** `src/Makefile:745-746` installs only `linuxcnc.nml` and `linuxcnc_big.nml`, so **neither networked config is installed** — they exist only in the source tree, which is why nothing exercised them and nothing caught the drift. That reframes the severity rather than the facts, and it is stated as such. **The discipline this entry is meant to record:** the open action that produced it carried the condition *"check the rest of both files before writing it — an erratum that fixes one stale line and leaves three is worse than none."* The audit found three, not one, plus a fourth that is **not** asserted: the `emcStatus` buffer at 10240 bytes, which stays in Part 5 *Out of reach from source alone* because `sizeof(EMC_STAT)` was never measured. Writing three verified defects and withholding the fourth in the same pass is the point. |
 | 2026-08-07 | **An open question recorded rather than an erratum written: do the networked NML configs still hold `EMC_STAT`?** Reading `configs/common/client.nml` and `server.nml` while answering a question about remote operation turned up `emcStatus` at 10240 bytes against the default's 20480. The history explains the gap and is verified: the default went to 170000 on 2020-04-07 (`b51ef8cc3c`, tools 55 → 1000) and back to 20480 on 2021-01-31 (`2dbb2f640f`, the tooldata refactor), while the line in `client.nml` has **never been edited** — its only history entry is a file move. Also verified: NML gives a message half the declared buffer (`cms.cc:729-731`) and divides the guaranteed space again by 4 under `xdr` (`cms.cc:47`), so 10240 leaves ~5 KB usable. **`sizeof(EMC_STAT)` was not measured** — it needs a Linux build, this machine has no compiler, and summing nested struct fields by hand is the plausible-and-wrong arithmetic this audit exists to avoid. So the consequence — that both networked configs have shipped unusable since 2020 — is filed under *Out of reach from source alone* as a suspicion with the one command that settles it (`tool_watch`, which LinuxCNC ships precisely to print these sizes), **not as erratum 39**. The restraint is the point: the previous entry in that section stood for three days as unreachable and was closed by reading one Makefile, so the section is for questions whose oracle is named, not for conclusions reached without one. No manifest entries added — widening it is Open action 7, and doing that inside an unrelated change is the error that action warns against. |
 | 2026-08-07 | **`initf` is 2.10-only, and the manifest is a curated set rather than an index. Citations 173 → 174.** Comparing the two branches inside the pinned clone with `git grep <ref>` — no pull, HEAD unmoved — establishes that `hal_init_funct_to_thread` has **zero** occurrences anywhere in `origin/2.9` (`18c5bb5b1c`, 2026-07-26), that the halcmd verb is not registered there, and that the `lcec.0.activate` text of §2.9.5 is likewise absent. A counter-proof was run: the same patterns find both on `caa13ca6ae`, so the empty result is not a bad-pattern artefact. Recorded in §2.9.1 and §2.9.5. **Two consequences.** For anyone bench-testing on the official 2.9.x ISO, the clean activation path cannot be exercised at all — lcec necessarily takes the legacy inline path and prints its own warning. For PR #4349, the 2.9-applicability question now has a second and simpler answer: **patch `0001` is master-only by nature, because the text it corrects does not exist on that branch.** One citation added, `src/hal/utils/halcmd.c:138`, anchoring the counter-proof. **And a defect in this project's own tooling, found while checking whether that citation was covered:** the manifest holds 174 entries but `LINUXCNC-FINDINGS.md` contains **126 distinct `file:line` citations, 39 of which have no manifest entry** — a proportion nobody had measured. The verifier's own header claimed to *"machine-check every citation backing LINUXCNC-FINDINGS.md"*, and `ETHERCAT-NOTES.md` §8 claimed its citations were covered; both were false, and both invited the same wrong inference — that a green run means the document has been checked. It means the *manifest* has been checked. Both claims corrected to say so. Widening the manifest to real coverage is deliberately **not** done here and is recorded as an open action instead: it is a curation job, not a one-line fix, and doing it silently inside an unrelated change would be the same kind of error. |

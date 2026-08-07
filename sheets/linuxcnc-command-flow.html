@@ -355,7 +355,7 @@ const B=[
  {x:490,y:128,w:152,h:68,cls:"us",t1:"canon",t2:"emccanon.cc",
   d:"The canonical layer: STRAIGHT_FEED, ARC_FEED, SET_SPINDLE_SPEED(int spindle, double r). It applies units, work offsets and tool offsets.",s:"src/emc/nml_intf/canon.hh",cap:"—"},
  {x:664,y:128,w:148,h:68,cls:"us q",t1:"interp_list",t2:"std::deque<NMLmsg>",t3:"queue",
-  d:"The queue that absorbs how far the interpreter runs ahead. Unbounded. A command needing the machine's real state forces emcTaskPlanSynch, which drains it.",s:"src/emc/nml_intf/interpl.hh",cap:"unbounded",cap2:"process heap"},
+  d:"The queue that absorbs how far the interpreter runs ahead. The deque itself has no capacity check, but the producer is throttled: task stops reading above [TASK]INTERP_MAX_LEN, default 1000, and resumes only at two thirds of it. So it does not grow without limit. A command needing the machine's real state also forces emcTaskPlanSynch, which drains it.",s:"src/emc/nml_intf/interpl.hh",cap:"≈1 000 entries",cap2:"read-ahead limit"},
  {x:834,y:128,w:160,h:68,cls:"us",t1:"task",t2:"emctaskmain.cc",
   d:"The task loop: one message popped per iteration. On master it also owns the 14 iocontrol.0.* HAL pins — commit 764655eb4d, 2023-05-16. That commit carries no tag: in released 2.9.x, iocontrol is still a separate process.",s:"src/emc/task/emctaskmain.cc",cap:"—"},
  {x:1016,y:128,w:152,h:68,cls:"us",t1:"usrmotintf",t2:"translation",
