@@ -1,4 +1,12 @@
-# verify-citations.ps1 — machine-check every citation backing LINUXCNC-FINDINGS.md
+# verify-citations.ps1 — machine-check the manifest's citations backing LINUXCNC-FINDINGS.md
+#
+# IT IS A CURATED SET, NOT AN INDEX. Measured 2026-08-07: LINUXCNC-FINDINGS.md
+# contains 126 distinct file:line citations, of which 39 have no manifest entry.
+# The header of this script used to say "every citation", which was not true and
+# invited the wrong inference — that a green run means every citation in the
+# document has been checked. It means every citation IN THE MANIFEST has been
+# checked. Widening the manifest to full coverage is a real job, deliberately not
+# done; see SESSION-STATE.md, Open actions.
 #
 # Usage:
 #   powershell -File tools\verify-citations.ps1

@@ -21,6 +21,7 @@
     { "repo": "linuxcnc", "file": "src/hal/hal_lib.c", "line": 3594, "match": "static void thread_task", "claim": "thread loop with init cycle" },
     { "repo": "linuxcnc", "file": "src/hal/hal_lib.c", "line": 3610, "match": "EtherCAT send clear of SYNC0", "claim": "init cycle re-anchor rationale" },
     { "repo": "linuxcnc", "file": "src/hal/utils/halcmd_commands.cc", "line": 291, "match": "do_initf_cmd", "claim": "halcmd initf verb" },
+    { "repo": "linuxcnc", "file": "src/hal/utils/halcmd.c", "line": 138, "match": "\"initf\".*do_initf_cmd", "claim": "the initf verb is registered on master — counter-proof for its absence on 2.9" },
     { "repo": "linuxcnc", "file": "src/emc/motion/emcmotcfg.h", "line": 25, "match": "EMCMOT_MAX_JOINTS 16", "claim": "16 joints" },
     { "repo": "linuxcnc", "file": "src/emc/motion/emcmotcfg.h", "line": 31, "match": "EMCMOT_MAX_AXIS 9", "claim": "9 axes" },
     { "repo": "linuxcnc", "file": "src/emc/motion/emcmotcfg.h", "line": 33, "match": "EMCMOT_MAX_SPINDLES 8", "claim": "8 spindles" },
