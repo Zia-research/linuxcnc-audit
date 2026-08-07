@@ -1052,6 +1052,41 @@ repository.
   occurs. There is nothing to measure. See §2.9.1. **The lesson outlasts the item:** it stood here
   for three days as *"cannot be closed by reading code"*, and reading one Makefile closed it.
 
+- **Do the shipped networked NML configs still hold `EMC_STAT`?** *Opened 2026-08-07.* The
+  default `configs/common/linuxcnc.nml` declares `emcStatus` at **20480** bytes; the two
+  networked configs, `client.nml` and `server.nml`, declare **10240**. **What is verified:** the
+  divergence itself, read in all three files; and that the default tracked the struct while the
+  other two did not. The default was raised to **170000** on 2020-04-07 (`b51ef8cc3c`, *"increase
+  max tools from 55 to 1000"*) and cut to **20480** on 2021-01-31 (`2dbb2f640f`, the `tooldata`
+  refactor that moved the tool table out of status). The `emcStatus` line in `client.nml` has
+  **never been edited** — its only appearance in the history is a file move (`48e0f02754`), so
+  10240 predates both changes. Also verified: NML gives a message only **half** the declared
+  buffer, `max_message_size = (size_without_diagnostics / 2) - total_connections -
+  encoded_header_size - 2` (`src/libnml/cms/cms.cc:729-731`), and under `xdr` the *guaranteed*
+  space is divided again by `cms_encoded_data_explosion_factor`, which is **4**
+  (`cms.cc:47`, used at `:735`). So 10240 declared leaves roughly 5 KB of message and ~1.3 KB
+  guaranteed. **What is NOT verified, and why this is here rather than in the errata:**
+  `sizeof(EMC_STAT)`. Measuring it needs a Linux build of the tree; this machine has no
+  compiler, and adding up nested struct fields by hand — 16 joints, 9 axes, `LINELEN` strings,
+  alignment and padding — is precisely the plausible-and-wrong arithmetic this audit exists to
+  avoid. **The inference, labelled as such:** raising the default to 20480 *after* the refactor
+  suggests 10240 no longer suffices, in which case both networked configs have shipped
+  unusable since 2020. That is a suspicion, not a finding.
+  **One command closes it**, and LinuxCNC ships it — `src/emc/tooldata/tool_watch.cc:56-66`
+  prints the whole family:
+
+  ```
+  tool_watch
+  ```
+
+  It reports `sizeof(EMC_STAT)` and then `EMC_IO_STAT`, `EMC_TASK_STAT`, `EMC_MOTION_STAT`,
+  `EMC_TRAJ_STAT`, `EMC_JOINT_STAT`, `EMC_AXIS_STAT`, `EMC_SPINDLE_STAT`. Compare the first
+  figure against ~5 KB (the usable half of 10240) and against ~10 KB (the usable half of 20480).
+  That the maintainers ship a tool whose job is to watch this number is itself a hint that it
+  has been a problem before.
+  *Citations here are prose, not manifest entries — widening the manifest is Open action 7 and
+  doing it inside an unrelated change is the error that action warns against.*
+
 ---
 
 ## Part 6 — G-code reference audit (sampled) and the work products
@@ -1087,6 +1122,34 @@ that were perhaps once planned and never implemented.
 | `interp_convert.cc:5534` | G76's `$`-validity check reports *"Invalid D-number in G76 cycle"* — wrong word name, inconsistent with G33's message |
 | `command.c:1475`, `:1553` | PROBE and RIGID_TAP carry the copy-pasted comment *"requires coordinated mode, enable off"*; the test requires enable **on** |
 | `command.c:1966` | `SET_AXIS_LOCKING_JOINT` debug message prints `SET_AXIS_ACC_LOCKING_JOINT`, a name matching no command |
+
+#### 6.3.1 The two networked NML configs instruct the user to run software that no longer exists
+
+*Found 2026-08-07, while answering a question about remote operation.* **Not numbered among the
+errata**, for the same reason the context-diagram findings were not: errata 1–38 are against the
+Code Notes, and these are config files.
+
+`configs/common/client.nml` and `configs/common/server.nml` are the shipped examples for running
+a GUI on one machine and the realtime side on another. Their header comments are the only
+instructions a reader gets, and three of their statements are stale:
+
+| Statement | State at `caa13ca6ae` |
+|---|---|
+| `client.nml`: *"run the GUI with: `tcl/tkemc.tcl -ini emc.ini`"*, and *"Note: tkemc.tcl does not need to be run as 'root'"* | **`tkemc` is gone from the tree.** A whole-repository search returns five matches, all `.png` screenshots under `docs/`. No script, no executable. |
+| both: *"Change the `NML_FILE` in `emc.ini`"* | **No file named `emc.ini` is shipped** — zero matches. The variable itself is fine and current: `ini-config.adoc:301` documents `NML_FILE`. Only the filename is a fossil. |
+| both: *"a networked **emc2** system"* | The project was renamed to LinuxCNC. Cosmetic, but it dates the text: one occurrence in `client.nml`, two in `server.nml`. |
+
+**The framing fact, and it explains the rot:** *neither file is installed.* `src/Makefile:745-746`
+copies only `linuxcnc.nml` and `linuxcnc_big.nml` into `$(prefix)/share/linuxcnc`. A user who
+installs from a package never receives `client.nml` or `server.nml`; they exist for whoever reads
+the source tree. Nothing ships them, so nothing exercises them, so nothing caught the drift.
+
+**Severity, stated honestly:** low for the ordinary user, who never sees these files; real for
+the reader who goes looking for how to run LinuxCNC over a network, since what they find is the
+only guidance offered and it names a GUI that cannot be started. **A fourth problem in the same
+two files is *not* asserted here** — the `emcStatus` buffer at 10240 bytes — because
+`sizeof(EMC_STAT)` was never measured. It is recorded in Part 5, *Out of reach from source
+alone*, with the command that settles it.
 
 ### 6.4 Work products
 
@@ -1176,6 +1239,8 @@ would be worse than none.
 
 | Date | Change |
 |---|---|
+| 2026-08-07 | **The networked NML configs instruct the reader to run software that no longer exists — recorded as §6.3.1, deliberately not numbered among the errata.** Errata 1–38 are against the Code Notes; these are config files, so the same rule that kept the context-diagram findings out of the numbering applies here. Three stale statements, each checked at `caa13ca6ae`: `client.nml` tells the reader to run `tcl/tkemc.tcl` and **`tkemc` is gone** (five matches repository-wide, all `.png` screenshots under `docs/`); both files say to edit `emc.ini` and **no such file is shipped** (zero matches — the `NML_FILE` variable itself is current, `ini-config.adoc:301`); both still call the project *emc2*. **The framing fact came from checking whether the erratum was worth writing at all:** `src/Makefile:745-746` installs only `linuxcnc.nml` and `linuxcnc_big.nml`, so **neither networked config is installed** — they exist only in the source tree, which is why nothing exercised them and nothing caught the drift. That reframes the severity rather than the facts, and it is stated as such. **The discipline this entry is meant to record:** the open action that produced it carried the condition *"check the rest of both files before writing it — an erratum that fixes one stale line and leaves three is worse than none."* The audit found three, not one, plus a fourth that is **not** asserted: the `emcStatus` buffer at 10240 bytes, which stays in Part 5 *Out of reach from source alone* because `sizeof(EMC_STAT)` was never measured. Writing three verified defects and withholding the fourth in the same pass is the point. |
+| 2026-08-07 | **An open question recorded rather than an erratum written: do the networked NML configs still hold `EMC_STAT`?** Reading `configs/common/client.nml` and `server.nml` while answering a question about remote operation turned up `emcStatus` at 10240 bytes against the default's 20480. The history explains the gap and is verified: the default went to 170000 on 2020-04-07 (`b51ef8cc3c`, tools 55 → 1000) and back to 20480 on 2021-01-31 (`2dbb2f640f`, the tooldata refactor), while the line in `client.nml` has **never been edited** — its only history entry is a file move. Also verified: NML gives a message half the declared buffer (`cms.cc:729-731`) and divides the guaranteed space again by 4 under `xdr` (`cms.cc:47`), so 10240 leaves ~5 KB usable. **`sizeof(EMC_STAT)` was not measured** — it needs a Linux build, this machine has no compiler, and summing nested struct fields by hand is the plausible-and-wrong arithmetic this audit exists to avoid. So the consequence — that both networked configs have shipped unusable since 2020 — is filed under *Out of reach from source alone* as a suspicion with the one command that settles it (`tool_watch`, which LinuxCNC ships precisely to print these sizes), **not as erratum 39**. The restraint is the point: the previous entry in that section stood for three days as unreachable and was closed by reading one Makefile, so the section is for questions whose oracle is named, not for conclusions reached without one. No manifest entries added — widening it is Open action 7, and doing that inside an unrelated change is the error that action warns against. |
 | 2026-08-07 | **`initf` is 2.10-only, and the manifest is a curated set rather than an index. Citations 173 → 174.** Comparing the two branches inside the pinned clone with `git grep <ref>` — no pull, HEAD unmoved — establishes that `hal_init_funct_to_thread` has **zero** occurrences anywhere in `origin/2.9` (`18c5bb5b1c`, 2026-07-26), that the halcmd verb is not registered there, and that the `lcec.0.activate` text of §2.9.5 is likewise absent. A counter-proof was run: the same patterns find both on `caa13ca6ae`, so the empty result is not a bad-pattern artefact. Recorded in §2.9.1 and §2.9.5. **Two consequences.** For anyone bench-testing on the official 2.9.x ISO, the clean activation path cannot be exercised at all — lcec necessarily takes the legacy inline path and prints its own warning. For PR #4349, the 2.9-applicability question now has a second and simpler answer: **patch `0001` is master-only by nature, because the text it corrects does not exist on that branch.** One citation added, `src/hal/utils/halcmd.c:138`, anchoring the counter-proof. **And a defect in this project's own tooling, found while checking whether that citation was covered:** the manifest holds 174 entries but `LINUXCNC-FINDINGS.md` contains **126 distinct `file:line` citations, 39 of which have no manifest entry** — a proportion nobody had measured. The verifier's own header claimed to *"machine-check every citation backing LINUXCNC-FINDINGS.md"*, and `ETHERCAT-NOTES.md` §8 claimed its citations were covered; both were false, and both invited the same wrong inference — that a green run means the document has been checked. It means the *manifest* has been checked. Both claims corrected to say so. Widening the manifest to real coverage is deliberately **not** done here and is recorded as an open action instead: it is a curation job, not a one-line fix, and doing it silently inside an unrelated change would be the same kind of error. |
 | 2026-08-06 | **The context-diagram comparison verified line by line, corrected, and published as the third sheet. Citations 148 → 173.** The 2026-08-05 comparison of PR #3781's merged C4 context diagram was re-verified in four passes with separate oracles: every cited line re-read in the pinned clone; the published `.drawio`'s **edge graph extracted** (31 edges) rather than the figure eyeballed; adversarial greps on the gates (the whole halcmd family carries zero NML references, `emcrsh.cc` zero HAL references, and the panel pin-creation paths are reachable — `makepins.py:55`, `axis.py:3978`); and the review-thread quotes re-read verbatim with `gh`. **Both errata are confirmed structurally**: in the merged XML the Terminal box's only functional link points at the Core Runtime, and the Embedded Tabs box's only functional link points at the GUI — no edge from either to HAL. **One real defect was found in our own rebuilt view, of exactly the class this audit criticises**: it drew `linuxcncsvr` inside "The LinuxCNC task process", when the start script runs it as its own process at step 4.3.1 (*"it owns/creates the NML buffers"*, `scripts/linuxcnc.in:795`) and task at 4.3.7, the kill list naming `linuxcncsvr milltask` side by side (`:678`). Corrected — the box is now two. Three fidelity slips also fixed and recorded in the sheet's own correction note: a c-morley quotation had silently repaired his "interrogators" into "integrators" (restored verbatim with [sic]); the as-published view wrote "joints, spindles" where the merged file says "axes, spindle" (published wording restored, the joints question moved to the *left alone* list); and the wizard names drifted from the published `PNCconf / Stepconf`. The *Still open* entry for `LCNC_Architecture_C1.drawio` — which had waved the figure off as unfalsifiable and of low audit value — is rewritten to say it was wrong, twice over. 25 citations added, one per drawn claim, including the three NML channel lines, both shared-memory keys, the error ring's refuse-newest guard, and the funct names. Deliberately **not** added to the errata numbering: the figure lives in `about-linuxcnc.adoc`, outside Part 3's scope. The three `upstream/*.patch` files were also regenerated from the submitted branch, so their `From` hashes are byte-for-byte the commits of PR #4349; re-verified two ways on the pinned master — `git apply --check`, then a real apply with the produced text read back. |
 | 2026-08-06 | **§2.9's RTAI framing withdrawn — the second gate-check failure of the day, from the same reviewer. Citations 146 → 148.** grandixximo filed issue #1 against §2.9: framing the RTAI resync stub as a practical consequence implies a configuration that cannot be built. **Verified, and the evidence is harder than the issue states.** lcec does not build for RTAI — the kbuild branch is commented out under *"Rules for building RTAI. Currently disabled, and needs updated to work"* (`linuxcnc-ethercat/src/Makefile:62-76`), and the only live `realtime` target links a userspace `lcec.so` (`:82,104`). `src/Kbuild` survives but is **stale**, naming three common objects (`:3`) against the Makefile's six (`:18`), so uncommenting would not even link — a point neither side had made. **One claim in the issue does not hold:** RTAI was not absent from the driver's history, it was *deprecated* — the rules exist in comment form, and `debian/changelog` retires them in release 0.9.3, March 2018. **One claim could not be checked:** that the packaged IgH master lacks RTAI support concerns an external Debian package present in neither audited repository, so it is not repeated as established. Rewritten in §2.9.1 and §2.9.4, and in `ETHERCAT-NOTES.md` §1 and §5 (retitled *"RTAI: a closed door, not a trap"*). The narrow finding stands unchanged: the primitive is a no-op on both RTAI backends and implemented only in `uspace_rtapi_main.cc:1676`. Two citations added on the driver's build system, chosen as tripwires against a future re-enabling; the changelog line was deliberately **not** cited — that file is newest-first, so the line drifts on every release and would fail for reasons unrelated to the claim. **This is the same error as the jerk correction, hours apart:** a consequence asserted without checking that the configuration exercising it is reachable. A sweep of the remaining *practical consequence* claims confirmed one — pause bypassed during threading — whose path checks out end to end (`interp_convert.cc:5505,5520,5644,5651,5656` → `emccanon.cc:1503` → `command.c:1019` → `tp.c:4160-4164`, mode 0 giving `TC_SYNC_POSITION`, exempted from pause and feed override at `tp.c:243,251-252`). **That sweep was itself defective**, and is recorded as such: its search excluded lines 1000-1199 to suppress changelog noise, and the filter swallowed a live claim along with it — the *Out of reach from source alone* item asserting the RTAI effect *"cannot be closed by reading code"*. The reporter had named that very text in his issue; this pass had to be told about it. Now corrected, with the same claim in `ETHERCAT-NOTES.md` §7 narrowed to the `uspace` path, where hardware genuinely is required. Both were found only after reading the issue **verbatim** rather than through a summarising fetch — which had also dropped the word *supported* from his central sentence, and would have led to correcting him in public over a claim he never made. |
