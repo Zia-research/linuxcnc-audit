@@ -4,7 +4,7 @@
 learning the system before a first machine build, and shared in case it helps
 someone else arriving here.
 
-Three self-contained HTML sheets, plus the verification work that backs them:
+Four self-contained HTML sheets, plus the verification work that backs them:
 everything shown was read in the source, and every claim carries a `file:line`
 citation that a script re-checks.
 
@@ -18,7 +18,7 @@ citation that a script re-checks.
 
 ## The sheets
 
-All three are single HTML files with no dependencies — download and open in
+All four are single HTML files with no dependencies — download and open in
 any browser. *(GitHub shows HTML as source rather than rendering it; use
 **Download raw file**, or clone the repository.)*
 
@@ -61,6 +61,26 @@ rebuilt from the source. The page records its own verification passes and the
 corrections they forced on it, including one error of exactly the class it
 criticises.
 
+### [`sheets/linuxcnc-system-overview.html`](sheets/linuxcnc-system-overview.html)
+
+The whole system on one page, from the operator's screen to the machine. It began as a
+merge of the two sheets above — Sheet B for component detail, the context sheet's
+rebuilt view for the seams — and has been corrected seven times since.
+
+Two decisions shape it. **There are no domain containers**: a frame asserts membership
+and can be contradicted by its own geometry, as the first version was when the frame
+labelled *"ordinary Linux processes"* ended above `linuxcncsvr` and `milltask`. A dashed
+line cannot make that mistake, so the boundary is a line and nothing else, labelled on
+each side. **And the two shared-memory segments are drawn across it** — `emcmot` at key
+100 and HAL at `0x48414C32` — because each is created on one side and attached from the
+other, which is what shared memory is.
+
+Both network doors are drawn, because a door that is not shown is a door nobody thinks
+about, and they are not alike: `linuxcncrsh` is a telnet server on TCP 5007 speaking
+plain text, reachable from anything with a socket, while a remote NML client needs
+`libnml` and in practice another Linux. Red marks what is wrong rather than what is,
+including one note printed *unverified* because it is.
+
 ---
 
 ## The verification behind them
@@ -77,7 +97,7 @@ git -C linuxcnc-ethercat checkout 87a72a8
 powershell -File linuxcnc-audit/tools/verify-citations.ps1
 ```
 
-Expected: `174 pass, 0 fail`. On a later HEAD a FAIL usually means the line
+Expected: `190 pass, 0 fail`. On a later HEAD a FAIL usually means the line
 moved — re-anchor the citation rather than assume the finding broke.
 
 The script also checks itself against the documents: if any file here tells you

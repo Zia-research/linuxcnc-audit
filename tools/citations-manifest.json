@@ -184,6 +184,23 @@
     { "repo": "linuxcnc", "file": "src/emc/task/taskclass.cc", "line": 41, "match": "Task::iocontrol_hal_init", "claim": "context: iocontrol pins live in task" },
     { "repo": "linuxcnc", "file": "src/hal/components/pid.c", "line": 966, "match": "do-pid-calcs", "claim": "context: the pid funct name as drawn" },
     { "repo": "linuxcnc", "file": "src/hal/components/stepgen.c", "line": 44, "match": "stepgen\\.make-pulses", "claim": "context: the stepgen funct names as drawn" },
-    { "repo": "linuxcnc", "file": "configs/sim/axis/axis.ini", "line": 140, "match": "KINEMATICS = trivkins", "claim": "context: kins are chosen by INI and loaded via loadrt" }
+    { "repo": "linuxcnc", "file": "configs/sim/axis/axis.ini", "line": 140, "match": "KINEMATICS = trivkins", "claim": "context: kins are chosen by INI and loaded via loadrt" },
+
+    { "repo": "linuxcnc", "file": "src/emc/usr_intf/halui.cc", "line": 494, "match": "hal_pin_new_bool\\(comp_id, HAL_IN", "claim": "halui exports HAL_IN pins — the GUI side reads HAL, not only writes it" },
+    { "repo": "linuxcnc", "file": "src/emc/usr_intf/halui.cc", "line": 531, "match": "hal_pin_new_bool\\(comp_id, HAL_OUT", "claim": "halui exports HAL_OUT pins — hence the bidirectional GUI/HAL arrow" },
+    { "repo": "linuxcnc", "file": "src/emc/usr_intf/axis/scripts/axis.py", "line": 3950, "match": "hal\\.component", "claim": "AXIS is itself a HAL component (axisui) — the pins are not only the panels'" },
+    { "repo": "linuxcnc", "file": "src/emc/usr_intf/axis/scripts/axis.py", "line": 75, "match": "AXIS_NO_HAL", "claim": "the only way to run AXIS without HAL, which is what a GUI-only remote PC needs" },
+    { "repo": "linuxcnc", "file": "src/emc/usr_intf/emcrsh.cc", "line": 187, "match": "port = 5007", "claim": "linuxcncrsh listens on TCP 5007, not the NML port" },
+    { "repo": "linuxcnc", "file": "src/emc/usr_intf/emcrsh.cc", "line": 390, "match": "listen\\(sockfd", "claim": "linuxcncrsh IS the server, not a client of one" },
+    { "repo": "linuxcnc", "file": "src/emc/usr_intf/emcrsh.cc", "line": 41, "match": "include.*shcom\\.hh", "claim": "linuxcncrsh reaches NML through shcom, i.e. as an ordinary LOCAL client" },
+    { "repo": "linuxcnc", "file": "src/emc/task/emcsvr.cc", "line": 185, "match": "run_nml_servers\\(\\)", "claim": "linuxcncsvr serves NML over the network and does nothing else in main()" },
+    { "repo": "linuxcnc", "file": "scripts/linuxcnc.in", "line": 532, "match": "GetFromIniQuiet HALUI HAL", "claim": "halui comes from [HAL]HALUI and is optional — it adds, never replaces" },
+    { "repo": "linuxcnc", "file": "scripts/linuxcnc.in", "line": 540, "match": "GetFromIni DISPLAY DISPLAY", "claim": "the GUI comes from [DISPLAY]DISPLAY — a different section, and mandatory" },
+    { "repo": "linuxcnc", "file": "src/emc/task/emctaskmain.cc", "line": 493, "match": "interp_list\\.len\\(\\) <= emc_task_interp_max_len", "claim": "the interpreter read-ahead is throttled — interp_list is not unbounded in practice" },
+    { "repo": "linuxcnc", "file": "src/emc/task/emctaskmain.cc", "line": 3151, "match": "findSInt\\(.INTERP_MAX_LEN., .TASK.\\)", "claim": "[TASK]INTERP_MAX_LEN sets that limit, and is documented nowhere" },
+    { "repo": "linuxcnc", "file": "src/emc/nml_intf/emccfg.h", "line": 34, "match": "DEFAULT_EMC_TASK_INTERP_MAX_LEN 1000", "claim": "the read-ahead limit defaults to 1000" },
+    { "repo": "linuxcnc", "file": "src/emc/rs274ngc/interp_namedparams.cc", "line": 807, "match": "zero in gcodemodule, 1 in milltask", "claim": "the RS-274 interpreter is shared: the GUI preview runs the same code" },
+    { "repo": "linuxcnc", "file": "src/emc/task/Submakefile", "line": 34, "match": "liblinuxcnchal\\.so\\.0", "claim": "milltask links HAL — it is a HAL component, which is what iocontrol.0.* are" },
+    { "repo": "linuxcnc", "file": "configs/common/client.nml", "line": 16, "match": "emcStatus\\s+SHMEM\\s+192\\.168\\.0\\.4\\s+10240", "claim": "the networked config declares emcStatus at 10240 against the default's 20480" }
   ]
 }

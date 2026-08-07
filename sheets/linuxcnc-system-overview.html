@@ -1,0 +1,439 @@
+<meta charset="utf-8">
+<title>LinuxCNC — system overview</title>
+<style>
+  :root { --ink:#1a1d21; --muted:#5b636b; --line:#d8dde2; --bg:#f4f6f8; --card:#fff; }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:28px 20px 60px; background:var(--bg); color:var(--ink);
+         font:15px/1.55 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; }
+  .wrap { max-width:1200px; margin:0 auto; }
+  h1 { font-size:21px; margin:0 0 4px; letter-spacing:-.01em; }
+  .sub { color:var(--muted); font-size:13.5px; margin:0 0 18px; }
+  .stage { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:8px;
+           overflow-x:auto; }
+  svg { display:block; width:100%; height:auto; min-width:860px; }
+  text { font:11px/1.25 'Open Sans',Segoe UI,Helvetica,Arial,sans-serif; text-anchor:middle;
+         fill:#000; stroke:none; }
+  .sm { font-size:10px; fill:#333; }
+  .lb { font-size:10px; fill:#333; text-anchor:start; font-weight:700; }
+  .ln { stroke:#000; fill:none; }
+  .foot { margin-top:20px; color:var(--muted); font-size:12.5px; border-top:1px solid var(--line);
+          padding-top:12px; }
+  code { background:#eef1f4; padding:1px 5px; border-radius:4px; font-size:12.5px;
+         font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+</style>
+
+<div class="wrap">
+<h1>LinuxCNC — the whole system on one page</h1>
+<p class="sub">
+  From the operator's screen down to the machine. The dashed red line is the <strong>only</strong>
+  domain marker — no containers, because a frame asserts membership and can be contradicted by its
+  own geometry, while a line cannot. The two shared-memory segments are drawn <em>across</em> it,
+  which is what shared memory is. It began as a merge of two earlier sheets — Sheet B of the
+  errata sheet for component detail, the context sheet's rebuilt view for the seams — and has been
+  corrected seven times since, each correction and its evidence recorded at the foot of the page.
+</p>
+
+<div class="stage">
+<!-- SCALED ×1.4 on 2026-08-07, to leave room for work still to come.
+     Every coordinate, dimension, corner radius and stroke width was multiplied;
+     FONT SIZES WERE NOT. That is the whole point: the gaps between boxes grow by
+     40% while the text stays the same size, so a label that fitted before fits
+     more easily now — text width did not change while its box got wider. A uniform
+     scale preserves every relationship by construction, which is why the geometry
+     checker was expected to stay clean, and did.
+     Before: viewBox "0 -46 1400 1146", boundary at y=556.
+     After:  viewBox "0 -64 1960 1604", boundary at y=778. -->
+<!-- Margin added on all four sides on top of the ×1.4 scale: the window is wider
+     than the drawing on purpose. The left gutter at negative x is what lets a
+     connector route around the configuration column without crossing it, and the
+     spare room right and below is for boxes not yet drawn. -->
+<svg viewBox="-240 -140 2560 1900" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="m" markerWidth="8" markerHeight="8" refX="6.5" refY="3" orient="auto-start-reverse">
+      <path d="M0,0 L7,3 L0,6 z" fill="#000"/></marker>
+  </defs>
+
+  <!-- No domain containers. The dashed line below is the only domain marker:
+       a box's side of it is its domain, and a box drawn across it belongs to
+       neither exclusively. Frames were removed 2026-08-07 — the previous ones
+       claimed membership their geometry did not hold (linuxcncsvr and milltask
+       fell outside the frame that named them). A line cannot make that mistake. -->
+
+  <!-- lines -->
+  <g class="ln">
+    <path d="M910,36 V84" marker-end="url(#m)" marker-start="url(#m)"/>
+    <path d="M602,193 V238" marker-end="url(#m)" marker-start="url(#m)"/>
+    <path d="M500,270 H532" marker-end="url(#m)" marker-start="url(#m)"/>
+    <path d="M252,240 H-60 V830 H204" marker-end="url(#m)" marker-start="url(#m)"/>
+    <path d="M910,193 V238" marker-end="url(#m)" marker-start="url(#m)"/>
+    <path d="M742,300 V420" marker-end="url(#m)" marker-start="url(#m)"/>
+    <path d="M952,269 H994" marker-end="url(#m)" marker-start="url(#m)"/>
+    <path d="M1162,588 V711" marker-end="url(#m)" marker-start="url(#m)"/>
+    <path d="M980,846 V896" marker-end="url(#m)" marker-start="url(#m)" stroke-width="3"/>
+    <path d="M1806,193 V652 H539 V711" marker-end="url(#m)" marker-start="url(#m)"/>
+    <path d="M1260,193 V235" marker-end="url(#m)" marker-start="url(#m)" opacity="0.45"/>
+    <path d="M252,175 H6 V840 H204" marker-end="url(#m)" marker-start="url(#m)"/>
+    <path d="M105,358 V420" marker-end="url(#m)"/>
+    <path d="M196,319 H329 V462" marker-end="url(#m)"/>
+    <path d="M420,515 H448" marker-end="url(#m)"/>
+    <path d="M105,526 V669 H420 V711" marker-end="url(#m)"/>
+    <path d="M1337,1246 V1425 H812 V1436" marker-end="url(#m)" marker-start="url(#m)"/>
+  </g>
+
+  <!-- Scheduling boundary — the only domain marker on this page.
+       Drawn as <line>, not <path>, deliberately: diagram-check.js collects
+       connectors with querySelectorAll('path[d^="M"]') and would report this
+       as crossing the two straddling boxes, which is the one thing it must
+       NOT complain about here. It is a background rule, not a connector, so
+       it is kept out of the connector check by element type. That it crosses
+       nothing else is verified by computation instead — see the page note. -->
+  <line x1="34" y1="778" x2="1932" y2="778" stroke="#c0392b" stroke-width="4" stroke-dasharray="9 5"/>
+  <text class="sm" x="39" y="748" style="text-anchor:start">ordinary scheduling</text>
+  <text class="sm" x="39" y="764" style="text-anchor:start;font-weight:700">NOT REALTIME</text>
+  <text class="sm" x="39" y="798" style="text-anchor:start;fill:#7A4A08;font-weight:700">REALTIME</text>
+  <text class="sm" x="39" y="815" style="text-anchor:start;fill:#7A4A08">SCHED_FIFO · rtapi_app</text>
+  <text class="sm" x="896" y="686">a scheduling boundary, not a kernel boundary — except under RTAI</text>
+
+  <!-- top band boxes -->
+  <rect x="252" y="84" width="462" height="109" rx="13" fill="#dae8fc" stroke="#6c8ebf"/>
+  <text x="483" y="118">GUI</text>
+  <text class="sm" x="483" y="141">axis · gmoccapy · qtvcp · touchy · gscreen</text>
+  <text class="sm" x="483" y="164">they export HAL pins themselves — axisui: 16</text>
+
+  <!-- halui, taken OUT of the GUI box on 2026-08-07. It occupies the same
+       architectural slot — non-realtime, NML client as "xemc" (halui.cc:292,:303),
+       HAL component — which is why it had been lumped in. But it is not graphical:
+       halui.cc contains zero matches for gtk|qt|tk|X11|window|widget|glade, and its
+       man page calls it "a User Interface using hardware knobs and switches".
+       And it is not an alternative: [DISPLAY]DISPLAY selects THE interface
+       (ini-config.adoc:312) while [HAL]HALUI *adds* pins (:780) and the start
+       script runs it in background "if necessary" (linuxcnc.in:833-834).
+       You do not choose between halui and AXIS; you run both. -->
+  <rect x="252" y="210" width="248" height="104" rx="13" fill="#dae8fc" stroke="#6c8ebf" stroke-dasharray="3 3"/>
+  <text x="376" y="234">halui</text>
+  <text class="sm" x="376" y="256">no display at all — knobs and switches</text>
+  <text class="sm" x="376" y="276">[HAL]HALUI — adds, never replaces</text>
+  <text class="sm" x="376" y="296">47 HAL_IN + 42 HAL_OUT</text>
+
+  <!-- The peer on the far side of linuxcncrsh: not another LinuxCNC process,
+       just anything that can open a socket. man linuxcncrsh: "A human (or a
+       program) can interface with linuxcncrsh using telnet(1), nc(1) or
+       similar programs." -->
+  <rect x="686" y="-45" width="420" height="81" rx="11" fill="#eee" stroke="#36393d" stroke-dasharray="4 3"/>
+  <text class="sm" x="896" y="-20" style="font-weight:700">telnet · nc · any socket client — plain text, not NML</text>
+  <text class="sm" x="896" y="3">a human or a program, on another machine</text>
+  <text class="sm" x="896" y="25" style="fill:#c0392b">two passwords, but sent in the clear — man warns twice</text>
+
+  <!-- The second network door, beside the first so both are visible at the top edge.
+       Unlike the telnet client above, this one reaches the triplet THROUGH
+       linuxcncsvr — hence the connector down to it rather than to a local process.
+       Verified: configs/common/client.nml declares xemc REMOTE at an address while
+       the default declares it LOCAL; src/libnml/ carries no Windows or Apple port,
+       so an NML client means another Linux with LinuxCNC built; axis.py:75-78 gates
+       its HAL component on AXIS_NO_HAL, which is what makes a GUI-only PC possible;
+       client.nml still tells you to run tcl/tkemc.tcl, a GUI no longer in the tree. -->
+  <!-- Dimmed as a whole, not deleted. This path is real but stale and uninstalled,
+       so it should be findable and not compete for attention. Dimming the group
+       rather than restyling each line keeps the red warnings red RELATIVE to their
+       own box — a bright warning inside a block we are saying to ignore would
+       contradict itself. Geometry is untouched, so diagramCheck still sees it. -->
+  <g opacity="0.45">
+  <rect x="1120" y="-45" width="518" height="238" rx="11" fill="#eee" stroke="#36393d" stroke-dasharray="4 3"/>
+  <text class="sm" x="1379" y="-20" style="font-weight:700">remote NML client</text>
+  <text class="sm" x="1379" y="3">another computer; nothing realtime runs there</text>
+  <text class="sm" x="1379" y="22">needs libnml — in practice another Linux with LinuxCNC</text>
+  <text class="sm" x="1379" y="42">a GUI-only control PC; task, motion and HAL stay here</text>
+  <text class="sm" x="1379" y="62">AXIS there needs AXIS_NO_HAL=1 — HAL is local memory —</text>
+  <text class="sm" x="1379" y="81">and loses jog pins, pyvcp panels, classicladder</text>
+  <text class="sm" x="1379" y="101">config: client.nml on it · server.nml on the machine</text>
+  <text class="sm" x="1379" y="126" style="fill:#c0392b;font-weight:700">no authentication on TCP 5005 — anything that reaches it writes</text>
+  <text class="sm" x="1379" y="146" style="fill:#c0392b">client.nml / server.nml are NOT INSTALLED — source tree only</text>
+  <text class="sm" x="1379" y="165" style="fill:#c0392b">and declare emcStatus at 10240 B against 20480 — NML halves it again</text>
+  <text class="sm" x="1379" y="185" style="fill:#c0392b">unverified — run tool_watch to settle it</text>
+  </g>
+
+  <rect x="784" y="84" width="252" height="109" rx="13" fill="#dae8fc" stroke="#6c8ebf" stroke-dasharray="3 3"/>
+  <text x="910" y="123">linuxcncrsh</text>
+  <text class="sm" x="910" y="148">telnet server · TCP 5007</text>
+  <text class="sm" x="910" y="171">a local NML client here</text>
+
+  <!-- moved right 2026-08-07 to free the lane its own connector needs: the second
+       network door now occupies the top band, and the descent to HAL memory has to
+       pass to the right of both linuxcncsvr and that door. -->
+  <rect x="1666" y="84" width="280" height="109" rx="13" fill="#dae8fc" stroke="#6c8ebf" stroke-dasharray="3 3"/>
+  <text x="1806" y="120">halcmd / halshow</text>
+  <text class="sm" x="1806" y="144">HAL clients — hal_init()</text>
+  <text class="sm" x="1806" y="167">they never touch NML</text>
+
+  <!-- NML strip -->
+  <rect x="532" y="238" width="420" height="62" fill="#fff" stroke="#6c8ebf"/>
+  <line x1="672" y1="238" x2="672" y2="300" stroke="#6c8ebf"/>
+  <line x1="812" y1="238" x2="812" y2="300" stroke="#6c8ebf"/>
+  <text class="sm" x="602" y="260">emcCommand</text><text class="sm" x="602" y="280">8192 B · queue</text>
+  <text class="sm" x="742" y="260">emcStatus</text><text class="sm" x="742" y="280">20480 B · overwritten</text>
+  <text class="sm" x="882" y="260">emcError</text><text class="sm" x="882" y="280">8192 B · queue</text>
+  <!-- Moved below the strip 2026-08-07 to make room for halui on the left. -->
+  <text class="sm" x="730" y="336" style="text-anchor:end;font-weight:700">NML · the only triplet</text>
+  <text class="sm" x="730" y="356" style="text-anchor:end">SHMEM — shared memory, like the two below</text>
+  <text class="sm" x="730" y="376" style="text-anchor:end">but this one never crosses the boundary</text>
+
+
+  <!-- linuxcncsvr — placed BESIDE the triplet, not between it and task.
+       It is not in the local data path: every local client attaches the SHMEM
+       segments directly (configs/common/linuxcnc.nml lists emc, emcsvr and xemc
+       all as LOCAL, and only emcsvr with server?=1 master?=1). Its two real jobs
+       are creating the segments and serving them over the network —
+       emcsvr.cc:185 calls run_nml_servers(). Drawing it in the chain asserted a
+       transit that never happens. Moved 2026-08-07. -->
+  <rect x="994" y="235" width="420" height="67" rx="7" fill="#d5e8d4" stroke="#82b366"/>
+  <text class="sm" x="1204" y="258" style="font-weight:700">linuxcncsvr — master of the three channels</text>
+  <text class="sm" x="1204" y="277">creates the segments · starts first</text>
+  <text class="sm" x="1204" y="297">NML servers, TCP 5005 — its clients are remote</text>
+
+  <!-- Moved here 2026-08-07, from under the triplet. It was suggested it belonged
+       beside linuxcncrsh; it does not — linuxcncrsh is a LOCAL client reading
+       linuxcnc.nml, where emcStatus is 20480, so the 10240 never touches it.
+       The note belongs on the road to the remote door, which is this column.
+       Left at full strength deliberately: the size divergence is verified, only
+       its consequence is not, and a dimmed warning would read as neither. -->
+
+
+  <!-- milltask -->
+  <rect x="448" y="420" width="952" height="168" rx="13" fill="#d5e8d4" stroke="#82b366"/>
+  <text class="lb" x="1378" y="445" style="text-anchor:end">milltask — the task process</text>
+  <rect x="476" y="462" width="224" height="90" rx="7" fill="#fff" stroke="#82b366"/>
+  <text class="sm" x="588" y="490">RS-274 interpreter</text>
+  <text class="sm" x="588" y="510">librs274.so — shared</text>
+  <text class="sm" x="588" y="529">the GUI preview runs it too</text>
+  <!-- Recoloured 2026-08-07. The stroke was #b08a2e, a colour used ONCE in this
+       figure and present in none of the five source figures — invented during the
+       merge and never explained. A category of one is not a category. It read as a
+       warning, and the warning was wrong: the deque has no capacity check
+       (interpl.cc:33) but the producer is throttled — emctaskmain.cc:493 and :692
+       stop reading above emc_task_interp_max_len and :613-615 resume at 2/3 of it.
+       Default 1000 (emccfg.h:34), set by [TASK]INTERP_MAX_LEN (emctaskmain.cc:3151). -->
+  <rect x="721" y="462" width="196" height="90" rx="7" fill="#fff" stroke="#82b366"/>
+  <text class="sm" x="819" y="484">interp_list</text>
+  <text class="sm" x="819" y="504">std::deque</text>
+  <text class="sm" x="819" y="524">throttled at 1000</text>
+  <text class="sm" x="819" y="543">[TASK]INTERP_MAX_LEN</text>
+  <rect x="938" y="462" width="210" height="90" rx="7" fill="#fff" stroke="#82b366"/>
+  <text class="sm" x="1043" y="497">sequencing</text>
+  <text class="sm" x="1043" y="518">emctaskmain.cc</text>
+  <rect x="1169" y="462" width="196" height="90" rx="7" fill="#fff" stroke="#82b366"/>
+  <text class="sm" x="1267" y="487">iocontrol.0.*</text>
+  <text class="sm" x="1267" y="507">14 HAL pins</text>
+  <text class="sm" x="1267" y="526">former io process</text>
+  <text class="sm" x="476" y="575" style="text-anchor:start">tool, coolant, estop — no NML channel left for I/O</text>
+
+  <!-- the two shared segments, each drawn ACROSS the boundary.
+       Straddling is a positive claim, not decoration: each is created on one
+       side and attached from the other, so neither belongs to one domain.
+       HAL: hal_lib.c:285 creates, halcmd.c:107 attaches from an ordinary process.
+       emcmot: motion.c:827 creates in RT, usrmotintf.cc:578 attaches from milltask. -->
+  <rect class="straddle" x="210" y="711" width="658" height="134" rx="11" fill="#fff" stroke="#82b366" stroke-width="3"/>
+  <text class="lb" x="230" y="736">HAL shared memory · key 0x48414C32</text>
+  <text class="sm" x="539" y="759">2 MiB · pins · signals · params · functions · threads</text>
+  <text class="sm" x="539" y="806">every hal_init() attaches it — halcmd too</text>
+  <text class="sm" x="539" y="829">hal_lib.c:285 creates · halcmd.c:107 attaches</text>
+
+  <rect class="straddle" x="924" y="711" width="658" height="134" rx="11" fill="#fff" stroke="#c0392b" stroke-width="3"/>
+  <text class="lb" x="944" y="736" style="fill:#7A4A08">emcmot · RTAPI shmem key 100 — not NML, not a FIFO</text>
+  <text class="sm" x="1253" y="759">command · SINGLE SLOT · mutex · commandNum → Echo</text>
+  <text class="sm" x="1253" y="806">status · seqlock head / tail</text>
+  <text class="sm" x="1253" y="829">error · MPSC ring 32 × 1024 · newest lost</text>
+
+  <!-- the boundary continued through both, so the straddle is visible; <line> for the same reason -->
+  <line x1="210" y1="778" x2="868" y2="778" stroke="#c0392b" stroke-width="2" stroke-dasharray="9 5" opacity="0.45"/>
+  <line x1="924" y1="778" x2="1582" y2="778" stroke="#c0392b" stroke-width="2" stroke-dasharray="9 5" opacity="0.45"/>
+  <text class="sm" x="1582" y="871" style="text-anchor:end;fill:#666">created on one side, attached from the other — that is what shared memory is</text>
+
+  <!-- servo thread -->
+  <rect class="grp" x="90" y="896" width="980" height="350" rx="8" fill="#fffdf5" stroke="#b0a06a"/>
+  <text class="lb" x="112" y="924" style="font-weight:400"><tspan style="font-weight:700">servo-thread — servo_period_nsec</tspan> · members, not execution order (addf order is config data)</text>
+  <rect x="118" y="941" width="280" height="39" rx="7" fill="#d5e8d4" stroke="#82b366"/>
+  <text class="sm" x="258" y="966">motion-command-handler</text>
+  <rect x="118" y="991" width="280" height="39" rx="7" fill="#d5e8d4" stroke="#82b366"/>
+  <text class="sm" x="258" y="1016">motion-controller</text>
+  <text class="sm" x="258" y="1053" style="fill:#666">both exported by motmod</text>
+  <text class="sm" x="258" y="1071" style="fill:#666">via hal_export_funct()</text>
+  <rect x="426" y="941" width="280" height="140" rx="7" fill="#d5e8d4" stroke="#82b366" stroke-dasharray="3 3"/>
+  <text class="sm" x="566" y="969">tpmod — cruckig · finite jerk</text>
+  <text class="sm" x="566" y="991">homemod · one of 19 *kins</text>
+  <text class="sm" x="566" y="1022">separate modules (loadrt),</text>
+  <text class="sm" x="566" y="1042">called from motmod's functs</text>
+  <path class="ln" d="M398,960 H420" marker-end="url(#m)"/>
+  <path class="ln" d="M398,1011 H420" marker-end="url(#m)"/>
+  <rect x="734" y="941" width="308" height="140" rx="7" fill="#fff" stroke="#b0a06a"/>
+  <text class="sm" x="888" y="969" style="font-weight:700">inside the controller</text>
+  <text class="sm" x="888" y="994">TC_QUEUE — ring · 2000 segments ≈ 1 MB</text>
+  <text class="sm" x="888" y="1016">spindle.N.* pins × 8</text>
+  <text class="sm" x="888" y="1039">JOINT 1…16: cubic interpolator</text>
+  <text class="sm" x="888" y="1058">→ backlash + screw comp → motor_pos_cmd pin</text>
+  <rect x="118" y="1098" width="896" height="78" rx="7" fill="#fff" stroke="#b0a06a"/>
+  <text class="sm" x="566" y="1123" style="font-weight:700">HAL components in the same thread — wired by the integrator</text>
+  <text class="sm" x="566" y="1145">pid.N.do-pid-calcs · encoder · stepgen.capture-position · pwmgen · limit3 · estop_latch</text>
+  <text class="sm" x="566" y="1165">124 .comp + 25 .c source files</text>
+  <text class="sm" x="566" y="1212" style="fill:#666">JOINT 1…16 — a motor, not an axis · 9 separate Cartesian axes</text>
+
+  <!-- base thread -->
+  <rect class="grp" x="1106" y="896" width="462" height="154" rx="8" fill="#fffdf5" stroke="#b0a06a" stroke-dasharray="4 3"/>
+  <text class="lb" x="1128" y="924">base-thread</text>
+  <text class="sm" x="1337" y="946">created only when servo_base_ratio &gt; 1</text>
+  <rect x="1197" y="969" width="280" height="39" rx="7" fill="#f8cecc" stroke="#b85450"/>
+  <text class="sm" x="1337" y="994">stepgen.make-pulses</text>
+
+  <!-- drivers -->
+  <rect x="1106" y="1078" width="462" height="168" rx="8" fill="#f8cecc" stroke="#b85450"/>
+  <text class="lb" x="1128" y="1106">hardware drivers — in these same threads</text>
+  <text class="sm" x="1337" y="1137">hostmot2 (Mesa) · lcec (EtherCAT)</text>
+  <text class="sm" x="1337" y="1159">hal_parport · gpio · and the rest</text>
+  <text class="sm" x="1337" y="1182">23 driver files</text>
+  <text class="sm" x="1337" y="1201">+ hostmot2 alone: 42 modules, one driver</text>
+
+  <!-- hardware -->
+  <rect x="476" y="1436" width="672" height="81" rx="13" fill="#eee" stroke="#36393d"/>
+  <text x="812" y="1470">Machine hardware</text>
+  <text class="sm" x="812" y="1495">drives · encoders · limit and home switches · spindle · field I/O</text>
+  <text class="sm" x="1170" y="1470" style="text-anchor:start;fill:#666">outside the computer — the boundary</text>
+  <text class="sm" x="1170" y="1490" style="text-anchor:start;fill:#666">classifies software, not this</text>
+
+  <!-- config column -->
+  <rect x="14" y="280" width="182" height="78" rx="11" fill="#e1d5e7" stroke="#9673a6" stroke-dasharray="3 3"/>
+  <text x="105" y="311">Wizards</text><text class="sm" x="105" y="336">pncconf / stepconf</text>
+  <rect x="14" y="420" width="182" height="106" rx="11" fill="#fff2cc" stroke="#d6b656"/>
+  <text x="105" y="454">HAL files</text>
+  <text class="sm" x="105" y="476">loadrt · addf</text>
+  <text class="sm" x="105" y="496">net · setp</text>
+  <rect x="238" y="462" width="182" height="106" rx="11" fill="#fff2cc" stroke="#d6b656"/>
+  <text x="329" y="496">INI file</text>
+  <text class="sm" x="329" y="518">[KINS] · periods</text>
+  <text class="sm" x="329" y="538">limits · which GUI</text>
+</svg>
+</div>
+<!-- diagram-check.js is deliberately NOT referenced here. It is a working tool that
+     lives outside this repository, so a <script src> would 404 on GitHub Pages —
+     the same reason it was kept out of the context sheet. To run it against this
+     page, inject it from the console:
+       var s=document.createElement('script'); s.src='…/diagram-check.js';
+       document.body.appendChild(s);      then:  diagramCheck() -->
+
+<p class="foot">
+  Sources: <code>sheets/linuxcnc-code-notes-errata.html</code> (Sheet B, the
+  corrected block diagram — milltask internals, the emcmot segment's three structures, TC_QUEUE,
+  the joint pipeline, component and driver inventories, the boundary wording) and
+  <code>sheets/linuxcnc-context-diagram.html</code> ("Rebuilt from the code" — the linuxcncsvr /
+  milltask process split, the three UI-side clients separated by what they touch, motion as
+  functs inside the servo thread, the base-thread condition, the config column). Both verified
+  against the pinned clone <code>caa13ca6ae</code>. Assembled 2026-08-06.
+</p>
+
+<p class="foot" style="border-top:none;margin-top:8px">
+  <strong>Restructured 2026-08-07, after three defects found by reading the geometry rather
+  than looking at the figure.</strong> <em>(1)</em> The two domain containers claimed a
+  membership their geometry did not hold: the frame labelled <em>"ordinary Linux processes"</em>
+  ended at y=240, while <code>linuxcncsvr</code> (246) and <code>milltask</code> (300) sat
+  below it — the same defect a reader had already caught in the sibling colour figure, fixed
+  there and never here. <em>(2)</em> The <code>emcmot</code> segment was drawn wholly above the
+  boundary, saying it belongs to ordinary scheduling. <em>(3)</em> HAL shared memory was not
+  drawn at all, only captioned inside the realtime frame, which asserted it belongs to the
+  realtime domain. Both segment claims are false: each is created on one side and attached from
+  the other — <code>motion.c:827</code> → <code>usrmotintf.cc:578</code>, and
+  <code>hal_lib.c:285</code> → <code>halcmd.c:107</code>, an ordinary process.
+  <strong>The fix removes both domain frames.</strong> A dashed line marks the boundary and
+  nothing else, the two shared segments are drawn across it, and the two connectors that used
+  to land on a frame edge — from <code>halcmd</code> and from the <code>.hal</code> files — now
+  land on HAL shared memory, which was always their real target. A line cannot make defect (1):
+  there is no container left to contradict.
+  <strong><em>(4)</em> A fourth defect, found by a reader questioning the layout rather than the
+  drawing: <code>linuxcncsvr</code> sat in a vertical chain between the NML triplet and
+  milltask, which asserts that commands transit through it.</strong> They do not. In
+  <code>configs/common/linuxcnc.nml</code> every process is <code>LOCAL</code> —
+  <code>emc</code>, <code>emcsvr</code> and <code>xemc</code> alike — and only
+  <code>emcsvr</code> carries <code>server?=1 master?=1</code>; task attaches the SHMEM
+  segments directly, read-write. <code>linuxcncrsh</code> has no entry at all and opens its own
+  channels. linuxcncsvr's two real jobs are creating the segments and starting first
+  (<code>scripts/linuxcnc.in:795</code>) and serving them over TCP 5005
+  (<code>emcsvr.cc:185</code> calls <code>run_nml_servers()</code>; its man page: <em>"Allows
+  network access to LinuxCNC internals via NML"</em>) — and its clients are remote, so none of
+  them appears on this figure. The figure also contradicted itself: it already ran the GUI and
+  <code>linuxcncrsh</code> straight to the triplet while routing task around. It is now drawn
+  <em>beside</em> the triplet, and the triplet connects directly to milltask.
+  <strong><em>(5)</em> The same question asked once more exposed a label that was wrong twice:
+  <code>linuxcncrsh</code> was captioned <em>“NML over the network”</em>.</strong> It is neither.
+  On the network side it speaks a plain-text telnet protocol on its own port —
+  <code>emcrsh.cc:187</code> sets <code>port = 5007</code>, and <code>:373-390</code> call
+  <code>socket()</code>, <code>bind()</code> and <code>listen()</code>: <strong>it is itself the
+  server</strong>, not a client of one. Its own header calls it an <em>“Extended telnet based
+  LinuxCNC interface”</em>, and its man page <em>“a text-mode interface for commanding LinuxCNC
+  over the network… using telnet(1), nc(1) or similar”</em>. On the LinuxCNC side it is an
+  ordinary <em>local</em> NML client: <code>emcrsh.cc:41</code> includes
+  <code>shcom.hh</code>, which opens the channels as <code>"xemc"</code> — <code>LOCAL</code> in
+  the default config — so it does write the triplet directly. It has no relationship with
+  <code>linuxcncsvr</code> whatever: two independent servers, TCP 5007 text and TCP 5005 NML.
+  The box is relabelled and <strong>both network doors are now drawn</strong>, because a door to
+  the network that is not shown is a door nobody thinks about. Both now sit on the top edge, so
+  that where the network touches this machine is visible at a glance; the canvas was widened and
+  <code>halcmd / halshow</code> moved right to free the lane its own descent needs. Which door a
+  client uses decides what it must be, and the difference is larger than it looks.
+  <strong>The NML door is the narrow one.</strong> It carries no port of libnml —
+  <code>src/libnml/</code> has no Windows or Apple build — and no NML library is packaged apart
+  from LinuxCNC, so “a remote NML client” means in practice another Linux running LinuxCNC as a
+  GUI-only control PC. Even then it is not free: <code>axis.py:75-78</code> gates AXIS's HAL
+  component on the <code>AXIS_NO_HAL</code> environment variable, and HAL is local shared memory,
+  so a remote AXIS must set it and give up its jog pins, pyvcp panels and classicladder
+  detection. The shipped instructions have also rotted: <code>client.nml</code> still says to run
+  <code>tcl/tkemc.tcl</code>, <strong>a GUI no longer present in the tree</strong> — only its
+  screenshots survive in the documentation. <strong>The telnet door is the wide one:</strong> a
+  socket and some text, so Windows, macOS, a tablet or a three-line script all qualify. Anything
+  resembling MES, SCADA or a phone app belongs there, not on the NML side.
+  <strong>A vocabulary warning</strong>, because it inverts easily: NML calls the
+  <em>machine</em> the master — <code>emcsvr</code> carries <code>master?=1</code> in
+  <code>server.nml</code> — so describing the remote GUI as the “master PC” contradicts the very
+  file you would then open. <strong>The two doors also differ in posture:</strong>
+  linuxcncsvr authenticates nothing at all, while linuxcncrsh has a connection and an enable
+  password (<code>emcrsh.cc:189</code>, default <code>"EMCTOO"</code>) that its man page warns
+  twice are <em>“sent in the clear”</em>.
+  <strong>Red marks what is wrong rather than what is.</strong> Two problems on the NML door —
+  it authenticates nothing, and its two config files look unmaintained — and one under the
+  triplet, where the number itself lives: <code>client.nml</code> and <code>server.nml</code>
+  declare <code>emcStatus</code> at 10240 B against the default's 20480, while NML gives a
+  message only half the declared buffer (<code>cms.cc:729-731</code>). That last one is printed
+  <em>unverified</em> on the figure itself, because <code>sizeof(EMC_STAT)</code> was never
+  measured — a diagram that hides its own uncertainty is worse than one that admits it. The
+  first words of the note scope it to the networked configs, so no reader concludes the default
+  is affected. <strong>Also moved:</strong> <em>“not NML on the network side”</em> left the
+  <code>linuxcncrsh</code> box for the grey peer above it. The phrase never described the box —
+  it described the wire, and the grey box is what sits at the other end of it.
+  <strong><em>(6)</em> The GUI's link to HAL was drawn one-way.</strong> Reader's catch, and the
+  source is blunt: <code>halui.cc</code> creates <strong>47 <code>HAL_IN</code> pins against 42
+  <code>HAL_OUT</code></strong> (<code>:494</code>, <code>:531</code>), and even
+  <code>axisui</code> has inputs — <code>axis.py:3961-3964</code> exports
+  <code>notifications-clear</code> and <code>resume-inhibit</code> as <code>HAL_IN</code>
+  alongside its twelve <code>HAL_OUT</code> jog pins. A GUI panel with a button writes a pin; the
+  same panel's lamp reads one. Now double-headed. <strong>The remaining six one-way arrows were
+  audited rather than left alone</strong>, and all six survive: the wizards <em>generate</em> the
+  INI and HAL files, task <em>reads</em> the INI without writing it, a <code>.hal</code> file is
+  <em>loaded</em> into HAL memory, and the two short arrows into <code>tpmod / homemod / *kins</code>
+  are calls — the box says <em>“called from motmod's functs”</em>, which is one-way by
+  construction.
+  <strong><em>(7)</em> The networked configs are not merely stale — they are not installed.</strong>
+  <code>src/Makefile:745-746</code> copies only <code>linuxcnc.nml</code> and
+  <code>linuxcnc_big.nml</code> into <code>$(prefix)/share/linuxcnc</code>. A user installing from
+  a package never receives <code>client.nml</code> or <code>server.nml</code>; they exist for
+  whoever reads the source tree, which is why nothing exercised them and nothing caught the drift.
+  The red note on the NML door says so, because “unmaintained” understates it. And the telnet door
+  now carries its own red line: it does have two passwords, but its man page warns twice that they
+  are sent in the clear, so marking only 5005 as unauthenticated would have let 5007 read as safe.
+  <strong>Defects (4) and (5) share a lesson worth more than either:</strong> both were found by
+  a reader questioning what the drawing <em>asserted</em>, and neither was reachable by any
+  checker here — <code>diagramCheck</code> measures boxes, it does not read labels.
+  <em>Checked, not assumed:</em> <code>diagramCheck()</code> reports clean — 19 boxes, 79 texts,
+  15 connectors. The straddle is tested directly rather than by rule 6, which needs two domain
+  frames and there are deliberately none. The boundary was computed to cross only the two
+  straddling boxes. <strong>Each of those three checks was first made to fail on a broken
+  version</strong>, and the boundary is drawn as <code>&lt;line&gt;</code> rather than
+  <code>&lt;path&gt;</code> so the connector check does not report the intended crossings as
+  collisions — a checker that cries wolf on every run stops being read.
+</p>
+</div>
