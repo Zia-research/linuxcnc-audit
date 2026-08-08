@@ -371,6 +371,74 @@ one side, attached from the other.** The declared users are named in the source 
 `tooldata_mmap.cc:167`: *"typ: milltask, guis (emcmodule,emcsh,...), halui"* — a comment, which is
 why each attachment above is cited at its call site instead.
 
+#### 2.4.1 `streamer` and `sampler` create RTAPI segments of their own — measured, 2026-08-08
+
+**The table above already carried `hal_stream_t` as an SPSC FIFO. What it did not say is that each
+one is a shared-memory region in the same family as HAL's block and the `emcmot` segment, and that a
+configuration can create sixteen of them.** The row named the queue; this names the memory.
+
+`hal_stream_create()` calls **`rtapi_shmem_new`** (`hal_lib.c:4859`) — the same call that creates HAL
+memory at `hal_lib.c:285` — and `hal_stream_attach()` calls it again from the other side
+(`hal_lib.c:5031`, then `:5067` once the header has been read and the real size is known; the attach
+is two-step, mapping `sizeof(hal_stream_shm_t)` first to check `magic`). Size is not fixed:
+`sizeof(hal_stream_shm_t) + sizeof(hal_stream_data_u) * depth * (1 + pin_count)` (`:4858`), the depth
+being chosen at `loadrt`.
+
+| | `streamer` + `halstreamer` | `sampler` + `halsampler` |
+|---|---|---|
+| Direction | file / `stdin` → HAL pins | HAL pins → `stdout` / file |
+| Data pins | **`HAL_OUT`** (`streamer.c:279-284`) | **`HAL_IN`** (`sampler.c:233-238`) |
+| Realtime side does | `hal_stream_read` (`streamer.c:217`) | `hal_stream_write` (`sampler.c:180`) |
+| User side does | reads `stdin` (`streamer_usr.c:173`), `hal_stream_write` (`:249`) | `hal_stream_read` (`sampler_usr.c:197`), writes `stdout` (`:163`) |
+| Key | `0x48535430` — ASCII *"HST0"* (`streamer.h:18`) | `0x48534130` — ASCII *"HSA0"* (`streamer.h:19`) |
+| Created by | the realtime component (`streamer.c:135`) | the realtime component (`sampler.c:121`) |
+| Attached by | `halstreamer`, an ordinary process (`streamer_usr.c:166`) | `halsampler`, an ordinary process (`sampler_usr.c:186`) |
+
+**The keys are bases, not addresses.** Both call sites pass `KEY + n`, and `streamer.h:16-17` sets
+`MAX_STREAMERS 8` and `MAX_SAMPLERS 8`, so the segments actually in use run `0x48535430`–`0x48535437`
+and `0x48534130`–`0x48534137`: **up to sixteen regions beyond the two the figure draws.**
+
+**They straddle the scheduling boundary, by the audit's own test** — created on one side, attached
+from the other — exactly as `emcmot` does. **They are optional, and that is the whole of the
+difference.** *An earlier version of this section said they were "outside the machine cycle". That
+was wrong, and the error is instructive:* both export a HAL function — `hal_export_functf` at
+`streamer.c:295` and `sampler.c:249`, one per FIFO, as the man pages state — and a HAL function
+exists to be `addf`'d into a thread. The one shipped configuration that loads either does exactly
+that: `configs/sim/axis/panelui-demo/panelui-demo.hal` carries `addf sampler.0 servo-thread`, so
+**`sampler.0` runs in the servo thread every period, inside the cycle**. The slip was from *"no
+stock machine loads them"*, which is measured and true, to *"nothing in the cycle uses them"*, which
+is neither — **a claim about shipped configurations quietly became a claim about execution.**
+What is true: they move data into and out of HAL rather than commanding the machine, though even
+that is design intent rather than a guarantee, since `streamer`'s `HAL_OUT` pins can be wired to
+anything an integrator chooses. *Measured across the 332 shipped
+`.hal` files:* **`loadrt streamer` occurs 0 times, `loadrt sampler` exactly once** —
+`configs/sim/axis/panelui-demo/panelui-demo.hal:13`, `loadrt sampler cfg=u depth=1025`, under the
+comment *"sampler is needed for panelui"*, with `loadusr -W panelui` two lines below. That single case
+closes the loop with `panelui.c:285`: the demo creates the segment in realtime and `panelui`, an
+ordinary process, attaches it. That is why both are named on the figure in text rather than drawn as
+boxes with connectors: *live traffic gets a line, everything else gets a caption.*
+
+> **The first form of this check returned a false negative**, and only a second, differently written
+> one caught the `panelui-demo` line. Had the first been believed, this section would have asserted
+> that no shipped config loads either — a clean, plausible, wrong sentence. **A count of zero deserves
+> a second query more than a count of nine does**, because zero is what a broken search returns.
+
+**The facility has more clients than its two tools.** `panelui.c:285` attaches to
+`SAMPLER_SHMEM_KEY+channel`; `histobinstream.comp` and `latencybinstream.comp` use the same API, and
+so do the Python (`halmodule.cc`) and Tcl (`halsh.c`) bindings. `hal_stream` is general; `halstreamer`
+and `halsampler` are simply its two shipped front ends.
+
+**A gap worth recording**: `scripts/runtests.in:157-158` lists the six shared-memory keys the test
+harness looks for after a run — `0x00000064` Emc motion, `0x48414c32` Hal, `0x48484c34` UUID,
+`0x90280a48` Rtapi, `0x130cf406` Hal scope, `0x434c522b` Classicladder. **No `0x4853…` key is among
+them**, so a leaked `streamer` or `sampler` segment is invisible to the check that exists precisely to
+catch leaked segments. Two of those six — `UUID` and `Hal scope` — are also regions this audit has
+never opened.
+
+*Provenance note:* this was reached because a reader asked where `halstreamer` fits, and named its
+counterpart only as *"a similar process in the other direction"*. Everything above is read from the
+source at the lines cited, or counted across the shipped configs; nothing here rests on a man page.
+
 ### 2.5 The servo cycle
 
 `emcmotController()` — `src/emc/motion/control.c:209-277`, exact call order:
@@ -1471,6 +1539,7 @@ would be worse than none.
 
 | Date | Change |
 |---|---|
+| 2026-08-08 (LCNC_04, third pass) | **A rule stated in prose cannot contradict another one out loud; a rule that executes can.** Every checker in this project so far read the *generated SVG*. That was a default, never examined, and it put whole classes of defect out of reach: the SVG carries no parent relations, no `source`/`target`, no style colours, and — as this pass discovered — **not the edge labels at all**, which the converter silently drops. A label overlapping a caption therefore stayed invisible until a human looked at a PNG export. **A checker that reads the `.drawio` model was written** (`drawio-check.ps1`, seven rules, each refusing to run unless it first fails on a deliberately broken copy). What the model settles that the SVG could only guess: a dangling connector is *an edge without `source` or `target`* rather than an endpoint within 14 px of something; containment is `parent`, so **a declared parent that does not geometrically contain its child** becomes detectable — the exact defect that footnote (1) of the sheet removed the domain frames for, and which no SVG check could ever see; and the colour rules printed on the sheet's own legend become executable. **Its first run on a figure believed finished returned two real defects and no false positive.** One of them is that **the figure asserts something about itself that is false**: the legend prints four colour rules and the sentence *"All four hold as drawn"*, and the fourth — *"every WHITE box must carry at least two links"* — does not hold, because `base-thread` carries one. That single link is itself a deliberate decision recorded elsewhere in this audit: the servo thread hands the base thread work through `stepgen`'s own state, which is neither a pin nor a signal, so by the project's *information crossing → line, code touching code → text* criterion it is text and not an arrow. **Two of our own rules contradicted each other, and both were true in isolation.** Neither prose nor a reader had caught it in two days; the model check caught it in one second. *The honest division that follows:* **the model carries the logic, the render carries the geometry of the lines.** Connector routing is not in the model — draw.io computes it at display time and stores only waypoints — so *"does this line cross that box"* stays with the SVG checker, as does rendered text width, for want of a font. Two checkers, two domains, and each must state where it stops. |
 | 2026-08-08 (LCNC_04, later) | **A rule that corrects the one written hours earlier: a second oracle that shares the first one's environment is not a second oracle.** The entry below records a reported connector/text crossing being dismissed after a direct `getBBox` measurement put the text's left edge at x=825.5 against the connector's x=815. **That was wrong, and the crossing was real.** Measured again on the same two files, the caption runs from **x=781.3 to 1218.7** — the connector was inside it, and it was the *first* measurement that had resolved a narrower fallback face, 349 units of rendered text against 437. `getBBox` and the checker disagreed about the verdict while agreeing about the font, so measuring more carefully **in the same browser** could only reproduce the same accident with more decimal places. The two oracles were independent in method and identical in the thing that actually varied. **The repair is geometry robust to the range, not a ruling on which font is right:** the link now runs through a corridor 31 units clear of the text in the widest rendering observed and further in the narrow one. *General form, and it is the transferable part:* **when a check's verdict depends on the environment, make the artefact survive the whole range rather than picking the reading that lets you leave it alone.** Three further layout defects were fixed in the same pass and are recorded on the sheet as footnote (12). **A fourth rule, earned the same way:** repairing the first connector left its arrow seven units short of its box, because the converter decided whether a segment was horizontal or vertical **by exact equality** while the SVG export rounds to the unit — so a segment one unit off true matched neither branch, nothing was reported, and a box became unreachable. The test is a tolerance now, and **the verdict went FAIL → clean on the same file inside one pass**, which is the only real evidence that a check is doing work. |
 | 2026-08-08 (LCNC_04) | **The system-overview figure is no longer written by hand: it is generated from a `.drawio`, and the return trip is what this entry records.** The drawing moved into a real editor so the reader could move a box and see the result — ten passes of correction had been made by editing SVG, which put the only person who could change the layout in the position of not being able to see it. `drawio-to-svg.ps1` v2 takes **the geometry of the boxes from the model and the routing of the arrows from draw.io's own SVG export**, because draw.io has already solved routing and v1's naive Z-routes crossed thirty boxes; the render→model offset is *derived* by matching rectangles on (width, height), 100 % agreement on 26, so the pairing is checked rather than assumed. **Only the `<svg>` block is replaced**, so the page's prose and its footnoted evidence make no round trip and cannot be damaged by one. Verified: citations **190/190**; `diagramCheck` **4 errors on three consecutive runs = two layout defects counted twice each**, plus a third that no check here can see — the two boundary lines span the canvas and pass behind the legend panel, and boundaries are exempt from the connector check by design. All three are recorded on the sheet rather than carried quietly. **Four rules earned, each from something that went wrong.** *(1) A name collision can silence a function completely and change more than it appears to:* a helper named `SV` was shadowed by PowerShell's alias for `Set-Variable`, so every style lookup returned nothing — **all colours came out `none`, and so did every text alignment**, without one error message. The `diagramCheck` verdict taken before the fix therefore described a figure whose text was in the wrong place; **a verdict is only about the artefact that produced it.** *(2) A geometric check that involves text is only as reproducible as the font that loads:* a crossing was reported once and not again on the same file; measured directly with `getBBox` — an oracle that fails differently from the checker — the text's left edge is at x=825.5 and the connector at x=815, so it clears by ten units. Had it been trusted, a connector that touched nothing would have been moved. *(3) A generated document should reach a **fixed point**:* re-converting the published page must return the published page, and it does, to the character. *(4) The prose around a figure ages while the figure is worked on, and no script reads it.* Four statements on the sheet had become false without anyone touching them — the number of domain markers, the claim of *no containers*, the count of corrections, and a verification note quoting the counts of a figure that no longer existed. **Worse than a false statement is an argument that reverses:** footnote (9) had justified deleting the NML compartments with *"with no named compartment for an arrow to point at, the per-channel claim can no longer be made"*, and the reader then asked for the compartments back. The published argument contradicted the published figure. It is recorded as a reversal, with a **replacement guarantee that is checkable where the old one was structural** — *no connector lands on a compartment*, verified in the model, five NML edges out of five targeting the parent box. |
 | 2026-08-07 (LCNC_04) | **Four new facts, one erratum against our own published sheet, and four verification rules.** §2.4 gains the **tool table** as a third shared region — a file-backed `mmap`, created by milltask (`taskclass.cc:162`) and attached by the GUIs (`emcmodule.cc:1010`) and halui (`halui.cc:2151`), read-write on both sides (`tooldata_mmap.cc:151-152`, `:186-187`) under a mutex (`:164`), and **wholly non-realtime**, so unlike the other two it never straddles the scheduling boundary. §2.5 gains **§2.5.1**: `motmod` exports exactly two thread functions (`motion.c:1030`, `:1037`), a third sits dead in `#if 0` at `:1044-1056` whose comment states the structure — *"currently the traj planner is called from the controller"* — and the **execution order is configuration**, measured across the 189 shipped `.hal` files: of the 55 that `addf` both a hardware read and `motion-command-handler`, **54 put the read first and one does not** (`GM6-PCI/3-axis-servo.hal` reads its board after the controller). An earlier pass had inferred that bracket from two files; the measurement is stronger and names the exception. Reading file order is legitimate because `addf`'s position defaults to −1 (`halcmd_commands.cc:276`) and −1 means *from the tail* (`hal_lib.c:2930`). §2.7 gains what **`loadrt` actually is**: on uspace it runs a program — `rtapi_app load <mod>` (`halcmd_commands.cc:918`, `:922`, `:925`) — while the `#else` branches load kernel modules (`:934`, `:1157`); so `rtapi_app` is the process every realtime component is `dlopen`'d into (`tpmod.c:31`). §2.8 gains an **erratum against our own work**: the system-overview sheet shipped *"not a kernel boundary — except under RTAI"*, which overstates the exception by four flavours out of five — `uspace/RTAI` runs realtime in user space. Corrected, and **published 2026-08-08**. New **§2.11** counts GUI-created HAL pins — axisui **16** (`axis.py:3951-3966`), qtdragon **18** in its shipped handler, none of them integrator widgets — which inverts a circulating claim that modern GUIs create only widget pins; and records that **QtPyVCP and ProbeBasic are not in this tree at all** (0 files), qtdragon being a `qtvcp` screen. *Verification rules:* a checker's own input set must be confirmed non-empty (`ORTHO` silently dropped every path with a negative coordinate); a graph built from a drawing must count edges that *resolve*, not edges that exist (the figure's thickest connector had lost its target and was anchored to a point); a box must be asked whether anything **reaches** it, not only whether arrows land on something (now `diagram-check.js` rule 7, on connected components); and a check that **fails** deserves the same scrutiny as one that passes. |

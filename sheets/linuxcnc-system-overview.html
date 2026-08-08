@@ -29,11 +29,12 @@
   frames</strong> — a frame asserts membership and can be contradicted by its own geometry, while
   a line cannot. Two dotted grey lines bracket what is inside the computer; between them, two
   dashed red ones bracket the scheduling boundary, and what lies in that band is the two
-  shared-memory segments, which is what shared memory is. The frames that <em>do</em> exist assert
+  shared-memory segments <em>every</em> machine has, which is what shared memory is — a configuration
+  can create more, and the band says which. The frames that <em>do</em> exist assert
   process and thread membership — a fact about the running system, not a domain — and each lies
   wholly on one side of every line. It began as a merge of two earlier sheets — Sheet B of the
   errata sheet for component detail, the context sheet's rebuilt view for the seams — and has been
-  corrected twelve times since, each correction and its evidence recorded at the foot of the page.
+  corrected fourteen times since, each correction and its evidence recorded at the foot of the page.
 </p>
 
 <div class="stage">
@@ -209,6 +210,7 @@
   <text class="sm" x="1359" y="1093">both exported by motmod</text>
   <text class="sm" x="1359" y="1111">via hal_export_funct()</text>
   <text class="sm" x="1359" y="1129">JOINT 1…16 — a motor, not an axis · 9 separate Cartesian axes</text>
+  <text class="sm" x="1359" y="1147">to HAL memory: joint.N.motor-pos-cmd OUT · motor-pos-fb IN</text>
   <rect x="810" y="1358" width="1064" height="99" rx="10" fill="#d5e8d4" stroke="#82b366"/>
   <text class="sm" x="1342" y="1376">④ HAL components in the same thread — wired by the integrator</text>
   <text class="sm" x="1342" y="1394">pid.N.do-pid-calcs · encoder · stepgen.capture-position · pwmgen · limit3 · estop_latch</text>
@@ -281,6 +283,13 @@
   <text class="sm" x="-193" y="665" style="text-anchor:start">NOT REALTIME</text>
   <text class="sm" x="-192" y="928" style="text-anchor:start">REALTIME</text>
   <text class="sm" x="-192" y="945" style="text-anchor:start">SCHED_FIFO · rtapi_app</text>
+  <text class="sm" x="1620" y="714" style="text-anchor:start">streamer / sampler — the same kind of memory, optional</text>
+  <text class="sm" x="1620" y="731" style="text-anchor:start">RTAPI segments of their own, created in realtime and</text>
+  <text class="sm" x="1620" y="748" style="text-anchor:start">attached by halstreamer / halsampler, ordinary processes</text>
+  <text class="sm" x="1620" y="765" style="text-anchor:start">— so they cross this band too</text>
+  <text class="sm" x="1620" y="782" style="text-anchor:start">keys 0x48535430+n (into HAL) · 0x48534130+n (out of HAL), 8 each</text>
+  <text class="sm" x="1620" y="799" style="text-anchor:start">loaded, they are addf'd into a thread and run in the cycle</text>
+  <text class="sm" x="1620" y="816" style="text-anchor:start">shipped configs: streamer 0 of 332 · sampler 1 (the panelui demo)</text>
   <text class="sm" x="-120" y="744" style="text-anchor:middle">a scheduling boundary, not a kernel boundary</text>
   <text class="sm" x="-120" y="761" style="text-anchor:middle">kernel modules only on the RTAI-kernel flavour — 1 of the 5 RTAPI flavours;</text>
   <text class="sm" x="-120" y="778" style="text-anchor:middle">uspace/RTAI is user space too</text>
@@ -310,10 +319,14 @@
   <text class="sm" x="2070" y="957" style="text-anchor:start">• every GREEN box must sit inside rtapi_app</text>
   <text class="sm" x="2070" y="974" style="text-anchor:start">• every GREY box must sit above the remote line</text>
   <text class="sm" x="2070" y="991" style="text-anchor:start">• the ORANGE box must sit below the machine line</text>
-  <text class="sm" x="2070" y="1008" style="text-anchor:start">• every WHITE box must carry at least two links</text>
+  <text class="sm" x="2070" y="1008" style="text-anchor:start">• every WHITE box must carry at least one link</text>
   <text class="sm" x="2070" y="1025" style="text-anchor:start">All four hold as drawn. And one trap: "process" and "non-realtime" are not the</text>
   <text class="sm" x="2070" y="1042" style="text-anchor:start">same thing — rtapi_app is a process and it lives below the line.</text>
 </svg>
+
+
+
+
 
 
 
@@ -567,7 +580,7 @@
   and that is the only evidence worth much: a check that has just failed and then passes says more
   than one that has only ever passed. <code>diagramCheck()</code> now reports <strong>clean on three
   consecutive runs</strong> — 32 boxes, 182 texts, 24 connectors.
-  <strong>A fourth defect was argued away instead of fixed, and the argument was wrong.</strong>
+    <strong>A fourth defect was argued away instead of fixed, and the argument was wrong.</strong>
   An earlier pass reported the HAL-to-servo link crossing the RTAI-flavours caption. Measuring in the
   browser put the caption's left edge at x=825.5 against the connector's x=815, and the report was
   written off as an artefact of whichever font had loaded. Measured again, on the same two files, the
@@ -582,5 +595,61 @@
   either font, not an argument about which font is right</strong>, and the general form of that is
   worth more than this instance: when a check's verdict depends on the environment, make the drawing
   robust to the range, rather than picking the reading that lets you leave it alone.
+  <strong><em>(13)</em> “The two shared-memory segments” was true of the drawing and read as an
+  inventory.</strong> A reader asked where <code>halstreamer</code> fits, and the answer is: in the
+  same band, under keys this figure never named. <code>streamer</code> and <code>sampler</code> create
+  <strong>their own RTAPI segments</strong> — <code>hal_stream_create()</code> calls
+  <code>rtapi_shmem_new</code> at <code>hal_lib.c:4859</code>, the same call that creates HAL memory at
+  <code>hal_lib.c:285</code> — and <code>halstreamer</code> / <code>halsampler</code>, ordinary
+  processes, attach them from the other side (<code>:5031</code>). <strong>By this page's own test for
+  what shared memory is, created on one side and attached from the other, they straddle the boundary
+  exactly as <code>emcmot</code> does.</strong> The keys are bases, not addresses: both call sites pass
+  <code>KEY + n</code> and <code>streamer.h:16-17</code> allows eight channels each, so a configuration
+  can hold <strong>sixteen segments beyond the two drawn here</strong>. The direction is the mirror
+  pair the reader remembered: <code>streamer</code>'s data pins are <code>HAL_OUT</code>
+  (<code>streamer.c:279-284</code>), fed from <code>stdin</code> by the user-space tool;
+  <code>sampler</code>'s are <code>HAL_IN</code> (<code>sampler.c:233-238</code>), drained to
+  <code>stdout</code>. <strong>They are named in text and not drawn as boxes</strong> because <em>no stock machine has
+  them</em> — not, as this note first said, because they sit outside the cycle. Both export a HAL
+  function (<code>streamer.c:295</code>, <code>sampler.c:249</code>), and the one shipped config that
+  loads either does <code>addf sampler.0 servo-thread</code>: when loaded they run in the cycle like
+  any other component. The correction matters more than the fact — <strong>a measured claim about
+  shipped configurations had quietly become a claim about execution</strong>, which is a different
+  and stronger thing. The opening sentence is hedged to
+  match. <strong>This is the fourth time on this page that a true sentence about the drawing has been
+  read as a claim about the system</strong> — after “the <em>only</em> domain marker”, “<em>no</em>
+  containers”, and the corrected count — and the pattern is now plain: <strong>a definite article is
+  an inventory claim, and this figure cannot support one.</strong>
+  <strong>One method note, because it nearly went the other way.</strong> The first search for
+  <code>loadrt streamer</code> and <code>loadrt sampler</code> across the shipped configurations
+  returned <em>nothing</em>, and “no shipped config loads either” was about to be written. A second
+  search, worded differently, found <code>configs/sim/axis/panelui-demo/panelui-demo.hal:13</code> —
+  <code>loadrt sampler cfg=u depth=1025</code>, under the comment <em>“sampler is needed for
+  panelui”</em>, with <code>loadusr -W panelui</code> two lines below, which closes the loop with
+  <code>panelui.c:285</code>. Measured properly: of 332 shipped <code>.hal</code> files,
+  <code>streamer</code> is loaded by <strong>none</strong> and <code>sampler</code> by
+  <strong>exactly one</strong>. <strong>A count of zero deserves a second query more than a count of
+  nine does</strong>, because zero is also what a broken search returns.
+  <strong><em>(14)</em> The legend printed four rules and the sentence &#8220;All four hold as drawn&#8221;, and
+  the fourth did not hold.</strong> Every checker used on this figure until now read the
+  <em>generated SVG</em>, which carries no fill colours, no parent relations and no
+  <code>source</code>/<code>target</code> &#8212; so the rules the legend states about colour were, in
+  practice, checked by eye. A checker that reads the <code>.drawio</code> model instead was written,
+  and its first run said that <em>&#8220;every WHITE box must carry at least two links&#8221;</em> is false:
+  <code>base-thread</code> carries one. <strong>The drawing was right and the rule was wrong</strong>,
+  which is worth more than the reverse would have been. That single link is a deliberate decision
+  recorded elsewhere in this audit: the servo thread hands the base thread its work through
+  <code>stepgen</code>&#39;s own state, which is neither a pin nor a signal, so by this page&#39;s own
+  criterion &#8212; <em>information crossing gets a line, code touching code gets a caption</em> &#8212; it is
+  text and not an arrow. <strong>Two of the project&#39;s rules contradicted each other and both were
+  true in isolation</strong>; neither prose nor two days of reading had noticed, because a sentence
+  cannot contradict another sentence out loud. The rule now reads <em>at least one link</em>, and
+  <strong>the checker reads the threshold out of the legend rather than carrying its own copy</strong>
+  &#8212; a rule that lives in two places is a rule that can drift, which is the defect this whole tool
+  exists to catch. Also in this pass: the last remaining arrow caption,
+  <code>joint.N.motor-pos-cmd OUT &#183; motor-pos-fb IN</code>, moved into the <code>servo-thread</code>
+  box it describes. It had been overlapping another label in the drawing editor while being
+  <em>absent</em> from this page, because the converter drops edge labels without saying so &#8212; so the
+  exported image and this page did not say the same thing, and nothing was in a position to notice.
 </p>
 </div>
