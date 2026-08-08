@@ -1,4 +1,4 @@
-From 859c1710f86b99b318f2efc856281b6530f8e5ba Mon Sep 17 00:00:00 2001
+From f587664ac8fbd94b6e69d02e76be2071df68c034 Mon Sep 17 00:00:00 2001
 From: Zia-research <309084419+Zia-research@users.noreply.github.com>
 Date: Mon, 3 Aug 2026 19:23:31 +0200
 Subject: [PATCH 3/3] docs: g-code - align G33/G33.1, G64 and G96 error lists

@@ -1,12 +1,37 @@
 # Upstream patches — prepared from the audit
 
-Patches generated from the `docs-audit-fixes` branch — byte-for-byte the three
-commits submitted upstream as
-[PR #4349](https://github.com/LinuxCNC/linuxcnc/pull/4349) on 2026-08-06
-(`5ac93bb4b2` · `d152953a4d` · `859c1710f8`, based on `dd8d0be15b`). Every
-change corrects a statement that the audit in
+Patches generated from the `docs-audit-fixes-v2` branch (`5ac93bb4b2` ·
+`a8fb59b743` · `f587664ac8`, based on `dd8d0be15b`). Every change corrects a
+statement that the audit in
 [`../LINUXCNC-FINDINGS.md`](../LINUXCNC-FINDINGS.md) verified against the source;
 the commit messages carry the `file:line` evidence.
+
+> **⚠ These are one revision ahead of the open PR.**
+> [PR #4349](https://github.com/LinuxCNC/linuxcnc/pull/4349), opened 2026-08-06,
+> still carries `5ac93bb4b2` · `d152953a4d` · `859c1710f8`. On 2026-08-08
+> @grandixximo reviewed it and found **two factual errors in the PAUSE
+> paragraph**, both now corrected here and neither yet pushed:
+> **(1)** *"Velocity-synchronized segments (G96 style)"* — it is **G95**, feed per
+> revolution. `G_95` enqueues `SET_FEED_MODE(spindle, 1)`
+> (`interp_convert.cc:2841-2846`), the only writer of `canon.feed_mode`
+> (`emccanon.cc:521`), and the only path passing `velocity_mode = 1` to
+> `START_SPEED_FEED_SYNCH` (`emccanon.cc:530`), which yields `TC_SYNC_VELOCITY`
+> (`tp.c:4159-4162`). G33/G33.1/G76 all pass `0`
+> (`interp_convert.cc:5505,5520,5644-5662`); G96 goes through `SET_SPINDLE_MODE`
+> (`:5075-5087`) and never reaches this code.
+> **(2)** *"with a non-zero MAX_JERK"* — the threshold is **1.0**, enforced in
+> three places (`initraj.cc:159`, `inihal.cc:302`, `:320`), all commented *"Force
+> planner type 0 if max_jerk < 1"*.
+> **The commit message already carried the right threshold** — *"forced back to 0
+> when jerk is below 1.0"* — so the patch contradicted its own evidence for two
+> days. The correction was written once, in the message and in a
+> [comment on #3718](https://github.com/LinuxCNC/linuxcnc/pull/3718#issuecomment-5206092235),
+> and never propagated to the document text.
+> **Still open from the same review**, deliberately not changed here: the ENABLE
+> *Requirements* sentence says *"the hardware enable chain must be satisfied"*,
+> which overstates — `motion.enable` is created with default `1`
+> (`motion.c:528`), under a source comment saying so, so an unconnected pin reads
+> TRUE and the rejection at `command.c:1372` never fires on a normal machine.
 
 ## Contents
 
@@ -25,7 +50,9 @@ git am path/to/0001-*.patch path/to/0002-*.patch
 
 Or apply without committing: `git apply --check` first, then `git apply`.
 
-The branch also exists locally: `git -C linuxcnc log master..audit-fixes`.
+The branches also exist locally: `docs-audit-fixes-v2` is what these patches were
+generated from, and `docs-audit-fixes` is kept unchanged as the revision the open
+PR still carries.
 
 ## Suggested PR framing
 
