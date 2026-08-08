@@ -65,7 +65,7 @@ criticises.
 
 The whole system on one page, from the operator's screen to the machine. It began as a
 merge of the two sheets above — Sheet B for component detail, the context sheet's
-rebuilt view for the seams — and has been corrected thirteen times since, each correction
+rebuilt view for the seams — and has been corrected fourteen times since, each correction
 and its evidence recorded at the foot of the page.
 
 Two decisions shape it. **Domains are marked by lines, never by frames**: a frame asserts
@@ -109,6 +109,33 @@ powershell -File linuxcnc-audit/tools/verify-citations.ps1
 Expected: `190 pass, 0 fail`. On a later HEAD a FAIL usually means the line
 moved — re-anchor the citation rather than assume the finding broke.
 
+**The manifest is a curated set, not an index.** Measured 2026-08-07, the
+findings hold 126 distinct `file:line` citations and 39 of them have no manifest
+entry. A green run means *the manifest's* citations were re-read against the
+source at the pinned commits — not that every citation in every document was.
+The script's own header used to claim otherwise and was corrected.
+
+### The two figure checkers
+
+The figures are checked as well as the prose, by two tools that answer different
+questions and are honest about where each stops.
+
+| Tool | Reads | Answers |
+|---|---|---|
+| [`tools/diagram-check.js`](tools/diagram-check.js) | the rendered SVG, in a browser | does a connector cross a box or a label, does every arrow land on something named, is any text hidden |
+| [`tools/drawio-check.ps1`](tools/drawio-check.ps1) | the `.drawio` model, no dependencies | dangling edges, orphan boxes, a declared parent its geometry contradicts, the legend's own colour rules, what a connector is allowed to land on |
+
+Routing is not in the model — draw.io computes it at display time — so line
+collisions belong to the first. Fill colours, parent relations and
+`source`/`target` do not survive into an SVG, so the claims the figure makes
+about itself belong to the second. **Every rule in both refuses to run unless it
+first fails on a deliberately broken copy**, because three of the earliest checks
+written here passed everything by measuring the wrong thing.
+
+The model checker found the sheet asserting something false about itself: the
+legend printed four colour rules and the sentence *"All four hold as drawn"*, and
+the fourth did not hold. The rule was wrong and the drawing was right.
+
 The script also checks itself against the documents: if any file here tells you
 to expect a number the manifest no longer holds, it says so and exits non-zero.
 That check exists because the mistake was made twice — the count grew, and was
@@ -151,6 +178,19 @@ during spindle-synchronized motion (G33 threading, rigid tapping) — sensible
 behaviour, documented nowhere.
 
 ---
+
+## The EtherCAT notes
+
+[`ETHERCAT-NOTES.md`](ETHERCAT-NOTES.md) — how LinuxCNC accommodates an EtherCAT
+master it does not contain. There is no EtherCAT driver in the LinuxCNC tree;
+`linuxcnc-ethercat` is a separate project depending on IgH EtherLab, and the two
+meet through a small number of real accommodations in LinuxCNC itself. The notes
+cover that seam, the `initf` mechanism, and the RTAI question — a door that is
+closed rather than a trap.
+
+Held back until now because it was written for one reader and not checked as
+hard as the sheets. It is published as it stands, with its own caveat in place:
+some of its citations have no manifest entry, and it says so where it matters.
 
 ## Caveats
 

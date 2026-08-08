@@ -330,13 +330,21 @@
 
 
 
+
 </div>
-<!-- diagram-check.js is deliberately NOT referenced here. It is a working tool that
-     lives outside this repository, so a <script src> would 404 on GitHub Pages —
-     the same reason it was kept out of the context sheet. To run it against this
-     page, inject it from the console:
-       var s=document.createElement('script'); s.src='…/diagram-check.js';
-       document.body.appendChild(s);      then:  diagramCheck() -->
+<!-- diagram-check.js is still not referenced from this page, but the reason has
+     changed: it used to live outside the repository, so a <script src> would have
+     404'd on Pages. It is now published at tools/diagram-check.js. It stays
+     unreferenced so that this sheet remains a single file with no dependencies,
+     which is what makes it readable offline. To run it against this page, inject
+     it from the console:
+       var s=document.createElement('script');
+       s.src='https://zia-research.github.io/linuxcnc-audit/tools/diagram-check.js';
+       document.body.appendChild(s);      then:  diagramCheck()
+     It checks the rendered SVG. The claims this figure makes about itself — the
+     colour rules in the legend, what a connector may land on, which box is inside
+     which — are checked against the .drawio model instead, by
+     tools/drawio-check.ps1, because none of that survives into an SVG. -->
 
 <p class="foot">
   Sources: <code>sheets/linuxcnc-code-notes-errata.html</code> (Sheet B, the
