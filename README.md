@@ -110,17 +110,37 @@ Expected: `280 pass, 0 fail`. On a later HEAD a FAIL usually means the line
 moved — re-anchor the citation rather than assume the finding broke.
 
 **The manifest is a curated set, not an index**, and the gap is stated rather
-than hidden. Measured 2026-08-08 the findings hold 193 distinct `file:line`
-citations, of which **164 now have an entry at that exact line — 85%**, and
-three more are anchored at a line *inside* the cited range: the one that carries
-the claim rather than the one that opens the block. The rest are left out on
-purpose: 16 point at LinuxCNC's own `.adoc` documentation, which is what this
-audit criticises and what its patches change, so pinning them would guarantee a
-failure the day a patch lands while telling you nothing about the code; 10 merely
-locate something a neighbouring entry already covers. A green run
-means *the manifest's* citations were re-read against the source at the pinned
-commits. The script's own header used to claim it covered every citation, and
-was corrected.
+than hidden. Measured 2026-08-08, with the manifest at 280: `LINUXCNC-FINDINGS.md`
+holds **204 distinct `file:line` citations, of which 171 have an entry at that
+exact line — 84%**.
+
+*The method, so it can be redone rather than believed:* extract every
+`name.ext:NNN` from the findings with a regex, compare against the manifest on
+`basename:line`. It does not resolve the shorthand the document uses when several
+lines of one file are cited in a row — `emcsvr.cc:140`, `:146`, `:151` counts as
+one citation, not three — so it **undercounts**. And note that **the instrument
+changed here**: an earlier pass counted 193 where this one counts 198 on the same
+commit. Two rulers, not growth.
+
+The 33 without an exact-line entry are three different things, and the difference
+is the point:
+
+- **14 point at LinuxCNC's own `.adoc` documentation** — which is what this audit
+  criticises and what its patches rewrite. Pinning them would guarantee a failure
+  the day a patch lands, while saying nothing about the code. A check that breaks
+  when you win is a bad check.
+- **10 have an entry within fifteen lines of the same file.** The block is
+  watched; the exact line is not.
+- **9 are genuinely unwatched**, and are named here rather than left as a number:
+  `control.c:333`, `control.main-pkg.in:70`, `control.top.in:119`,
+  `driver.cc:571`, `emctaskmain.cc:3303`, `interpmodule.cc:39`, `Makefile:745`,
+  `motion.c:1091`, `pyparamclass.cc:28`.
+
+A green run means *the manifest's* citations were re-read against the source at
+the pinned commits. The script's own header used to claim it covered every
+citation, and was corrected; it now points here instead of carrying its own copy
+of these figures, because a number kept in two files is a number that will drift
+— which is exactly what happened to it.
 
 ### The two figure checkers
 

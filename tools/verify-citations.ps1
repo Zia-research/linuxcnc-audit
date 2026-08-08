@@ -1,12 +1,19 @@
 # verify-citations.ps1 — machine-check the manifest's citations backing LINUXCNC-FINDINGS.md
 #
-# IT IS A CURATED SET, NOT AN INDEX. Measured 2026-08-07: LINUXCNC-FINDINGS.md
-# contains 126 distinct file:line citations, of which 39 have no manifest entry.
-# The header of this script used to say "every citation", which was not true and
-# invited the wrong inference — that a green run means every citation in the
-# document has been checked. It means every citation IN THE MANIFEST has been
-# checked. Widening the manifest to full coverage is a real job, deliberately not
-# done; see SESSION-STATE.md, Open actions.
+# IT IS A CURATED SET, NOT AN INDEX, and that is what a green run means: every
+# citation IN THE MANIFEST was re-read against the source at the pinned commits.
+# It does not mean every citation in LINUXCNC-FINDINGS.md was. This header once
+# said "every citation", which was untrue and invited exactly that inference.
+#
+# The coverage figures are deliberately NOT repeated here. They live in ONE place,
+# README.md, in the paragraph beginning "The manifest is a curated set" — together
+# with the method, so the measurement can be redone rather than believed, and with
+# the reason the citations left out are a decision rather than a backlog. A number
+# kept in two files is a number that will drift: this header carried a stale one
+# for a day after the manifest grew, which is why it now points instead of counts.
+# The script enforces the same discipline from the other side, at the bottom of
+# this file: it refuses to pass while any document in the repository states an
+# expected count the manifest no longer holds.
 #
 # Usage:
 #   powershell -File tools\verify-citations.ps1
