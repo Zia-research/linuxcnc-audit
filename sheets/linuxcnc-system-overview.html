@@ -263,7 +263,7 @@
   <text class="sm" x="330" y="-376">the man page says telnet, and the tree</text>
   <text class="sm" x="330" y="-358">contains none — same as the 5007 door</text>
   <text class="sm" x="330" y="-340">a human or a script, on another machine</text>
-  <rect class="grp detached" x="2050" y="480" width="700" height="620" rx="10" fill="#ffffff" stroke="#36393d"/>
+  <rect class="grp detached" x="2050" y="480" width="700" height="665" rx="10" fill="#ffffff" stroke="#36393d"/>
   <text class="sm" x="2400" y="498">LEGEND — the colour says WHAT A THING IS</text>
   <text class="sm" x="2400" y="516">position says where it lives; the arrows say what moves</text>
   <rect class="detached" x="2070" y="566" width="110" height="34" rx="10" fill="#dae8fc" stroke="#6c8ebf"/>
@@ -322,7 +322,11 @@
   <text class="sm" x="2070" y="1008" style="text-anchor:start">• every WHITE box must carry at least one link</text>
   <text class="sm" x="2070" y="1025" style="text-anchor:start">All four hold as drawn. And one trap: "process" and "non-realtime" are not the</text>
   <text class="sm" x="2070" y="1042" style="text-anchor:start">same thing — rtapi_app is a process and it lives below the line.</text>
+  <text class="sm" x="2070" y="1059" style="text-anchor:start">The letters on the NML strip say what each side DOES: the file declares task RW on</text>
+  <text class="sm" x="2070" y="1076" style="text-anchor:start">emcCommand, a permission it never uses.</text>
 </svg>
+
+
 
 
 
@@ -659,5 +663,22 @@
   box it describes. It had been overlapping another label in the drawing editor while being
   <em>absent</em> from this page, because the converter drops edge labels without saying so &#8212; so the
   exported image and this page did not say the same thing, and nothing was in a position to notice.
+  <strong><em>(15)</em> The NML strip printed its access letters in two vocabularies without saying
+  so.</strong> Two compartments print the mode the configuration file declares &#8212; <code>emcStatus</code>
+  and <code>emcError</code>, <code>task W</code> against <code>clients R</code>, which is exactly what
+  <code>configs/common/linuxcnc.nml:17,18,27,28</code> says. The third does not:
+  <code>emcCommand</code> prints <code>task R</code> where line 16 declares <code>RW</code>. Neither
+  reading is wrong on its own &#8212; task really does only read that channel, and the file really does
+  grant it more &#8212; but <strong>a figure that switches vocabulary between neighbouring cells is asking
+  the reader to guess which one is in force</strong>. The legend now states the convention: the letters
+  are what each side <em>does</em>, and the one place where the declaration is wider is named. Nothing
+  in the drawing moved. <strong>Two things made this findable at all, and neither was a checker.</strong>
+  The access grid was written into <code>LINUXCNC-FINDINGS.md</code> &#167;2.1 first, where the three
+  declared names and their nine pairs sit side by side and the odd one out is visible at a glance;
+  before that, the six letters existed <em>only here</em>, on a drawing, backed by nothing a reader
+  could open. And the twenty-four citations added with it mean the letters can now be checked against
+  the file rather than believed. <em>The general form is the one this sheet keeps relearning:</em>
+  <strong>a checker can tell you the drawing is consistent with itself; only prose can tell you it is
+  saying one thing.</strong>
 </p>
 </div>
