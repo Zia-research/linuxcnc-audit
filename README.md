@@ -106,14 +106,21 @@ git -C linuxcnc-ethercat checkout 87a72a8
 powershell -File linuxcnc-audit/tools/verify-citations.ps1
 ```
 
-Expected: `190 pass, 0 fail`. On a later HEAD a FAIL usually means the line
+Expected: `256 pass, 0 fail`. On a later HEAD a FAIL usually means the line
 moved — re-anchor the citation rather than assume the finding broke.
 
-**The manifest is a curated set, not an index.** Measured 2026-08-07, the
-findings hold 126 distinct `file:line` citations and 39 of them have no manifest
-entry. A green run means *the manifest's* citations were re-read against the
-source at the pinned commits — not that every citation in every document was.
-The script's own header used to claim otherwise and was corrected.
+**The manifest is a curated set, not an index**, and the gap is stated rather
+than hidden. Measured 2026-08-08 the findings hold 193 distinct `file:line`
+citations, of which **164 now have an entry at that exact line — 85%**, and
+three more are anchored at a line *inside* the cited range: the one that carries
+the claim rather than the one that opens the block. The rest are left out on
+purpose: 16 point at LinuxCNC's own `.adoc` documentation, which is what this
+audit criticises and what its patches change, so pinning them would guarantee a
+failure the day a patch lands while telling you nothing about the code; 10 merely
+locate something a neighbouring entry already covers. A green run
+means *the manifest's* citations were re-read against the source at the pinned
+commits. The script's own header used to claim it covered every citation, and
+was corrected.
 
 ### The two figure checkers
 
