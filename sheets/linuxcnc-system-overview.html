@@ -33,7 +33,7 @@
   process and thread membership — a fact about the running system, not a domain — and each lies
   wholly on one side of every line. It began as a merge of two earlier sheets — Sheet B of the
   errata sheet for component detail, the context sheet's rebuilt view for the seams — and has been
-  corrected eleven times since, each correction and its evidence recorded at the foot of the page.
+  corrected twelve times since, each correction and its evidence recorded at the foot of the page.
 </p>
 
 <div class="stage">
@@ -70,22 +70,22 @@
     <path d="M1253,845 V951 H1359 V1057" marker-end="url(#m)" marker-start="url(#m)"/>
     <path d="M1600,-272 V-26 H1595 V220" marker-end="url(#m)" marker-start="url(#m)"/>
     <path d="M636,112 V140 H280 V711" marker-end="url(#m)" marker-start="url(#m)"/>
-    <path d="M348,1501 V1646 H551 V1790" marker-end="url(#m)" marker-start="url(#m)"/>
-    <path d="M815,845 V1020 H943 V1057" marker-end="url(#m)" marker-start="url(#m)"/>
+    <path d="M74,1439 H25 V1440 V1830 H215" marker-end="url(#m)" marker-start="url(#m)"/>
+    <path d="M750,845 V1100 H777" marker-end="url(#m)" marker-start="url(#m)"/>
     <path d="M242,845 V1000 H145 V1288" marker-end="url(#m)" marker-start="url(#m)"/>
     <path d="M533,652 V682 H539 V711" marker-end="url(#m)" marker-start="url(#m)"/>
     <path d="M608,1050 V948 H604 V845" marker-end="url(#m)" marker-start="url(#m)"/>
     <path d="M574,484 V464 V445" marker-end="url(#m)" marker-start="url(#m)"/>
     <path d="M679,112 V160 H600 V337" marker-end="url(#m)" marker-start="url(#m)"/>
-    <path d="M120,58 H213 V711" marker-end="url(#m)" marker-start="url(#m)"/>
+    <path d="M110,112 V670 H230 V711" marker-end="url(#m)" marker-start="url(#m)"/>
     <path d="M252,85 V398 H253 V711" marker-end="url(#m)" marker-start="url(#m)"/>
     <path d="M330,-250 V-140" marker-end="url(#m)" marker-start="url(#m)"/>
     <path d="M420,294 V337" marker-end="url(#m)" marker-start="url(#m)"/>
   </g>
-  <line x1="-370" y1="688" x2="2434" y2="688" stroke="#c0392b" stroke-width="4" stroke-dasharray="9 5"/>
+  <line x1="-370" y1="688" x2="1990" y2="688" stroke="#c0392b" stroke-width="4" stroke-dasharray="9 5"/>
   <line x1="-199" y1="-214" x2="2605" y2="-214" stroke="#36393d" stroke-width="14" stroke-dasharray="2 5"/>
   <line x1="-209" y1="1656" x2="2595" y2="1656" stroke="#36393d" stroke-width="14" stroke-dasharray="2 5"/>
-  <line x1="-360" y1="861" x2="2444" y2="861" stroke="#c0392b" stroke-width="4" stroke-dasharray="9 5"/>
+  <line x1="-370" y1="861" x2="1990" y2="861" stroke="#c0392b" stroke-width="4" stroke-dasharray="9 5"/>
   <rect x="210" y="711" width="658" height="134" rx="10" fill="#e1d5e7" stroke="#9673a6" stroke-width="3"/>
   <text class="sm" x="539" y="729">HAL shared memory · key 0x48414C32</text>
   <text class="sm" x="539" y="747">2 MiB · pins · signals · params · functions · threads</text>
@@ -315,6 +315,8 @@
   <text class="sm" x="2070" y="1042" style="text-anchor:start">same thing — rtapi_app is a process and it lives below the line.</text>
 </svg>
 
+
+
 </div>
 <!-- diagram-check.js is deliberately NOT referenced here. It is a working tool that
      lives outside this repository, so a <script src> would 404 on GitHub Pages —
@@ -540,24 +542,45 @@
   and it asserts <em>process</em> membership rather than a domain, wholly on one side of every line;
   and <strong>both items left open by (8) are closed</strong> — milltask has its line to HAL memory,
   and the base thread is no longer joined to nothing.
-  <em>Checked, and where the check stops:</em> <code>diagramCheck()</code> on this page reports 32
-  boxes, 182 texts, 24 connectors — and <strong>four geometric errors that are still there.</strong>
-  They are two defects counted twice each: the drivers-to-machine link descends through both lines of
-  the <code>addf</code>-order note, and <code>halcmd</code>'s descent to HAL memory passes through the
-  <code>halrmt</code> box — which, on a figure that means something by adjacency, is the worse of the
-  two. <strong>A fifth was reported once, and it is not real.</strong> The HAL-to-servo link was said
-  to cross the RTAI-flavours caption; measuring both in the browser rather than trusting the report
-  puts the caption's left edge at x=825.5 and the connector at x=815, so it clears by ten units. The
-  run that flagged it had resolved a different font, which widened the text past the line.
-  <strong>The text-crossing check is therefore only as reproducible as the font that happens to
-  load</strong>, and a clearance of ten units is thin enough to flip it — which is worth more here as
-  a warning than the number it replaced. <strong>A third defect is reported by nothing here:</strong> the two red boundary lines span the whole
-  canvas and so run behind the legend panel, which sits to the right and straddles both. The boundary
-  is drawn as <code>&lt;line&gt;</code> rather than <code>&lt;path&gt;</code> precisely so the
-  connector check does not report the intended crossings as collisions — a checker that cries wolf on
-  every run stops being read — and the price of that exemption is that this one is invisible to it.
-  All three are layout and none of them changes a claim, but they are <em>recorded</em> rather than
-  quietly carried, because <strong>a page that reports itself clean when it is not teaches its reader
-  to stop checking.</strong>
+  <strong><em>(12)</em> Four layout defects fixed — including one the note above had argued was not
+  there — and the repair of another broke something the checker then caught.</strong> (11) shipped
+  with three faults recorded rather than hidden, and they are now fixed. <em>What they were:</em> the drivers-to-machine link descended through both lines of
+  the <code>addf</code>-order note; <code>halcmd</code>'s descent to HAL memory passed through the
+  <code>halrmt</code> box, which on a figure that means something by adjacency is the worse of the
+  two, since a line through a box reads as a line <em>to</em> it; and the two red boundary lines
+  spanned the whole canvas, so the scheduling band ran behind the legend panel and appeared to cut
+  through the key that explains it. The first now leaves its box on the left and descends outside the
+  <code>rtapi_app</code> frame, the second drops straight down a lane of its own, and the boundary
+  lines stop short of the legend. <strong>The third was invisible to every check here</strong>, and
+  that is a consequence of a deliberate choice: boundaries are drawn as <code>&lt;line&gt;</code>
+  rather than <code>&lt;path&gt;</code> so the connector check does not report the intended crossings
+  as collisions — a checker that cries wolf on every run stops being read — and the price of the
+  exemption is that this one had to be <em>seen</em>. It was, in a rendering.
+  <strong>Then the repair introduced a new defect, and this time the checker found it.</strong>
+  Rerouting the first link left its arrow seven units short of the box it starts from: draw.io
+  shortens a line to make room for its own arrowhead, and the converter pulls the endpoint back onto
+  the border afterwards — except that the export rounds coordinates to the unit, the first segment
+  came out one unit off true, and the code decided whether a segment was horizontal or vertical by
+  <strong>exact equality</strong>. Neither branch matched, nothing was reported, and the result was a
+  connector starting in open space and a <em>Machine hardware</em> box that no path reached. The test
+  is a tolerance now. <strong>The verdict went FAIL → clean on the same file inside one pass</strong>,
+  and that is the only evidence worth much: a check that has just failed and then passes says more
+  than one that has only ever passed. <code>diagramCheck()</code> now reports <strong>clean on three
+  consecutive runs</strong> — 32 boxes, 182 texts, 24 connectors.
+  <strong>A fourth defect was argued away instead of fixed, and the argument was wrong.</strong>
+  An earlier pass reported the HAL-to-servo link crossing the RTAI-flavours caption. Measuring in the
+  browser put the caption's left edge at x=825.5 against the connector's x=815, and the report was
+  written off as an artefact of whichever font had loaded. Measured again, on the same two files, the
+  caption runs from <strong>x=781.3</strong> to 1218.7: the connector was inside it, and it was the
+  <em>first</em> measurement that had resolved a narrower fallback face — 349 units of text against
+  437. The crossing was real all along. <strong>A second oracle that shares the first one's
+  environment is not a second oracle</strong>: <code>getBBox</code> and the checker disagreed about
+  the verdict while agreeing about the font, so measuring more carefully in the same browser could
+  only ever reproduce the same accident more precisely. The link now runs through the corridor
+  between <code>base-thread</code> and the frame's own caption — 31 units clear against the widest
+  rendering observed and more against the narrow one. <strong>The repair is geometry that survives
+  either font, not an argument about which font is right</strong>, and the general form of that is
+  worth more than this instance: when a check's verdict depends on the environment, make the drawing
+  robust to the range, rather than picking the reading that lets you leave it alone.
 </p>
 </div>
