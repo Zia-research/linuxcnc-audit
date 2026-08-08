@@ -1,0 +1,335 @@
+<mxfile host="Electron">
+  <diagram id="linuxcnc-system-overview" name="LinuxCNC — system overview">
+    <mxGraphModel dx="6600" dy="4303" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2560" pageHeight="1900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="b13" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=3;" value="HAL shared memory &amp;#183; key 0x48414C32&lt;br&gt;2 MiB &amp;#183; pins &amp;#183; signals &amp;#183; params &amp;#183; functions &amp;#183; threads&lt;br&gt;every hal_init() attaches it &amp;#8212; halcmd too" vertex="1">
+          <mxGeometry height="134" width="658" x="210" y="711" as="geometry" />
+        </mxCell>
+        <mxCell id="b14" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=3;" value="&lt;font color=&quot;#7A4A08&quot;&gt;emcmot · RTAPI shmem key 100 — not NML, not a FIFO&lt;/font&gt;&lt;br&gt;command · SINGLE SLOT · mutex · commandNum → Echo&lt;br&gt;status · seqlock head / tail&lt;br&gt;error · MPSC ring 32 × 1024 · newest lost" vertex="1">
+          <mxGeometry height="134" width="658" x="924" y="711" as="geometry" />
+        </mxCell>
+        <mxCell id="b26" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;detached=1;" value="&lt;b&gt;HAL files&lt;/b&gt;&lt;br&gt;loadrt &amp;#183; addf &amp;#183; net &amp;#183; setp&lt;br&gt;read once at startup by halcmd&lt;br&gt;they BUILD HAL memory; no live link after" vertex="1">
+          <mxGeometry height="140" width="470" x="1820" y="271" as="geometry" />
+        </mxCell>
+        <mxCell id="b27" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;detached=1;" value="&lt;b&gt;INI file&lt;/b&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;[KINS] · periods · limits · which GUI&lt;br&gt;read by task at startup — one way, never written back&lt;/div&gt;" vertex="1">
+          <mxGeometry height="110" width="470" x="1820" y="121" as="geometry" />
+        </mxCell>
+        <mxCell id="b24" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=2;" value="Machine hardware&lt;br&gt;drives · encoders · limit and home switches · spindle · field I/O" vertex="1">
+          <mxGeometry height="81" width="672" x="215" y="1790" as="geometry" />
+        </mxCell>
+        <mxCell id="YvrQsZjTYEUz9iUAEqGL-11" edge="1" parent="1" source="b25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fontSize=16;" target="b27">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="YvrQsZjTYEUz9iUAEqGL-12" edge="1" parent="1" source="b25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fontSize=16;" target="b26">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="b25" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;dashed=1;detached=1;" value="&lt;b&gt;Wizards&lt;/b&gt;&lt;br&gt;pncconf / stepconf&lt;br&gt;they GENERATE the INI and HAL files, one way&lt;br&gt;you run them before the machine, not with it" vertex="1">
+          <mxGeometry height="120" width="340" x="2380" y="116" as="geometry" />
+        </mxCell>
+        <mxCell id="b6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=3;container=1;collapsible=0;" value="" vertex="1">
+          <mxGeometry height="135" width="650" x="690" y="190.5" as="geometry" />
+        </mxCell>
+        <mxCell id="b6a" parent="b6" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#9673a6;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;" value="&lt;b&gt;emcCommand&lt;/b&gt;&lt;br&gt;8192 B&lt;br&gt;queue&lt;br&gt;&lt;font color=&quot;#7A4A08&quot;&gt;clients W&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#7A4A08&quot;&gt;task R&lt;/font&gt;" vertex="1">
+          <mxGeometry height="92" width="126.28571428571429" x="11.142857142857142" y="27.692307692307693" as="geometry" />
+        </mxCell>
+        <mxCell id="b6b" parent="b6" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#9673a6;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;" value="&lt;b&gt;emcStatus&lt;/b&gt;&lt;br&gt;20480 B&lt;br&gt;overwritten&lt;br&gt;&lt;font color=&quot;#7A4A08&quot;&gt;task W&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#7A4A08&quot;&gt;clients R&lt;/font&gt;" vertex="1">
+          <mxGeometry height="92" width="126.28571428571429" x="144.85714285714286" y="27.692307692307693" as="geometry" />
+        </mxCell>
+        <mxCell id="b6c" parent="b6" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#9673a6;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;" value="&lt;b&gt;emcError&lt;/b&gt;&lt;br&gt;8192 B&lt;br&gt;queue&lt;br&gt;&lt;font color=&quot;#7A4A08&quot;&gt;task W&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#7A4A08&quot;&gt;clients R&lt;/font&gt;" vertex="1">
+          <mxGeometry height="92" width="126.28571428571429" x="278.57142857142856" y="27.692307692307693" as="geometry" />
+        </mxCell>
+        <mxCell id="tnml" parent="b6" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13;" value="&lt;b&gt;NML &amp;#183; the only triplet&lt;/b&gt;&lt;br&gt;SHMEM &amp;#8212; shared memory,&lt;br&gt;like the two below&lt;br&gt;but this one never crosses&lt;br&gt;the boundary" vertex="1">
+          <mxGeometry height="73.84615384615385" width="219.14285714285714" x="419.7142857142857" y="31.384615384615387" as="geometry" />
+        </mxCell>
+        <mxCell id="b7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;" value="&lt;b&gt;linuxcncsvr — master of the three channels&lt;/b&gt;&lt;br&gt;creates the segments · starts first&lt;br&gt;NML servers, TCP 5005 — its clients are remote" vertex="1">
+          <mxGeometry height="75" width="300" x="1370" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="b3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eee;strokeColor=#36393d;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;dashed=1;" value="&lt;b&gt;remote NML client&lt;br&gt;&lt;/b&gt;&lt;br&gt;another computer; nothing realtime runs there&lt;br&gt;needs libnml — in practice another Linux with LinuxCNC&lt;br&gt;a GUI-only control PC; task, motion and HAL stay here&lt;br&gt;AXIS there needs AXIS_NO_HAL=1 — HAL is local memory —&lt;br&gt;and loses jog pins, pyvcp panels, classicladder&lt;br&gt;config: client.nml on it · server.nml on the machine&lt;br&gt;&lt;font color=&quot;#c0392b&quot;&gt;&lt;b&gt;no authentication on TCP 5005 — anything that reaches it writes&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#c0392b&quot;&gt;client.nml / server.nml are NOT INSTALLED — source tree only&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#c0392b&quot;&gt;and declare emcStatus at 10240 B against 20480 — NML halves it again&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#c0392b&quot;&gt;unverified — run tool_watch to settle it&lt;/font&gt;" vertex="1">
+          <mxGeometry height="238" width="380" x="1410" y="-510" as="geometry" />
+        </mxCell>
+        <mxCell id="b5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;dashed=1;" value="&lt;b&gt;halcmd / halshow&lt;/b&gt;&lt;br&gt;HAL clients &amp;#8212; hal_init() attaches HAL memory&lt;br&gt;a hand tool, not part of the cycle&lt;br&gt;setp writes a pin, getp reads one &amp;#8212; live&lt;br&gt;they never touch NML" vertex="1">
+          <mxGeometry height="108" width="340" x="-220" y="4.5" as="geometry" />
+        </mxCell>
+        <mxCell id="b1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;dashed=1;" value="halui&lt;br&gt;no display at all — knobs and switches&lt;br&gt;[HAL]HALUI — adds, never replaces&lt;br&gt;47 HAL_IN + 42 HAL_OUT" vertex="1">
+          <mxGeometry height="104" width="248" x="300" y="190.5" as="geometry" />
+        </mxCell>
+        <mxCell id="b0" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;" value="&lt;b&gt;LOCAL GUI&lt;/b&gt;&lt;br&gt;axis &amp;#183; gmoccapy &amp;#183; touchy &amp;#183; gscreen &amp;#183; qtvcp screens (qtdragon&amp;#8230;)&lt;br&gt;each screen exports its OWN pins &amp;#8212; and the count differs&lt;br&gt;axisui 16 &amp;#183; qtdragon 18" vertex="1">
+          <mxGeometry height="109" width="462" x="580" y="3.5" as="geometry" />
+        </mxCell>
+        <mxCell id="b8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;" value="milltask — the task process&lt;br&gt;tool, coolant, estop — no NML channel left for I/O" vertex="1">
+          <mxGeometry height="168" width="952" x="439" y="484" as="geometry" />
+        </mxCell>
+        <mxCell id="b9" parent="b8" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#6c8ebf;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;" value="&lt;b&gt;RS-274 interpreter&lt;/b&gt;&lt;br&gt;librs274.so &amp;#8212; one class, TWO instances&lt;br&gt;task&amp;#39;s: canon &amp;#8594; interp_list &amp;#8594; motion" vertex="1">
+          <mxGeometry height="90" width="224" x="28" y="42" as="geometry" />
+        </mxCell>
+        <mxCell id="b12" parent="b8" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#6c8ebf;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;" value="iocontrol.0.*&lt;br&gt;14 HAL pins&lt;br&gt;former io process" vertex="1">
+          <mxGeometry height="90" width="196" x="721" y="42" as="geometry" />
+        </mxCell>
+        <mxCell id="b11" parent="b8" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#6c8ebf;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;" value="&lt;b&gt;sequencing&lt;/b&gt;&lt;br&gt;the task state machine &amp;#8212;&lt;br&gt;decides what runs next" vertex="1">
+          <mxGeometry height="90" width="210" x="490" y="42" as="geometry" />
+        </mxCell>
+        <mxCell id="b10" parent="b8" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#6c8ebf;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;" value="interp_list&lt;br&gt;std::deque&lt;br&gt;throttled at 1000&lt;br&gt;[TASK]INTERP_MAX_LEN" vertex="1">
+          <mxGeometry height="90" width="196" x="273" y="42" as="geometry" />
+        </mxCell>
+        <mxCell id="b2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eee;strokeColor=#36393d;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;dashed=1;" value="&lt;div&gt;&lt;b&gt;REMOTE GUI&lt;/b&gt;&lt;/div&gt;&lt;b&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;telnet · nc · any socket client — plain text, not NML&lt;/b&gt;&lt;br&gt;a human or a program, on another machine&lt;br&gt;&lt;font color=&quot;#c0392b&quot;&gt;two passwords, but sent in the clear — man warns twice&lt;/font&gt;" vertex="1">
+          <mxGeometry height="108" width="320" x="1006" y="-394" as="geometry" />
+        </mxCell>
+        <mxCell id="t1" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=30;fontColor=light-dark(#ff0000, #ededed);fontStyle=1" value="ordinary scheduling&lt;div&gt;&lt;span&gt;NOT REALTIME&lt;/span&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="16" width="103" x="-193" y="634" as="geometry" />
+        </mxCell>
+        <mxCell id="t3" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=30;fontColor=light-dark(#ff0000, #ededed);fontStyle=1" value="&lt;span&gt;REALTIME&lt;/span&gt;&lt;div&gt;SCHED_FIFO · rtapi_app&lt;span&gt;&lt;/span&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="16" width="60" x="-192" y="914" as="geometry" />
+        </mxCell>
+        <mxCell id="tstream" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=16;fontColor=#000000;" value="streamer / sampler &amp;#8212; the same kind of memory, optional&lt;div&gt;RTAPI segments of their own, created in realtime and&lt;/div&gt;&lt;div&gt;attached by halstreamer / halsampler, ordinary processes&lt;/div&gt;&lt;div&gt;&amp;#8212; so they cross this band too&lt;/div&gt;&lt;div&gt;keys 0x48535430+n (into HAL) &amp;#183; 0x48534130+n (out of HAL), 8 each&lt;/div&gt;&lt;div&gt;loaded, they are addf'd into a thread and run in the cycle&lt;/div&gt;&lt;div&gt;shipped configs: streamer 0 of 332 &amp;#183; sampler 1 (the panelui demo)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="130" width="370" x="1620" y="700" as="geometry" />
+        </mxCell>
+        <mxCell id="t5" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=16;fontColor=#000000;" value="a scheduling boundary, not a kernel boundary&lt;br&gt;kernel modules only on the RTAI-&lt;i&gt;kernel&lt;/i&gt; flavour — 1 of the 5 RTAPI flavours;&lt;div&gt;uspace/RTAI is user space too&lt;/div&gt;" vertex="1">
+          <mxGeometry height="90" width="420" x="-330" y="730" as="geometry" />
+        </mxCell>
+        <mxCell id="boundary" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;strokeColor=#c0392b;strokeWidth=4;fontSize=16;fontColor=#FF0000;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-370" y="688" as="sourcePoint" />
+            <mxPoint x="1990" y="688" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="b2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;endFill=1;startArrow=classic;startFill=1;strokeWidth=1;jettySize=auto;fontSize=16;" target="b4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="b0" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;endFill=1;startArrow=classic;startFill=1;strokeWidth=1;jettySize=auto;exitX=0.615;exitY=0.986;exitDx=0;exitDy=0;entryX=0.263;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;fontSize=16;exitPerimeter=0;" target="b6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="b1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;endFill=1;startArrow=classic;startFill=1;strokeWidth=1;jettySize=auto;fontSize=16;entryX=-0.006;entryY=0.381;entryDx=0;entryDy=0;entryPerimeter=0;" target="b6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="b1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;endFill=1;startArrow=classic;startFill=1;strokeWidth=1;jettySize=auto;fontSize=16;exitX=0.088;exitY=1.048;exitDx=0;exitDy=0;exitPerimeter=0;" target="b13">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="322" y="503" />
+              <mxPoint x="380" y="503" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="b4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;endFill=1;startArrow=classic;startFill=1;strokeWidth=1;jettySize=auto;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.886;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;fontSize=16;" target="b6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="b6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;endFill=1;startArrow=classic;startFill=1;strokeWidth=1;jettySize=auto;fontSize=16;" target="b8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="b6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;endFill=1;startArrow=classic;startFill=1;strokeWidth=1;jettySize=auto;fontSize=16;" target="b7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="b8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;endFill=1;startArrow=classic;startFill=1;strokeWidth=1;jettySize=auto;exitX=0.853;exitY=0.994;exitDx=0;exitDy=0;exitPerimeter=0;fontSize=16;" target="b14">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="b14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;endFill=1;startArrow=classic;startFill=1;strokeWidth=1;jettySize=auto;fontSize=16;" target="b15" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" edge="1" parent="1" source="b3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;endFill=1;startArrow=classic;startFill=1;strokeWidth=1;jettySize=auto;fontSize=16;entryX=0.75;entryY=0;entryDx=0;entryDy=0;" target="b7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" edge="1" parent="1" source="b0" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;endFill=1;startArrow=classic;startFill=1;strokeWidth=1;jettySize=auto;fontSize=16;" target="b13">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="636" y="140" />
+              <mxPoint x="280" y="140" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e17" edge="1" parent="1" source="b23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;endFill=1;startArrow=classic;startFill=1;strokeWidth=1;jettySize=auto;fontSize=16;exitX=0;exitY=0.71;exitDx=0;exitDy=0;entryX=0;entryY=0.49;entryDx=0;entryDy=0;" target="b24">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="25" y="1439" />
+              <mxPoint x="25" y="1830" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e18" edge="1" parent="1" source="b13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;endFill=1;startArrow=classic;startFill=1;strokeWidth=1;jettySize=auto;entryX=0;entryY=0.097;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.821;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;fontSize=13;labelBackgroundColor=#ffffff;" target="b15">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="750" y="1100" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e19" edge="1" parent="1" source="b13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;endFill=1;startArrow=classic;startFill=1;strokeWidth=1;jettySize=auto;exitX=0.048;exitY=0.987;exitDx=0;exitDy=0;entryX=0.13;entryY=0;entryDx=0;entryDy=0;fontSize=16;entryPerimeter=0;exitPerimeter=0;" target="b23">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="242" y="1000" />
+              <mxPoint x="145" y="1000" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YvrQsZjTYEUz9iUAEqGL-6" edge="1" parent="1" style="endArrow=none;dashed=1;dashPattern=1 3;html=1;strokeColor=#36393d;strokeWidth=14;startSize=16;endSize=16;sourcePerimeterSpacing=0;fontSize=16;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-199" y="-214" as="sourcePoint" />
+            <mxPoint x="2605" y="-214" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YvrQsZjTYEUz9iUAEqGL-7" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=30;fontColor=#36393d;" value="everything under this line is software&lt;div&gt;&lt;b&gt;INSIDE THE COMPUTER&lt;/b&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="16" width="200" x="-241" y="-170" as="geometry" />
+        </mxCell>
+        <mxCell id="YvrQsZjTYEUz9iUAEqGL-9" parent="1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=30;fontColor=#36393d;html=1;convertToSvg=0;fontStyle=1" value="REMOTE DESKTOP&lt;br&gt;over network" vertex="1">
+          <mxGeometry height="36" width="200" x="-241" y="-280" as="geometry" />
+        </mxCell>
+        <mxCell id="c3a" edge="1" parent="1" source="b8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;endFill=1;startArrow=classic;startFill=1;strokeWidth=1;jettySize=auto;fontSize=13;labelBackgroundColor=#ffffff;exitX=0.099;exitY=0.989;exitDx=0;exitDy=0;exitPerimeter=0;" target="b13">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c3b" edge="1" parent="1" source="b21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;endFill=1;startArrow=classic;startFill=1;strokeWidth=1;jettySize=auto;fontSize=13;labelBackgroundColor=#ffffff;entryX=0.599;entryY=0.966;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.75;exitY=0;exitDx=0;exitDy=0;" target="b13" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="b90" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;detached=1;" value="&lt;b&gt;G-code program &amp;#8212; .ngc&lt;/b&gt;&lt;br&gt;the job, not the configuration&lt;br&gt;read TWICE, by two instances of the same interpreter:&lt;br&gt;task&amp;#39;s &amp;#8212; canon &amp;#8594; interp_list &amp;#8594; motion&lt;br&gt;the GUI&amp;#39;s &amp;#8212; canon &amp;#8594; a drawing callback, the path on screen" vertex="1">
+          <mxGeometry height="140" width="470" x="1820" y="-49" as="geometry" />
+        </mxCell>
+        <mxCell id="b91" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=3;" value="&lt;b&gt;tool table &amp;#8212; mmap&amp;#39;d FILE, not RTAPI shm&lt;/b&gt;&lt;br&gt;milltask creates &amp;#183; GUIs and halui attach&lt;br&gt;read-write on both sides, under a mutex&lt;br&gt;wholly non-realtime &amp;#8212; never crosses the line" vertex="1">
+          <mxGeometry height="108" width="380" x="347" y="337" as="geometry" />
+        </mxCell>
+        <mxCell id="g3" edge="1" parent="1" source="b8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;endFill=1;startArrow=classic;startFill=1;strokeWidth=1;jettySize=auto;fontSize=13;labelBackgroundColor=#ffffff;exitX=0.142;exitY=0.016;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.599;entryY=0.991;entryDx=0;entryDy=0;entryPerimeter=0;" target="b91" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="b92" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#6c8ebf;verticalAlign=top;spacingTop=4;fontSize=13;strokeWidth=2;container=1;collapsible=0;" value="&lt;b&gt;rtapi_app &amp;#8212; the process these threads run in&lt;/b&gt;&lt;br&gt;started by halcmd: loadrt runs &amp;quot;rtapi_app load &amp;lt;mod&amp;gt;&amp;quot;&lt;br&gt;a component is a shared object dlopen&amp;#39;d into it&lt;br&gt;uspace flavours only, the default; under RTAI-&lt;i&gt;kernel&lt;/i&gt; they are kernel modules" vertex="1">
+          <mxGeometry height="660" width="1900" x="50" y="920" as="geometry" />
+        </mxCell>
+        <mxCell id="b15" parent="b92" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffdf5;strokeColor=#b0a06a;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;" value="servo-thread — servo_period_nsec · members, not execution order (addf order is config data)&lt;br&gt;&lt;font color=&quot;#666&quot;&gt;both exported by motmod&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#666&quot;&gt;via hal_export_funct()&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#666&quot;&gt;JOINT 1…16 — a motor, not an axis · 9 separate Cartesian axes&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#666&quot;&gt;to HAL memory: joint.N.motor-pos-cmd OUT · motor-pos-fb IN&lt;/font&gt;" vertex="1">
+          <mxGeometry height="444.2307692307693" width="1163.7500000000002" x="726.7500000000001" y="137.0769230769231" as="geometry" />
+        </mxCell>
+        <mxCell id="b20" parent="b15" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;" value="&lt;b&gt;&amp;#9315;&lt;/b&gt; &lt;b&gt;HAL components in the same thread — wired by the integrator&lt;/b&gt;&lt;br&gt;pid.N.do-pid-calcs · encoder · stepgen.capture-position · pwmgen · limit3 · estop_latch&lt;br&gt;124 .comp + 25 .c source files" vertex="1">
+          <mxGeometry height="99" width="1064.0000000000002" x="33.25000000000001" y="301.3846153846154" as="geometry" />
+        </mxCell>
+        <mxCell id="b16" parent="b15" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;" value="&lt;b&gt;&amp;#9313;&lt;/b&gt; motion-command-handler" vertex="1">
+          <mxGeometry height="49.5" width="332.5" x="23.75" y="118.6923076923077" as="geometry" />
+        </mxCell>
+        <mxCell id="b19" parent="b15" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#b0a06a;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;" value="&lt;b&gt;inside the controller&lt;/b&gt;&lt;br&gt;TC_QUEUE — ring · 2000 segments ≈ 1 MB&lt;br&gt;spindle.N.* pins × 8&lt;br&gt;JOINT 1…16: cubic interpolator&lt;br&gt;→ backlash + screw comp → motor_pos_cmd pin" vertex="1">
+          <mxGeometry height="177.6923076923077" width="365.75" x="764.7500000000001" y="97.11538461538461" as="geometry" />
+        </mxCell>
+        <mxCell id="b18" parent="b15" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;dashed=1;" value="&lt;b&gt;tpmod&lt;/b&gt; &amp;#8212; cruckig &amp;#183; finite jerk&lt;br&gt;&lt;b&gt;homemod&lt;/b&gt; &amp;#183; one of 19 &lt;b&gt;*kins&lt;/b&gt;&lt;br&gt;separate modules (loadrt), called from motmod&amp;#39;s functs:&lt;br&gt;controller RUNS it &amp;#8212; tpRunCycle each period&lt;br&gt;handler FEEDS it &amp;#8212; tpAddLine / tpAddCircle / tpSetVmax" vertex="1">
+          <mxGeometry height="177.6923076923077" width="332.5" x="409.68750000000006" y="104.73076923076924" as="geometry" />
+        </mxCell>
+        <mxCell id="b17" parent="b15" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;" value="&lt;b&gt;&amp;#9314;&lt;/b&gt; motion-controller" vertex="1">
+          <mxGeometry height="49.5" width="332.5" x="23.75" y="192.30769230769232" as="geometry" />
+        </mxCell>
+        <mxCell id="b21" parent="b92" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffdf5;strokeColor=#b0a06a;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;dashed=1;" value="&lt;b&gt;base-thread&lt;/b&gt;&lt;br&gt;created only when servo_base_ratio &amp;gt; 1&lt;br&gt;the servo thread hands it work through&lt;br&gt;stepgen&amp;#39;s own state &amp;#8212; not through pins" vertex="1">
+          <mxGeometry height="170.0769230769231" width="477.37500000000006" x="199.50000000000003" y="129.9969230769231" as="geometry" />
+        </mxCell>
+        <mxCell id="b22" parent="b21" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;" value="stepgen.make-pulses" vertex="1">
+          <mxGeometry height="43.07142857142858" width="289.31818181818187" x="94.02840909090911" y="80.62087912087912" as="geometry" />
+        </mxCell>
+        <mxCell id="b23" parent="b92" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;" value="&lt;b&gt;&amp;#9312;&lt;/b&gt; read &amp;#183; &lt;b&gt;&amp;#9316;&lt;/b&gt; write &amp;#8212; &lt;b&gt;hardware drivers&lt;/b&gt;&lt;br&gt;hostmot2 (Mesa) &amp;#183; lcec (EtherCAT) &amp;#183; hal_parport &amp;#183; gpio&lt;br&gt;loaded by loadrt like motmod &amp;#8212; rtapi_app_main()&lt;br&gt;their functs are addf&amp;#39;d into whichever thread the integrator picks&lt;br&gt;23 driver files &amp;#183; hostmot2 alone: 42 modules, one driver&lt;br&gt;every driver is a HAL component &amp;#8212; its pins live in HAL memory" vertex="1">
+          <mxGeometry height="213.23076923076925" width="548.6250000000001" x="23.75" y="368.0769230769231" as="geometry" />
+        </mxCell>
+        <mxCell id="tbracket" parent="b92" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=15;fontColor=#7A4A08;" value="&lt;b&gt;①②③④⑤ is one shipped CONVENTION, not a rule.&lt;/b&gt; Of the 55 shipped configs that addf both a hardware read and motion-command-handler, &lt;b&gt;54 put the read first&lt;/b&gt; — and one does not:&lt;br&gt;configs/by_interface/general_mechatronics/GM6-PCI/3-axis-servo.hal reads its board &lt;i&gt;after&lt;/i&gt; the controller has run. Reorder the addf lines and you reorder the machine&#39;s cycle." vertex="1">
+          <mxGeometry height="55.85" width="1702.5" x="47.5" y="596.54" as="geometry" />
+        </mxCell>
+        <mxCell id="g4" edge="1" parent="1" source="b0" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;endFill=1;startArrow=classic;startFill=1;strokeWidth=1;jettySize=auto;fontSize=13;labelBackgroundColor=#ffffff;exitX=0.214;exitY=1.024;exitDx=0;exitDy=0;exitPerimeter=0;" target="b91" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="679" y="160" />
+              <mxPoint x="600" y="160" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="b5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;endFill=1;startArrow=classic;startFill=1;strokeWidth=1;jettySize=auto;fontSize=13;labelBackgroundColor=#ffffff;exitX=0.97;exitY=1;exitDx=0;exitDy=0;entryX=0.03;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" target="b13">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="110" y="670" />
+              <mxPoint x="230" y="670" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="thead" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13;fontColor=#5b636b;" value="&lt;b&gt;INPUTS &amp;#8212; files, not processes&lt;/b&gt;&lt;br&gt;detached on purpose: nothing here runs, and nothing here is&lt;br&gt;on the machine&amp;#39;s cycle. They are read, then their arrows would&lt;br&gt;only add crossings. Kept as text." vertex="1">
+          <mxGeometry height="70" width="470" x="2320" y="-19" as="geometry" />
+        </mxCell>
+        <mxCell id="ie_a1OAYyR4woEJlA5U2-5" edge="1" parent="1" style="endArrow=none;dashed=1;dashPattern=1 3;html=1;strokeColor=#36393d;strokeWidth=14;startSize=16;endSize=16;sourcePerimeterSpacing=0;fontSize=16;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-209" y="1656" as="sourcePoint" />
+            <mxPoint x="2595" y="1656" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ie_a1OAYyR4woEJlA5U2-6" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=30;fontColor=#36393d;" value="everything ABOVE this line is software&lt;div&gt;&lt;b&gt;INSIDE THE COMPUTER&lt;/b&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="16" width="200" x="-232" y="1610" as="geometry" />
+        </mxCell>
+        <mxCell id="ie_a1OAYyR4woEJlA5U2-7" parent="1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=30;fontColor=#36393d;html=1;convertToSvg=0;fontStyle=1" value="THE MACHINE ITSELF&lt;div&gt;physical - no scheduling class applies to it&lt;/div&gt;" vertex="1">
+          <mxGeometry height="36" width="200" x="-232" y="1690" as="geometry" />
+        </mxCell>
+        <mxCell id="b93" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;dashed=1;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;" value="&lt;b&gt;halrmt &amp;#8212; a THIRD network door, onto HAL itself&lt;/b&gt;&lt;br&gt;telnet &amp;#183; TCP 5006 &amp;#183; it attaches HAL like any component&lt;br&gt;&lt;font color=&quot;#c0392b&quot;&gt;LoadRt &amp;#183; Unload &amp;#183; AddF &amp;#183; Net &amp;#183; SetP &amp;#183; Shutdown&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#c0392b&quot;&gt;&amp;#8212; full control of the realtime config, over a socket&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#c0392b&quot;&gt;default passwords EMC / EMCTOO &amp;#183; sessions unlimited&lt;/font&gt;&lt;br&gt;&lt;b&gt;nothing starts it&lt;/b&gt;: no config or script launches it&lt;br&gt;its man page: &amp;quot;It is not known if this interface currently works&amp;quot;" vertex="1">
+          <mxGeometry height="225" width="340" x="160" y="-140" as="geometry" />
+        </mxCell>
+        <mxCell id="e22" edge="1" parent="1" source="b93" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;endFill=1;startArrow=classic;startFill=1;strokeWidth=1;jettySize=auto;fontSize=13;labelBackgroundColor=#ffffff;entryX=0.065;entryY=-0.01;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.27;exitY=1.019;exitDx=0;exitDy=0;exitPerimeter=0;" target="b13" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="b4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;dashed=1;" value="linuxcncrsh&lt;br&gt;telnet server · TCP 5007&lt;br&gt;a local NML client here" vertex="1">
+          <mxGeometry height="109" width="252" x="1127" as="geometry" />
+        </mxCell>
+        <mxCell id="ie_a1OAYyR4woEJlA5U2-10" edge="1" parent="1" source="ie_a1OAYyR4woEJlA5U2-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;endArrow=classic;endFill=1;startArrow=classic;startFill=1;fontSize=16;" target="b93">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ie_a1OAYyR4woEJlA5U2-9" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eee;strokeColor=#36393d;dashed=1;verticalAlign=top;spacingTop=2;fontSize=17;strokeWidth=1;" value="&lt;b&gt;any telnet client&lt;/b&gt;&lt;br&gt;no LinuxCNC-provided client exists:&lt;br&gt;the man page says telnet, and the tree&lt;br&gt;contains none &amp;#8212; same as the 5007 door&lt;br&gt;a human or a script, on another machine" vertex="1">
+          <mxGeometry height="180" width="320" x="170" y="-430" as="geometry" />
+        </mxCell>
+        <mxCell id="ie_a1OAYyR4woEJlA5U2-13" edge="1" parent="1" source="b1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.484;exitY=1;exitDx=0;exitDy=0;entryX=0.192;entryY=0.028;entryDx=0;entryDy=0;entryPerimeter=0;exitPerimeter=0;startArrow=classic;startFill=1;" target="b91">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ie_a1OAYyR4woEJlA5U2-14" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;strokeColor=#c0392b;strokeWidth=4;fontSize=16;fontColor=#FF0000;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-370" y="861" as="sourcePoint" />
+            <mxPoint x="1990" y="861" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="leg" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#36393d;verticalAlign=top;spacingTop=6;fontSize=16;container=1;collapsible=0;detached=1;" value="&lt;b&gt;LEGEND &amp;#8212; the colour says WHAT A THING IS&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:13px&quot;&gt;position says where it lives; the arrows say what moves&lt;/font&gt;" vertex="1">
+          <mxGeometry height="620" width="700" x="2050" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="legs1" parent="leg" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=1;fontSize=13;detached=1;" value="" vertex="1">
+          <mxGeometry height="34" width="110" x="20" y="86" as="geometry" />
+        </mxCell>
+        <mxCell id="legt1" parent="leg" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13;detached=1;" value="a &lt;b&gt;PROCESS&lt;/b&gt; &amp;#8212; something the kernel schedules" vertex="1">
+          <mxGeometry height="34" width="540" x="144" y="86" as="geometry" />
+        </mxCell>
+        <mxCell id="legs2" parent="leg" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=3;fontSize=13;detached=1;" value="" vertex="1">
+          <mxGeometry height="34" width="110" x="20" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="legt2" parent="leg" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13;detached=1;" value="&lt;b&gt;SHARED MEMORY&lt;/b&gt; &amp;#8212; created on one side, attached from the other" vertex="1">
+          <mxGeometry height="34" width="540" x="144" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="legs3" parent="leg" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=1;fontSize=13;detached=1;" value="" vertex="1">
+          <mxGeometry height="34" width="110" x="20" y="174" as="geometry" />
+        </mxCell>
+        <mxCell id="legt3" parent="leg" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13;detached=1;" value="&lt;b&gt;REALTIME CODE&lt;/b&gt; &amp;#8212; a shared object dlopen&amp;#39;d into rtapi_app by loadrt" vertex="1">
+          <mxGeometry height="34" width="540" x="144" y="174" as="geometry" />
+        </mxCell>
+        <mxCell id="legs4" parent="leg" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffdf5;strokeColor=#b0a06a;strokeWidth=1;fontSize=13;detached=1;" value="" vertex="1">
+          <mxGeometry height="34" width="110" x="20" y="218" as="geometry" />
+        </mxCell>
+        <mxCell id="legt4" parent="leg" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13;detached=1;" value="a &lt;b&gt;THREAD&lt;/b&gt; &amp;#8212; its members are config data, not code" vertex="1">
+          <mxGeometry height="34" width="540" x="144" y="218" as="geometry" />
+        </mxCell>
+        <mxCell id="legs5" parent="leg" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=1;fontSize=13;detached=1;" value="" vertex="1">
+          <mxGeometry height="34" width="110" x="20" y="262" as="geometry" />
+        </mxCell>
+        <mxCell id="legt5" parent="leg" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13;detached=1;" value="a &lt;b&gt;FILE&lt;/b&gt; &amp;#8212; read, never a running thing" vertex="1">
+          <mxGeometry height="34" width="540" x="144" y="262" as="geometry" />
+        </mxCell>
+        <mxCell id="legs6" parent="leg" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eee;strokeColor=#36393d;strokeWidth=1;fontSize=13;detached=1;" value="" vertex="1">
+          <mxGeometry height="34" width="110" x="20" y="306" as="geometry" />
+        </mxCell>
+        <mxCell id="legt6" parent="leg" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13;detached=1;" value="&lt;b&gt;NOT ON THIS COMPUTER&lt;/b&gt;" vertex="1">
+          <mxGeometry height="34" width="540" x="144" y="306" as="geometry" />
+        </mxCell>
+        <mxCell id="legs7" parent="leg" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;strokeWidth=2;fontSize=13;detached=1;" value="" vertex="1">
+          <mxGeometry height="34" width="110" x="20" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="legt7" parent="leg" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13;detached=1;" value="&lt;b&gt;THE MACHINE&lt;/b&gt; &amp;#8212; not software at all" vertex="1">
+          <mxGeometry height="34" width="540" x="144" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="legs8" parent="leg" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#36393d;dashed=1;fontSize=13;detached=1;" value="" vertex="1">
+          <mxGeometry height="34" width="110" x="20" y="394" as="geometry" />
+        </mxCell>
+        <mxCell id="legt8" parent="leg" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13;detached=1;" value="&lt;b&gt;no fill&lt;/b&gt; &amp;#8212; a container, or a subdivision of its parent" vertex="1">
+          <mxGeometry height="34" width="540" x="144" y="394" as="geometry" />
+        </mxCell>
+        <mxCell id="legrules" parent="leg" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=13;detached=1;" value="&lt;b&gt;Why it is coloured this way:&lt;/b&gt; so the colour can be checked, not admired.&lt;br&gt;&amp;#8226; every GREEN box must sit inside rtapi_app&lt;br&gt;&amp;#8226; every GREY box must sit above the remote line&lt;br&gt;&amp;#8226; the ORANGE box must sit below the machine line&lt;br&gt;&amp;#8226; every WHITE box must carry at least one link&lt;br&gt;All four hold as drawn. &lt;b&gt;And one trap&lt;/b&gt;: &amp;quot;process&amp;quot; and &amp;quot;non-realtime&amp;quot; are not the&lt;br&gt;same thing &amp;#8212; rtapi_app is a process and it lives below the line." vertex="1">
+          <mxGeometry height="160" width="664" x="20" y="446" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

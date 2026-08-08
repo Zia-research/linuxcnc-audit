@@ -65,15 +65,24 @@ criticises.
 
 The whole system on one page, from the operator's screen to the machine. It began as a
 merge of the two sheets above — Sheet B for component detail, the context sheet's
-rebuilt view for the seams — and has been corrected seven times since.
+rebuilt view for the seams — and has been corrected thirteen times since, each correction
+and its evidence recorded at the foot of the page.
 
-Two decisions shape it. **There are no domain containers**: a frame asserts membership
-and can be contradicted by its own geometry, as the first version was when the frame
-labelled *"ordinary Linux processes"* ended above `linuxcncsvr` and `milltask`. A dashed
-line cannot make that mistake, so the boundary is a line and nothing else, labelled on
-each side. **And the two shared-memory segments are drawn across it** — `emcmot` at key
-100 and HAL at `0x48414C32` — because each is created on one side and attached from the
-other, which is what shared memory is.
+Two decisions shape it. **Domains are marked by lines, never by frames**: a frame asserts
+membership and can be contradicted by its own geometry, as the first version was when the
+frame labelled *"ordinary Linux processes"* ended above `linuxcncsvr` and `milltask`. A
+line cannot make that mistake. The frames that do exist assert *process* and *thread*
+membership — a fact about the running system rather than a domain — and each lies wholly
+on one side of every line. **And the two shared-memory segments lie in the boundary band**
+— `emcmot` at key 100 and HAL at `0x48414C32` — because each is created on one side and
+attached from the other, which is what shared memory is. A configuration can create more,
+and the figure names them.
+
+**The source is [`sheets/linuxcnc-system-overview.drawio`](sheets/linuxcnc-system-overview.drawio)**,
+and the HTML page is generated from it: box geometry comes from the model, connector
+routing from draw.io's own SVG export, and only the `<svg>` block of the page is replaced,
+so the prose and its footnoted evidence never make the round trip. Editing the SVG in the
+page by hand is a change the next conversion deletes.
 
 Both network doors are drawn, because a door that is not shown is a door nobody thinks
 about, and they are not alike: `linuxcncrsh` is a telnet server on TCP 5007 speaking
