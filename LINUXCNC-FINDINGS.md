@@ -181,6 +181,41 @@ reads `W` command, `R` status, `R` error. Anything drawn as a client *reading* c
 status contradicts the file. linuxcncsvr is not a fourth kind of participant either — it holds a
 client's hand (`W`, `R`, `R`) and carries those permissions for whoever connects on TCP 5005.
 
+**linuxcncsvr is not on the path between a client and task.** The same file settles it: every
+process line is `LOCAL`, so each process attaches the SHMEM segments directly and nothing relays.
+What `emcsvr` alone carries is `server?=1` and `master?=1` (`linuxcnc.nml:20`, `:23`) — it creates
+the segments and starts first (`scripts/linuxcnc.in:795`), then serves them over TCP 5005, which is
+the whole of its `main()`: `emcsvr.cc:185` calls `run_nml_servers()` and nothing follows it. **Its
+clients are therefore remote by definition**, and a local GUI never goes through it. Note also that
+`linuxcncrsh` has **no process line at all** in the file — it opens its channels under a name that
+does, which is why nothing had to be declared for it.
+
+*Vocabulary trap, because it inverts easily:* NML calls the **machine** the master. Describing a
+remote GUI computer as the "master PC" contradicts the very file you would then open.
+
+#### The two network doors, and why the difference is larger than it looks
+
+LinuxCNC exposes two unrelated network services. Confusing them is easy, because both get described
+as "remote access", and the choice between them decides what the remote end has to be.
+
+**TCP 5005 — NML, the narrow door.** Served by `linuxcncsvr`. A client has to speak NML, and no NML
+library is packaged apart from LinuxCNC: `src/libnml/` carries no Windows or Apple build. In
+practice "a remote NML client" means another Linux running LinuxCNC as a GUI-only control PC — and
+even that is not free, because HAL is local shared memory: `axis.py:75` gates AXIS's HAL component
+on the `AXIS_NO_HAL` environment variable, so a remote AXIS must set it and give up its jog pins,
+its pyvcp panels and classicladder detection. **It authenticates nothing.**
+
+**TCP 5007 — telnet text, the wide door.** Served by `linuxcncrsh`, which is *itself a server* and
+not a client of the first: `emcrsh.cc:187` sets `port = 5007` and `:390` calls `listen()`. A socket
+and some text suffice, so Windows, macOS, a tablet or a three-line script all qualify; anything
+resembling MES, SCADA or a phone app belongs here. It has a connection password and an enable
+password (`emcrsh.cc:189`, default `"EMCTOO"`), which its man page twice warns are sent in the
+clear.
+
+**On the LinuxCNC side, `linuxcncrsh` is an ordinary local client.** `emcrsh.cc:41` includes
+`shcom.hh`, which opens the channels as `xemc` — the row above. It has no relationship with
+`linuxcncsvr` whatever: two independent servers, one text on 5007, one NML on 5005.
+
 **Consequence 2 — `RW` on `emcCommand` is a permission, not a behaviour.** Task is the only pair
 declared `RW`, and it does not use the `W`: across `src/emc/task/*.cc` the command channel is only
 `read()` (`emctaskmain.cc:3303`) and `get_address()` (`:735`, `:2921`) — there is no write on it.
@@ -224,6 +259,18 @@ Not a message bus — a 2 MiB shared memory block containing linked lists of obj
 
 **All internal pointers are stored as offsets** from `hal_shmem_base` (the `SHMFIELD` macro), so the
 block stays valid whatever address each process maps it at.
+
+**A hardware driver is itself a HAL component, and that is what closes the loop.** `hal_parport.c:542`
+and `hostmot2.c:1807` both call `hal_init()`, and hostmot2 exports `.read` (`:1710`) and `.write`
+(`:1717`) — the two ends of the bracket the shipped `.hal` files place around the servo cycle by
+hand. Nothing therefore runs *from* motion *to* a driver: both meet in HAL memory, which is the only
+thing either of them touches. Drawing an arrow between them asserts a transit that does not happen.
+
+**`milltask` is a HAL component too**, which is easy to miss because it is a non-realtime process
+with no thread of its own: `taskclass.cc:43-56` declares **fourteen `iocontrol` pins, eleven `OUT`
+and three `IN`** — `user-enable-out`, `emc-enable-in`, `coolant-{mist,flood}` and the tool-change
+handshake. They are declared `hal_dir::OUT` / `hal_dir::IN` and not `HAL_OUT` / `HAL_IN`, which is
+why a search for the latter does not find them — the same trap as the halui count in §2.11.
 
 **A signal is a pointer redirect, not a copy.** A pin owns a `data_ptr_addr`; unlinked, it is pointed
 at the component's own `dummysig` (`hal_lib.c:1161,1169`). `hal_link()` (`hal_lib.c:1478`) repoints it
@@ -397,6 +444,11 @@ pairing is the same one the audit already uses to justify calling a region share
 one side, attached from the other.** The declared users are named in the source itself,
 `tooldata_mmap.cc:167`: *"typ: milltask, guis (emcmodule,emcsh,...), halui"* — a comment, which is
 why each attachment above is cited at its call site instead.
+
+The same test applies to HAL's own block, and it is what makes that block *shared* rather than
+merely realtime: `hal_lib.c:285` creates it from inside `rtapi_app`, and `halcmd.c:107` attaches it
+with an ordinary `hal_init()` from an ordinary process. Without that second half the pairing is
+demonstrated for `emcmot` alone.
 
 #### 2.4.1 `streamer` and `sampler` create RTAPI segments of their own — measured, 2026-08-08
 
@@ -850,6 +902,30 @@ pinned HEAD:
 |---|---|---|
 | `axisui` | **16** | `axis.py:3950` creates the component, `:3951-3966` the pins |
 | `qtdragon` | **18** | `share/qtvcp/screens/qtdragon/qtdragon_handler.py`, `newPin(...)` |
+| `halui` — not a screen | **92 `IN` / 56 `OUT` creation sites, a lower bound** | `halui.cc`, two routes: see below |
+
+`axisui`'s sixteen split **12 `HAL_OUT` / 4 `HAL_IN`** (`axis.py:3951-3966`). The inputs are
+`notifications-clear{,-info,-error}` and `resume-inhibit`; ten of the twelve outputs are jog pins,
+`error` and `abort` the other two.
+
+**`halui` belongs in this table and had been left out of it**, which is the odd omission, since it
+is the interface HAL exists for: it has no display at all. It also has to be counted differently.
+It creates pins by **two routes** — direct `hal_pin_new_*(comp_id, HAL_IN|HAL_OUT, …)` calls, and
+four helpers, `halui_export_pin_IN_{bit,s32,float}` at `:491`, `:503`, `:515` and
+`halui_export_pin_OUT_bit` at `:528`, **whose call sites contain neither string**. Counting the
+sites of both routes gives **92 `IN` against 56 `OUT`**, and twenty-two `for` loops mean several
+sites create more than one pin, so the runtime count is higher still.
+
+> **Correction, 2026-08-08.** This audit published *"47 `HAL_IN` against 42 `HAL_OUT`"* — as a
+> label on the system-overview sheet and in that sheet's footnote, both since `2c04a1b`. It never
+> reached this file, which is the only reason the error stayed in one place. Those are the
+> **occurrences of the two strings** in `halui.cc`, four of which are the helper definitions
+> themselves, and they miss the sixty-three pins created through the helpers entirely. The
+> conclusion they were cited for is untouched and in fact strengthened — halui reads HAL at least
+> as much as it writes it, so a GUI-to-HAL arrow drawn one-way is wrong — but the figures were
+> wrong and were repeated three times. **A count taken with `grep` counts what `grep` was given,
+> not what was meant**, and the tell was available without reading any code: a helper named
+> `halui_export_pin_IN_bit` exists precisely so that its callers do not have to write `HAL_IN`.
 
 qtdragon's eighteen are `spindle-amps`, `spindle-volts`, `spindle-fault{,-u32}`,
 `spindle-modbus-errors{,-u32}`, `spindle-modbus-connection`, `spindle-inhibit`, `external-pause`,

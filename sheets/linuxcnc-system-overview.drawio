@@ -52,7 +52,7 @@
         <mxCell id="b5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;dashed=1;" value="&lt;b&gt;halcmd / halshow&lt;/b&gt;&lt;br&gt;HAL clients &amp;#8212; hal_init() attaches HAL memory&lt;br&gt;a hand tool, not part of the cycle&lt;br&gt;setp writes a pin, getp reads one &amp;#8212; live&lt;br&gt;they never touch NML" vertex="1">
           <mxGeometry height="108" width="340" x="-220" y="4.5" as="geometry" />
         </mxCell>
-        <mxCell id="b1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;dashed=1;" value="halui&lt;br&gt;no display at all — knobs and switches&lt;br&gt;[HAL]HALUI — adds, never replaces&lt;br&gt;47 HAL_IN + 42 HAL_OUT" vertex="1">
+        <mxCell id="b1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;dashed=1;" value="halui&lt;br&gt;no display at all — knobs and switches&lt;br&gt;[HAL]HALUI — adds, never replaces&lt;br&gt;92 IN + 56 OUT pin sites" vertex="1">
           <mxGeometry height="104" width="248" x="300" y="190.5" as="geometry" />
         </mxCell>
         <mxCell id="b0" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;spacingTop=2;fontSize=13;strokeWidth=1;" value="&lt;b&gt;LOCAL GUI&lt;/b&gt;&lt;br&gt;axis &amp;#183; gmoccapy &amp;#183; touchy &amp;#183; gscreen &amp;#183; qtvcp screens (qtdragon&amp;#8230;)&lt;br&gt;each screen exports its OWN pins &amp;#8212; and the count differs&lt;br&gt;axisui 16 &amp;#183; qtdragon 18" vertex="1">

@@ -63,10 +63,10 @@ criticises.
 
 ### [`sheets/linuxcnc-system-overview.html`](sheets/linuxcnc-system-overview.html)
 
-The whole system on one page, from the operator's screen to the machine. It began as a
-merge of the two sheets above — Sheet B for component detail, the context sheet's
-rebuilt view for the seams — and has been corrected fourteen times since, each correction
-and its evidence recorded at the foot of the page.
+The whole system on one page, from the operator's screen to the machine, read against
+`caa13ca6ae`. **The evidence for what it asserts is in `LINUXCNC-FINDINGS.md`, not on the
+page** — the sheet used to carry a long footnoted record of its own corrections, and that
+record was moved out: a figure is for understanding, and proof belongs where proof is kept.
 
 Two decisions shape it. **Domains are marked by lines, never by frames**: a frame asserts
 membership and can be contradicted by its own geometry, as the first version was when the
@@ -81,8 +81,8 @@ and the figure names them.
 **The source is [`sheets/linuxcnc-system-overview.drawio`](sheets/linuxcnc-system-overview.drawio)**,
 and the HTML page is generated from it: box geometry comes from the model, connector
 routing from draw.io's own SVG export, and only the `<svg>` block of the page is replaced,
-so the prose and its footnoted evidence never make the round trip. Editing the SVG in the
-page by hand is a change the next conversion deletes.
+so the prose around it never makes the round trip. Editing the SVG in the page by hand is a
+change the next conversion deletes.
 
 Both network doors are drawn, because a door that is not shown is a door nobody thinks
 about, and they are not alike: `linuxcncrsh` is a telnet server on TCP 5007 speaking
@@ -106,13 +106,13 @@ git -C linuxcnc-ethercat checkout 87a72a8
 powershell -File linuxcnc-audit/tools/verify-citations.ps1
 ```
 
-Expected: `281 pass, 0 fail`. On a later HEAD a FAIL usually means the line
+Expected: `294 pass, 0 fail`. On a later HEAD a FAIL usually means the line
 moved — re-anchor the citation rather than assume the finding broke.
 
 **The manifest is a curated set, not an index**, and the gap is stated rather
-than hidden. Measured 2026-08-08, with the manifest at 281: `LINUXCNC-FINDINGS.md`
-holds **204 distinct `file:line` citations, of which 172 have an entry at that
-exact line — 84%**.
+than hidden. Measured 2026-08-08, with the manifest at 294: `LINUXCNC-FINDINGS.md`
+holds **214 distinct `file:line` citations, of which 182 have an entry at that
+exact line — 85%**.
 
 *The method, so it can be redone rather than believed:* extract every
 `name.ext:NNN` from the findings with a regex, compare against the manifest on
