@@ -219,6 +219,7 @@
     { "repo": "linuxcnc", "file": "src/emc/usr_intf/shcom.cc", "line": 76, "match": "RCS_CMD_CHANNEL\\(emcFormat, \"emcCommand\", \"xemc\",", "claim": "NML grid: shcom - hence linuxcncrsh - opens emcCommand as xemc" },
     { "repo": "linuxcnc", "file": "src/emc/usr_intf/shcom.cc", "line": 87, "match": "RCS_STAT_CHANNEL\\(emcFormat, \"emcStatus\", \"xemc\",", "claim": "NML grid: shcom opens emcStatus as xemc" },
     { "repo": "linuxcnc", "file": "src/emc/usr_intf/shcom.cc", "line": 109, "match": "NML\\(nmlErrorFormat, \"emcError\", \"xemc\", emc_nmlfile\\)", "claim": "NML grid: shcom opens emcError as xemc - three programs, one declaration row" },
+    { "repo": "linuxcnc", "file": "src/emc/task/emctaskmain.cc", "line": 3303, "match": "emcCommandBuffer->read\\(\\)", "claim": "NML grid: task READS the command channel - the only use it makes of a pair declared RW, which is why the figure prints task R" },
     { "repo": "linuxcnc", "file": "scripts/linuxcnc.in", "line": 532, "match": "GetFromIniQuiet HALUI HAL", "claim": "halui comes from [HAL]HALUI and is optional — it adds, never replaces" },
     { "repo": "linuxcnc", "file": "scripts/linuxcnc.in", "line": 540, "match": "GetFromIni DISPLAY DISPLAY", "claim": "the GUI comes from [DISPLAY]DISPLAY — a different section, and mandatory" },
     { "repo": "linuxcnc", "file": "src/emc/task/emctaskmain.cc", "line": 493, "match": "interp_list\\.len\\(\\) <= emc_task_interp_max_len", "claim": "the interpreter read-ahead is throttled — interp_list is not unbounded in practice" },
