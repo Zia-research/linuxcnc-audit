@@ -106,12 +106,12 @@ git -C linuxcnc-ethercat checkout 87a72a8
 powershell -File linuxcnc-audit/tools/verify-citations.ps1
 ```
 
-Expected: `294 pass, 0 fail`. On a later HEAD a FAIL usually means the line
+Expected: `304 pass, 0 fail`. On a later HEAD a FAIL usually means the line
 moved — re-anchor the citation rather than assume the finding broke.
 
 **The manifest is a curated set, not an index**, and the gap is stated rather
-than hidden. Measured 2026-08-08, with the manifest at 294: `LINUXCNC-FINDINGS.md`
-holds **214 distinct `file:line` citations, of which 182 have an entry at that
+than hidden. Measured 2026-08-09, with the manifest at 304: `LINUXCNC-FINDINGS.md`
+holds **220 distinct `file:line` citations, of which 187 have an entry at that
 exact line — 85%**.
 
 *The method, so it can be redone rather than believed:* extract every
@@ -122,7 +122,7 @@ one citation, not three — so it **undercounts**. And note that **the instrumen
 changed here**: an earlier pass counted 193 where this one counts 198 on the same
 commit. Two rulers, not growth.
 
-The 32 without an exact-line entry are three different things, and the difference
+The 33 without an exact-line entry are three different things, and the difference
 is the point:
 
 - **14 point at LinuxCNC's own `.adoc` documentation** — which is what this audit
@@ -131,9 +131,9 @@ is the point:
   when you win is a bad check.
 - **10 have an entry within fifteen lines of the same file.** The block is
   watched; the exact line is not.
-- **8 are genuinely unwatched**, and are named here rather than left as a number:
+- **9 are genuinely unwatched**, and are named here rather than left as a number:
   `control.c:333`, `control.main-pkg.in:70`, `control.top.in:119`,
-  `driver.cc:571`, `interpmodule.cc:39`, `Makefile:745`, `motion.c:1091`,
+  `driver.cc:571`, `hal.h:1472`, `interpmodule.cc:39`, `Makefile:745`, `motion.c:1091`,
   `pyparamclass.cc:28`.
 
 A green run means *the manifest's* citations were re-read against the source at
