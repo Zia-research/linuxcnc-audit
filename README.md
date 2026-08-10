@@ -110,6 +110,14 @@ bytes**, `<foreignObject>` from **56 to zero**, and text from 57 mostly-truncate
 to **197 real `<text>` elements** with 302 `<tspan>` children, one per rendered line. *The
 file gets smaller and more robust at the same time*, which is unusual enough to record.
 
+Two things to know before reusing this. It is **not a local invention**: GitHub code search
+returns 453 `.drawio` files carrying the property, draw.io's own example repository among
+them. And **the conversion is not universal, and fails silently**: draw.io documents it as
+working only for labels using simple HTML — headings, paragraphs, bold, italic. A label
+containing a table, a list, a link or a coloured background is left as HTML, with its
+truncated fallback, and nothing in the export says so. **Count `<foreignObject>` in the
+output rather than trusting the property to be present in the model.**
+
 **Record the draw.io version whenever this is regenerated**, in the comment at the top of
 the `.svg`. The same model exported on 2026-08-10 with 31.1.8 produces 109 720 bytes against
 the 96 667 of the committed file — **13 % more with no change to the drawing**. A regenerated
