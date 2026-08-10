@@ -1,0 +1,88 @@
+{
+  "_comment": "Numbers written in this repository's prose, each paired with the NAME of an oracle that re-derives it. tools/check-claims.ps1 runs the oracle and fails when the document and the oracle disagree. Why it exists: every number here was once measured, typed once, and then left alone while the thing it measured moved. Three of them were wrong on the published site for four days in August 2026. NO COMMAND APPEARS IN THIS FILE. Oracles are chosen by name and implemented in the script, because a data file whose contents get executed is a code-execution vector in a public repository. The manifest count (307) is deliberately absent: verify-citations.ps1 already refuses to pass when a document states a count the manifest no longer holds, and a rule living in two places can diverge.",
+
+  "claims": [
+    {
+      "id": "sheet-count",
+      "file": "README.md",
+      "pattern": "(\\w+) self-contained HTML sheets",
+      "format": "word",
+      "oracle": "sheet-count",
+      "note": "Spelled out, so the script maps words to numbers rather than the document to digits."
+    },
+    {
+      "id": "drawio-lines",
+      "file": "README.md",
+      "pattern": "over (\\d+) lines",
+      "oracle": "drawio-lines",
+      "note": "The whole argument for shipping uncompressed XML is that it reviews and diffs; the line count is that argument's evidence."
+    },
+    {
+      "id": "viewbox",
+      "file": "README.md",
+      "pattern": "It answers `([^`]+)` today",
+      "oracle": "viewbox",
+      "note": "This one went stale in the field: the README said 3198 for four days after converting the labels had moved the bounding box to 3209."
+    },
+    {
+      "id": "citations-distinct",
+      "file": "README.md",
+      "pattern": "holds \\*\\*(\\d+) distinct",
+      "oracle": "citations-distinct",
+      "note": "Uses the extraction rule the README itself publishes, so the guard and the documented method cannot drift apart."
+    },
+    {
+      "id": "citations-exact",
+      "file": "README.md",
+      "pattern": "of which (\\d+) have an entry",
+      "oracle": "citations-exact"
+    },
+    {
+      "id": "citations-percent",
+      "file": "README.md",
+      "pattern": "exact line[^0-9]{1,6}(\\d+)%",
+      "oracle": "citations-percent",
+      "note": "Dashes are matched as 'any few non-digits' rather than literally: an em dash is three bytes and encoding accidents should not break a guard."
+    },
+    {
+      "id": "motion-commands",
+      "file": "README.md",
+      "pattern": "all (\\d+)\\s+motion\\s+commands",
+      "oracle": "motion-commands",
+      "note": "Cross-document: the README's figure against the rows actually present in motion-commands-reference.md."
+    },
+    {
+      "id": "motion-documented",
+      "file": "README.md",
+      "pattern": "Code Notes document (\\d+) of them",
+      "oracle": "motion-documented",
+      "note": "Also cross-document, against the reference's own opening sentence. It checks that our two files agree, not that either matches LinuxCNC: that is the manifest's job."
+    },
+    {
+      "id": "gcode-lines",
+      "file": "README.md",
+      "pattern": "a ([0-9 ]+)-line document",
+      "oracle": "gcode-lines",
+      "note": "Needs the pinned linuxcnc clone. Without it the claim is reported as unmeasured, never as passing."
+    },
+    {
+      "id": "errata-count",
+      "file": "LINUXCNC-FINDINGS.md",
+      "pattern": "errata 1[^0-9]{1,3}(\\d+)",
+      "oracle": "errata-count"
+    },
+    {
+      "id": "ethercat-citations",
+      "file": "ETHERCAT-NOTES.md",
+      "pattern": "carries (\\d+) distinct",
+      "oracle": "ethercat-citations",
+      "note": "This file stated 39 for the findings' uncovered count from 2026-08-07 until 2026-08-10, three days after the answer became 32. The findings figure now lives only in README.md; what is left here is this file's own count, and it is guarded."
+    },
+    {
+      "id": "ethercat-uncovered",
+      "file": "ETHERCAT-NOTES.md",
+      "pattern": "of which (\\d+) have no manifest",
+      "oracle": "ethercat-uncovered"
+    }
+  ]
+}

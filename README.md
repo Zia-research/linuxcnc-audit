@@ -216,6 +216,36 @@ citation, and was corrected; it now points here instead of carrying its own copy
 of these figures, because a number kept in two files is a number that will drift
 — which is exactly what happened to it.
 
+### The numbers in this prose are re-derived, not trusted
+
+```
+powershell -File tools\check-claims.ps1
+```
+
+Every figure stated above — the citation counts, the sheet count, the model's
+line count, the `viewBox`, the command counts, the errata range — is paired in
+[`tools/claims.json`](tools/claims.json) with the name of an oracle that measures
+it again. The script fails when the sentence and the measurement disagree.
+
+It exists because they did disagree. A sweep in August 2026 found ten stale
+statements in this project, three of them live on this site for four days: a
+`viewBox` the figure had stopped producing, an export size naming a file two
+commits out of date, and a coverage count three days behind its own
+remeasurement. Every one had been true when written. **Prose does not
+re-measure itself.**
+
+Three properties are worth knowing before relying on it. A pattern that no
+longer matches is a *failure*, not a pass — a guard whose sentence was rewritten
+has stopped guarding. An oracle that cannot run is reported as *unmeasured*,
+never as passing. And each claim is first mutated and re-run: if it still passes
+on an altered document it is testing nothing, and the script refuses to give a
+verdict at all. **No command is read from the JSON** — oracles are chosen by
+name and implemented in the script, because a data file whose contents get
+executed is a code-execution vector.
+
+What it does not do is check that any of these numbers describes LinuxCNC
+correctly. That is what the citation manifest is for.
+
 ### The figure checker
 
 The figure is checked as well as the prose, by one tool that reads the model and
