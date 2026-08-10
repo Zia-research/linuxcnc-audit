@@ -293,7 +293,8 @@ function R8_ConvertToSvg($m) {
   # simples et l'exclut des tableaux, listes, liens et fonds colores ; elle est
   # alors grisee, et rien dans l'export ne le signale. Le seul controle qui
   # prouve est de compter les <foreignObject> APRES export -- il n'appartient pas
-  # a cet outil, qui ne lit que le modele. C'est state.ps1 qui le porte.
+  # a cet outil, qui ne lit que le modele. Le README de ce depot le dit et donne
+  # la commande, dans la section consacree au SVG engendre.
   $f = @()
   foreach ($c in @($m.vertices) + @($m.edges) + @($m.rules)) {
     $st = [string]$c.style
@@ -360,7 +361,11 @@ function AutoTest($m) {
 
   # Le prealable de compression, dans les DEUX SENS : un predicat qui rendrait
   # toujours vrai passerait pour un garde-fou tout en n'en etant pas un.
-  if (-not (EstCompresse '<mxfile host="Electron"><diagram id="a">7VvLcuI4FP0aqmYWU7yTLMFOd6cqmU4nqcrMUsY30MG2GFmE0F8/kiw/ZAyYBEymejZUdHV1Ze65V0fXhpY9DF6+SLKY30gPgpbT9V5a9nnLcbrOoK3+GcvKWM4GPWOYSd/DVYnh3v8BaOyidenPICosVFIGyl8UjZ4MQ/BUwUakVIvitkcZFP93QWZQMtx7NCitP/iemhvrqTgS+xfwZ3PMoNPHiYCa1WiI5tSTy5zJvmjZQyGlMk/By7BlG/Q2A3PxeUts+m8SwlSHOFwFvfnT7Y+r61+PN9dPZ/3nb98v/vjNhGGvBFvi8XCNSGkYPSFVjIm9j+YvvpqDVENn+dw6PLoDBoIBnEG3E4rZmwo1WKMFtLu9M9d1nP6gd352MTgn3f5g0P4mF7EnQC1jSTdAEPzUmYzrBFH31DBK4iVjMdM7wjbcYSp3QwCoyfDLoWNvz4pkcSPtnUb/2WwmYSb0Cd8dvJfyRUxu07wUiZFmnf7Wo2vMHkKk1CqZzabu2WY2i6knMdCJa7WdlkGjEqrltPFP2R0mFAWTQwGdCkAnPXt/qUgB6xGWJv8+dxegYtLcp7/pgD9ByfIDL2nAeioZPfkzldASHmVw2onbeqxOoJq7khaqR52o+RJnB2mVwsSD5eOF3Zg9YFbBSJVFuLpNL8sJm2ph1S+3XX7SBiMzhu6nUYFuxvJgcKagcZcbuoP9dQ3ScHt3AZI3IIt8UyGXo7O5+iURhFVIw2C1zVpc7CUdmyx2yRvXVMWZlbwnhOaHfCcqk4iw06L9d97BwiKMwlOAJHK/pMFUB/e29A9HcMKa0eeQGP3Wf76ScLQhrpF3+DPRIQE9jRHzngK15GVBP38fXn8+27DRl/GJmR9CE0RIRRmO7Y/HGoo9lLmT8O8W15p/i+9Bm4YfCM9SkZzUvDpZlKGaUnROZUqOPtHNGdxxJ1TwtGwqHmnDhF/QMcE+PmJfCe73sHM+M4TvNBAd7z5jptZ1+jfnwjXcH4M1Q9jj0S6DoV1nftvOfrM33FCcRXX+Wu9uz1o1jXX+U3vv1BwB9Rv/z1uZ3rZzZG3G3qmZ+eDVpTsauJH/UnrZOSVEjNXKB4d7WFtM1kSDGxPq9tPQAfEIT38V4kzKgHR/9r0dvNSU+lPdBTTV3s09kwq2SJ3UtvpTPJp+8G1KZo3JIWX9ZFO4Fyaus+dyGwj9RXd6D6NsJa4CruMxkVv7t9K5OQdmXamZ3sHwj+kf+58ecQK9YvhCw/AmL9DesJvHnaMBBGpBpsQBOAoBAgtRW+B5eFcgcQVwrEwvNS9Sy0nBLM+wUAvcHUb0FQaB7DfbwLM2QXbjRnO5xLpMHiRuEhSJTx1UttvIhLFOh1yZ6dh0Xmnu5CvvdyE8afTmz1yg7A9V/lRRTh8ihIsAsRVX+j6ROMU9wnGGxfLHhWJPo/gLNRwF4xEcYtE0kexmzvbYPjF1jyM0Y8OJ76mlvQOMLLKcXR4d/QK25Q1p9r5j4WBSTGvIUeD4rG5G4gVHRAt5RcHqu+cxCLxV5UdCUvI+dImaWyIsvOtNv2NF6yjW65I5xd+wkiSNqIzUJmJGkfhWDMt+ndetXe7yq5+OwGoxWjEfsdA6nJmZFI/W2r7nPq6/K3JTf5+q0dpEcaWfyH8=</diagram></mxfile>')) {
+  # L'echantillon est court et VISIBLEMENT faux, exprès : ce qui est teste est
+  # l'ABSENCE de <mxGraphModel>, jamais la validite d'une charge deflate. Y
+  # coller un vrai bloc compresse le ferait passer pour un exemple a reutiliser
+  # et n'ajouterait rien a la preuve.
+  if (-not (EstCompresse '<mxfile host="Electron"><diagram id="a">[base64+deflate, opaque]</diagram></mxfile>')) {
     $mauvais += 'le prealable ne reconnait pas un modele compresse'
   }
   if (EstCompresse $texte) { $mauvais += 'le prealable declare compresse un modele en clair' }
