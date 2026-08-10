@@ -324,19 +324,18 @@
 
 
 </div>
-<!-- diagram-check.js is still not referenced from this page, but the reason has
-     changed: it used to live outside the repository, so a <script src> would have
-     404'd on Pages. It is now published at tools/diagram-check.js. It stays
-     unreferenced so that this sheet remains a single file with no dependencies,
-     which is what makes it readable offline. To run it against this page, inject
-     it from the console:
-       var s=document.createElement('script');
-       s.src='https://zia-research.github.io/linuxcnc-audit/tools/diagram-check.js';
-       document.body.appendChild(s);      then:  diagramCheck()
-     It checks the rendered SVG. The claims this figure makes about itself — the
-     colour rules in the legend, what a connector may land on, which box is inside
-     which — are checked against the .drawio model instead, by
-     tools/drawio-check.ps1, because none of that survives into an SVG. -->
+<!-- The claims this figure makes about itself — the colour rules in the legend,
+     what a connector may land on, which box is inside which, whether an edge
+     really targets the box it appears to touch — are checked against the .drawio
+     model by tools/drawio-check.ps1, because none of that survives into an SVG.
+     This sheet stays a single file with no dependencies, which is what makes it
+     readable offline.
+     A second checker, diagram-check.js, used to measure this rendered SVG for
+     crossings, overlaps and arrows landing in open space. It was removed on
+     2026-08-10. It had been written when the figure was hand-written SVG and the
+     person who could move a box was the person who could not see the result; the
+     figure is drawn in draw.io now, and a line through a box is caught on the
+     canvas in seconds. A check that duplicates the eye earns nothing. -->
 
 <p class="foot">
   <strong>What this figure describes.</strong> LinuxCNC at commit <code>caa13ca6ae</code>, the

@@ -155,26 +155,37 @@ citation, and was corrected; it now points here instead of carrying its own copy
 of these figures, because a number kept in two files is a number that will drift
 — which is exactly what happened to it.
 
-### The two figure checkers
+### The figure checker
 
-The figures are checked as well as the prose, by two tools that answer different
-questions and are honest about where each stops.
+The figure is checked as well as the prose, by one tool that reads the model and
+is honest about where it stops.
 
 | Tool | Reads | Answers |
 |---|---|---|
-| [`tools/diagram-check.js`](tools/diagram-check.js) | the rendered SVG, in a browser | does a connector cross a box or a label, does every arrow land on something named, is any text hidden |
 | [`tools/drawio-check.ps1`](tools/drawio-check.ps1) | the `.drawio` model, no dependencies | dangling edges, orphan boxes, a declared parent its geometry contradicts, the legend's own colour rules, what a connector is allowed to land on |
 
-Routing is not in the model — draw.io computes it at display time — so line
-collisions belong to the first. Fill colours, parent relations and
-`source`/`target` do not survive into an SVG, so the claims the figure makes
-about itself belong to the second. **Every rule in both refuses to run unless it
-first fails on a deliberately broken copy**, because three of the earliest checks
-written here passed everything by measuring the wrong thing.
+**It checks what the drawing declares, not what it looks like**, and that is the
+division of labour that matters. An edge whose endpoint sits perfectly on a box
+but carries no `target` looks correct and is not — you find out when you move the
+box. A child whose declared parent its geometry contradicts looks fine. A legend
+printing four colour rules is an assertion nobody audits by eye, and that is the
+rule that caught this sheet asserting something false about itself: it printed
+*"All four hold as drawn"*, and the fourth did not hold. The rule was wrong and
+the drawing was right.
 
-The model checker found the sheet asserting something false about itself: the
-legend printed four colour rules and the sentence *"All four hold as drawn"*, and
-the fourth did not hold. The rule was wrong and the drawing was right.
+**Every rule refuses to run unless it first fails on a deliberately broken
+copy**, because three of the earliest checks written here passed everything by
+measuring the wrong thing.
+
+*There used to be a second checker here*, `diagram-check.js`, which measured the
+rendered SVG for connectors crossing boxes, overlapping text and arrows landing
+in open space. **It was removed on 2026-08-10, and the reason is the useful
+part.** It was written when the figure was hand-written SVG and the person who
+could move a box was the person who could not see the result. The figure is drawn
+in draw.io now, on a canvas somebody is watching, and a line through a box is
+caught there in seconds. *A check that duplicates the eye earns nothing and still
+has to be maintained.* What the eye cannot do — read a declaration — is what the
+model checker is for.
 
 The script also checks itself against the documents: if any file here tells you
 to expect a number the manifest no longer holds, it says so and exits non-zero.

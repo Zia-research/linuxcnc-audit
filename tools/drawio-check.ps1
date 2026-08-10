@@ -1,15 +1,21 @@
 # drawio-check.ps1 -- controle de LOGIQUE et de COHERENCE sur le MODELE .drawio.
 #
-# Pourquoi ce fichier existe. diagram-check.js lit le SVG engendre : il n'y voit
-# ni parents, ni source/cible, ni couleurs de style, et pas du tout les libelles
-# d'aretes -- que le convertisseur laisse tomber. Un chevauchement de libelle est
-# donc reste invisible jusqu'a ce qu'un humain regarde un PNG. Le modele porte
-# tout cela explicitement : on le lit la ou il est ecrit.
+# Pourquoi ce fichier existe. Il verifie ce que le dessin DECLARE, pas ce a quoi
+# il ressemble -- et c'est la toute la division du travail. Une arete dont le
+# bout est pose pile sur une boite mais qui n'a pas de `target` a l'air juste et
+# ne l'est pas : on s'en apercoit en deplacant la boite. Un enfant dont la
+# geometrie contredit le parent declare a l'air normal. Une legende qui imprime
+# quatre regles de couleur est une affirmation que l'oeil n'audite pas. Le modele
+# porte tout cela explicitement : on le lit la ou c'est ecrit.
 #
 # CE QUE CET OUTIL NE PEUT PAS VOIR, et il faut le savoir :
 #   - le TRACE des connecteurs. draw.io le calcule au rendu ; le modele ne garde
-#     que les points d'inflexion. "Ce trait coupe-t-il cette boite" reste du
-#     ressort de diagram-check.js sur le SVG.
+#     que les points d'inflexion. "Ce trait coupe-t-il cette boite" n'est plus
+#     verifie par machine : la figure se dessine dans draw.io, sur une toile que
+#     quelqu'un regarde, et l'oeil attrape cela en quelques secondes. C'etait le
+#     role de diagram-check.js, retire le 2026-08-10 -- ecrit pour une epoque ou
+#     la figure etait du SVG a la main et ou personne ne la voyait en l'editant.
+#     Un controle qui double l'oeil ne rapporte rien et reste a maintenir.
 #   - la largeur RENDUE d'un texte. Le modele a la largeur de la boite et la
 #     chaine, pas la police. L'estimation ci-dessous est declaree comme telle.
 #   - si la figure est VRAIE. Aucun script ne repond a cela.
@@ -317,5 +323,6 @@ if ($total -eq 0) { Write-Output 'VERDICT : propre.' } else { Write-Output ("VER
 Write-Output ''
 Write-Output 'Hors de portee de cet outil : le trace des connecteurs (draw.io le calcule au rendu),'
 Write-Output 'la largeur rendue des textes (le modele n a pas la police), et la question de savoir'
-Write-Output 'si la figure est vraie. Les deux premiers restent du ressort de diagram-check.js.'
+Write-Output 'si la figure est vraie. Les deux premiers se regardent sur la toile draw.io ; le'
+Write-Output 'troisieme ne se regarde nulle part, aucun script ne repond a cela.'
 exit $(if ($total -eq 0) { 0 } else { 1 })
