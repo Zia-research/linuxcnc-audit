@@ -34,6 +34,26 @@ param(
   [switch]$Verbeux
 )
 
+# Garde-fou ajoute le 2026-08-10, apres avoir vu le script mentir sur sa propre
+# panne. Sans fichier, Build() rendait un modele vide, les sept mutations temoins
+# ne changeaient rien, et le script annoncait "REFUSE : une regle ne sait pas
+# echouer" en listant ses sept regles comme cassees. Il refusait -- donc il etait
+# sur -- mais pour la mauvaise raison, et le message envoyait chercher un defaut
+# dans les regles au lieu d'un chemin.
+# A noter, parce que c'est la cause : le $Path par defaut se resout depuis le
+# PARENT DU SCRIPT, ce qui ne vaut que depuis l'emplacement publie
+# (publish/linuxcnc-audit/tools/ -> ../sheets/). Lance depuis drawio-work/, il
+# visait un sheets/ inexistant a la racine du dossier de travail.
+if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+  Write-Output "ERREUR : modele introuvable -- $Path"
+  Write-Output ''
+  Write-Output 'Ce script ne devine pas ou est le modele. Le chemin par defaut vise'
+  Write-Output '..\sheets\linuxcnc-system-overview.drawio RELATIVEMENT AU SCRIPT, ce qui'
+  Write-Output 'ne fonctionne que depuis publish\linuxcnc-audit\tools\. Depuis ailleurs :'
+  Write-Output '  powershell -File <script> -Path drawio-work\linuxcnc-system-overview.drawio'
+  exit 2
+}
+
 # ---------- modele -----------------------------------------------------------
 function Build([string]$xmlText) {
   [xml]$doc = $xmlText
