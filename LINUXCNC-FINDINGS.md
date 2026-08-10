@@ -1606,7 +1606,7 @@ this is the INI reference.
 | Artefact | What it is |
 |---|---|
 | `tools/verify-citations.ps1` + `tools/citations-manifest.json` | Machine-checks every citation in this file against both clones. Run after any `git pull`; a FAIL means re-anchor the citation, not necessarily that the finding is wrong. |
-| `upstream/0001…0003.patch` + `upstream/README.md` | Three reviewed patches on the `audit-fixes` branch of the clone, fixing errata 15–17, 19, 21–23, 25–27 in `basic-hal.adoc`, `code-notes.adoc`, `g-code.adoc`. Submission is the user's, under their identity. |
+| `upstream/README.md` | A pointer to [PR #4349](https://github.com/LinuxCNC/linuxcnc/pull/4349), which carries the patches: five commits against `basic-hal.adoc`, `code-notes.adoc`, `g-code.adoc` and `ini-config.adoc`, fixing errata 15–17, 19, 21–23, 25–27 and §2.9.5. Submission is the user's, under their identity. **The `.patch` copies were removed on 2026-08-10**: they held three of the five commits, and a copy of a live pull request falls behind it. |
 | `motion-commands-reference.md` | The complete 76-command inventory written from `command.c` — the Code Notes' missing chapter, with per-command gates and a verification-status statement. |
 
 ---

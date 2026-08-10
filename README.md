@@ -195,9 +195,11 @@ Most are harmless; a few would bite someone.
 - [`motion-commands-reference.md`](motion-commands-reference.md) — all 76
   motion commands read from `command.c`, with handler locations and rejection
   conditions. The Code Notes document 27 of them.
-- [`upstream/`](upstream/) — the three documentation patches submitted as
-  [LinuxCNC PR #4349](https://github.com/LinuxCNC/linuxcnc/pull/4349), exactly
-  as sent.
+- [`upstream/`](upstream/) — a pointer to
+  [LinuxCNC PR #4349](https://github.com/LinuxCNC/linuxcnc/pull/4349), which
+  carries the documentation patches this audit proposes: five commits against
+  four files, reviewed and answered. The patches are not copied here, because a
+  copy of a live pull request falls behind it.
 
 Two examples of the kind of thing found: the HAL manual's `initf` example names
 a funct the EtherCAT driver doesn't export, and pause is silently bypassed
@@ -221,7 +223,8 @@ some of its citations have no manifest entry, and it says so where it matters.
 
 ## Caveats
 
-- Everything targets **master, which is unreleased** (newest tag `v2.9.10`).
+- Everything targets **master, which is unreleased** (newest tag `v2.10.0-pre0`,
+  checked 2026-08-10; `v2.9.10` is the newest 2.9).
   Most of it holds for 2.9 too; the exceptions are flagged in the findings file
   — notably that on 2.9.x, `iocontrol` is still a separate process.
 - The G-code reference was **sampled**, not audited whole: G33/G33.1, G76, G64,
