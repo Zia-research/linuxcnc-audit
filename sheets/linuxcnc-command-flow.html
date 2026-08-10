@@ -373,7 +373,7 @@ const B=[
  {x:614,y:320,w:168,h:80,cls:"rt q",t1:"TC_QUEUE",t2:"ring start/end/allFull",t3:"queue · 2000",
   d:"The real motion queue. 2000 segments of lookahead: this is what allows corner blending and anticipated deceleration. It also holds a reverse history for run-in-reverse.",s:"src/emc/tp/tcq.c",cap:"≈ 1 MiB",cap2:"2000 × ~512 B"},
  {x:804,y:320,w:180,h:80,cls:"rt",t1:"tpRunCycle",t2:"cruckig · blendmath",
-  d:"Advances the planner by one period. On master, cruckig — a 34-file pure-C port of Ruckig — sits inside tpmod; finite jerk applies only where PLANNER_TYPE = 1 and MAX_JERK is non-zero, both off by default.",s:"src/emc/tp/tp.c:tpRunCycle",cap:"—"},
+  d:"Advances the planner by one period. On master, cruckig — a 34-file pure-C port of Ruckig — sits inside tpmod; finite jerk applies only where PLANNER_TYPE = 1 and MAX_JERK is 1.0 or more — below 1.0 the planner is silently forced back to trapezoidal — and both are off by default.",s:"src/emc/tp/tp.c:tpRunCycle",cap:"—"},
  {x:1006,y:320,w:180,h:80,cls:"rt",t1:"kinematicsInverse",t2:"19 modules available",
   d:"Cartesian → joints. The module is chosen at load time: trivkins, corexykins, genserkins, pumakins, lineardeltakins… switchkins even allows switching at runtime.",s:"src/emc/kinematics/",cap:"—"},
  {x:1208,y:320,w:160,h:80,cls:"rt",t1:"output_to_hal",t2:"+ update_status",
