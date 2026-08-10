@@ -54,6 +54,27 @@ if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
   exit 2
 }
 
+# SECOND PREALABLE, ajoute le 2026-08-10 : le XML doit etre EN CLAIR.
+# Par defaut draw.io compresse le contenu (base64 + deflate). Le modele n'est
+# alors qu'un bloc opaque : Build() rend un modele VIDE, et un modele vide passe
+# TOUTES les regles -- une boite qui n'existe pas ne viole rien. Le script
+# refuserait quand meme, ses mutations temoins ne changeant rien sur du vide,
+# mais il annoncerait "une regle ne sait pas echouer" et enverrait chercher un
+# defaut dans les regles au lieu d'une case a decocher. Meme forme d'erreur que
+# le chemin manquant, meme reponse : nommer la cause, pas le symptome.
+function EstCompresse([string]$texte) { $texte -notmatch '<mxGraphModel' }
+
+$texte = [IO.File]::ReadAllText($Path)
+if (EstCompresse $texte) {
+  Write-Output "ERREUR : le modele est COMPRESSE -- $Path"
+  Write-Output ''
+  Write-Output 'Aucune regle ne peut etre appliquee : le contenu est un bloc base64 opaque,'
+  Write-Output 'illisible en revue, indiffable, et inaccessible a un agent qui edite du texte.'
+  Write-Output 'Dans draw.io : File > Properties > Compressed a DECOCHER, puis reenregistrer.'
+  Write-Output 'A verifier apres le premier enregistrement humain, pas seulement a la creation.'
+  exit 2
+}
+
 # ---------- modele -----------------------------------------------------------
 function Build([string]$xmlText) {
   [xml]$doc = $xmlText
@@ -92,7 +113,7 @@ function Build([string]$xmlText) {
         $sp = $pts | Where-Object { $_.as -eq 'sourcePoint' }
         $tp = $pts | Where-Object { $_.as -eq 'targetPoint' }
         if ($sp -and $tp) {
-          $rules += [pscustomobject]@{ id=$id; x1=[double]$sp.x; y1=[double]$sp.y; x2=[double]$tp.x; y2=[double]$tp.y }
+          $rules += [pscustomobject]@{ id=$id; style=$st; x1=[double]$sp.x; y1=[double]$sp.y; x2=[double]$tp.x; y2=[double]$tp.y }
           continue
         }
       }
@@ -255,6 +276,36 @@ function R7_LibellesDAretes($m) {
   $f
 }
 
+function R8_ConvertToSvg($m) {
+  # La propriete derriere la case "Convert Labels to SVG" (Format > Texte >
+  # Avance). Sans elle, draw.io ecrit le libelle en HTML dans un <foreignObject>
+  # et pose a cote un <text> de repli TRONQUE : un libelle de trois lignes sort
+  # en "INI file...". Un navigateur affiche le HTML et personne ne voit rien ;
+  # un moteur qui n'implemente pas l'extension affiche la troncature.
+  #
+  # DEUX defauts, pas un, et le second est mesure : posee EN TETE de style la
+  # propriete ne prend pas -- le premier jeton d'un style mxGraph peut etre un
+  # nom de feuille -- et deux formes sur cinquante-six avaient garde leur
+  # foreignObject de cette facon. Elle se pose en FIN de style.
+  #
+  # CE QUE CETTE REGLE NE PROUVE PAS, et c'est important : que la conversion ait
+  # eu lieu. La documentation de draw.io limite la case aux libelles a balises
+  # simples et l'exclut des tableaux, listes, liens et fonds colores ; elle est
+  # alors grisee, et rien dans l'export ne le signale. Le seul controle qui
+  # prouve est de compter les <foreignObject> APRES export -- il n'appartient pas
+  # a cet outil, qui ne lit que le modele. C'est state.ps1 qui le porte.
+  $f = @()
+  foreach ($c in @($m.vertices) + @($m.edges) + @($m.rules)) {
+    $st = [string]$c.style
+    if ($st -notmatch 'convertToSvg=1') {
+      $f += "cellule $($c.id) '$(Lbl $c)' ne porte pas convertToSvg=1 : son libelle sortira en foreignObject, avec un repli tronque"
+    } elseif ($st -match '^convertToSvg=1') {
+      $f += "cellule $($c.id) '$(Lbl $c)' porte convertToSvg=1 EN TETE de style, ou il ne prend pas : le poser en fin"
+    }
+  }
+  $f
+}
+
 # ---------- non-vacuite : chaque regle doit d'abord echouer -------------------
 function AutoTest($m) {
   $mauvais = @()
@@ -298,12 +349,42 @@ function AutoTest($m) {
   $t.edges[0].value = 'temoin'
   if ((R7_LibellesDAretes $t).Count -eq 0) { $mauvais += 'R7 ne detecte pas un libelle d arete' }
 
+  # R8 : les DEUX defauts, separement. Un temoin unique laisserait la moitie de
+  # la regle sans preuve, et c'est la moitie subtile qui a reellement mordu.
+  $t = & $clone $Path
+  $t.vertices[0].style = 'rounded=0;whiteSpace=wrap;html=1;'
+  if ((R8_ConvertToSvg $t).Count -eq 0) { $mauvais += 'R8 ne detecte pas une forme sans convertToSvg' }
+  $t = & $clone $Path
+  $t.vertices[0].style = 'convertToSvg=1;rounded=0;whiteSpace=wrap;html=1;'
+  if ((R8_ConvertToSvg $t).Count -eq 0) { $mauvais += 'R8 ne detecte pas convertToSvg pose en tete de style' }
+
+  # Le prealable de compression, dans les DEUX SENS : un predicat qui rendrait
+  # toujours vrai passerait pour un garde-fou tout en n'en etant pas un.
+  if (-not (EstCompresse '<mxfile host="Electron"><diagram id="a">7VvLcuI4FP0aqmYWU7yTLMFOd6cqmU4nqcrMUsY30MG2GFmE0F8/kiw/ZAyYBEymejZUdHV1Ze65V0fXhpY9DF6+SLKY30gPgpbT9V5a9nnLcbrOoK3+GcvKWM4GPWOYSd/DVYnh3v8BaOyidenPICosVFIGyl8UjZ4MQ/BUwUakVIvitkcZFP93QWZQMtx7NCitP/iemhvrqTgS+xfwZ3PMoNPHiYCa1WiI5tSTy5zJvmjZQyGlMk/By7BlG/Q2A3PxeUts+m8SwlSHOFwFvfnT7Y+r61+PN9dPZ/3nb98v/vjNhGGvBFvi8XCNSGkYPSFVjIm9j+YvvpqDVENn+dw6PLoDBoIBnEG3E4rZmwo1WKMFtLu9M9d1nP6gd352MTgn3f5g0P4mF7EnQC1jSTdAEPzUmYzrBFH31DBK4iVjMdM7wjbcYSp3QwCoyfDLoWNvz4pkcSPtnUb/2WwmYSb0Cd8dvJfyRUxu07wUiZFmnf7Wo2vMHkKk1CqZzabu2WY2i6knMdCJa7WdlkGjEqrltPFP2R0mFAWTQwGdCkAnPXt/qUgB6xGWJv8+dxegYtLcp7/pgD9ByfIDL2nAeioZPfkzldASHmVw2onbeqxOoJq7khaqR52o+RJnB2mVwsSD5eOF3Zg9YFbBSJVFuLpNL8sJm2ph1S+3XX7SBiMzhu6nUYFuxvJgcKagcZcbuoP9dQ3ScHt3AZI3IIt8UyGXo7O5+iURhFVIw2C1zVpc7CUdmyx2yRvXVMWZlbwnhOaHfCcqk4iw06L9d97BwiKMwlOAJHK/pMFUB/e29A9HcMKa0eeQGP3Wf76ScLQhrpF3+DPRIQE9jRHzngK15GVBP38fXn8+27DRl/GJmR9CE0RIRRmO7Y/HGoo9lLmT8O8W15p/i+9Bm4YfCM9SkZzUvDpZlKGaUnROZUqOPtHNGdxxJ1TwtGwqHmnDhF/QMcE+PmJfCe73sHM+M4TvNBAd7z5jptZ1+jfnwjXcH4M1Q9jj0S6DoV1nftvOfrM33FCcRXX+Wu9uz1o1jXX+U3vv1BwB9Rv/z1uZ3rZzZG3G3qmZ+eDVpTsauJH/UnrZOSVEjNXKB4d7WFtM1kSDGxPq9tPQAfEIT38V4kzKgHR/9r0dvNSU+lPdBTTV3s09kwq2SJ3UtvpTPJp+8G1KZo3JIWX9ZFO4Fyaus+dyGwj9RXd6D6NsJa4CruMxkVv7t9K5OQdmXamZ3sHwj+kf+58ecQK9YvhCw/AmL9DesJvHnaMBBGpBpsQBOAoBAgtRW+B5eFcgcQVwrEwvNS9Sy0nBLM+wUAvcHUb0FQaB7DfbwLM2QXbjRnO5xLpMHiRuEhSJTx1UttvIhLFOh1yZ6dh0Xmnu5CvvdyE8afTmz1yg7A9V/lRRTh8ihIsAsRVX+j6ROMU9wnGGxfLHhWJPo/gLNRwF4xEcYtE0kexmzvbYPjF1jyM0Y8OJ76mlvQOMLLKcXR4d/QK25Q1p9r5j4WBSTGvIUeD4rG5G4gVHRAt5RcHqu+cxCLxV5UdCUvI+dImaWyIsvOtNv2NF6yjW65I5xd+wkiSNqIzUJmJGkfhWDMt+ndetXe7yq5+OwGoxWjEfsdA6nJmZFI/W2r7nPq6/K3JTf5+q0dpEcaWfyH8=</diagram></mxfile>')) {
+    $mauvais += 'le prealable ne reconnait pas un modele compresse'
+  }
+  if (EstCompresse $texte) { $mauvais += 'le prealable declare compresse un modele en clair' }
+
   $mauvais
 }
 
 # ---------- execution --------------------------------------------------------
-$texte = [IO.File]::ReadAllText($Path)
+# $texte est deja lu plus haut, par le prealable de compression.
 $m = Build $texte
+
+# La liste est definie AVANT l'auto-test pour que le compte annonce vienne
+# d'elle et non d'un nombre ecrit a la main : la ligne disait "les 7 regles"
+# quand il y en avait sept, et serait devenue fausse en en ajoutant une.
+$regles = @(
+  @{ n='R1 aretes pendantes';            f={ R1_AretesPendantes $m } },
+  @{ n='R2 boites orphelines';           f={ R2_BoitesOrphelines $m } },
+  @{ n='R3 parent contredit par la geo'; f={ R3_ParentContredit $m } },
+  @{ n='R4 regles de couleur';           f={ R4_Couleurs $m } },
+  @{ n='R5 subdivisions visees';         f={ R5_Subdivisions $m } },
+  @{ n='R6 frontieres contre boites';    f={ R6_FrontieresContreBoites $m } },
+  @{ n='R7 libelles d aretes';           f={ R7_LibellesDAretes $m } },
+  @{ n='R8 convertToSvg sur les styles'; f={ R8_ConvertToSvg $m } }
+)
 
 $echecsAutoTest = AutoTest $m
 if ($echecsAutoTest.Count) {
@@ -312,19 +393,10 @@ if ($echecsAutoTest.Count) {
   exit 2
 }
 
-$regles = @(
-  @{ n='R1 aretes pendantes';            f={ R1_AretesPendantes $m } },
-  @{ n='R2 boites orphelines';           f={ R2_BoitesOrphelines $m } },
-  @{ n='R3 parent contredit par la geo'; f={ R3_ParentContredit $m } },
-  @{ n='R4 regles de couleur';           f={ R4_Couleurs $m } },
-  @{ n='R5 subdivisions visees';         f={ R5_Subdivisions $m } },
-  @{ n='R6 frontieres contre boites';    f={ R6_FrontieresContreBoites $m } },
-  @{ n='R7 libelles d aretes';           f={ R7_LibellesDAretes $m } }
-)
-
 Write-Output ("modele : " + (Split-Path $Path -Leaf))
 Write-Output ("  " + (Boxes $m).Count + " boites, " + @($m.vertices | Where-Object { $_.text }).Count + " libelles libres, " + $m.edges.Count + " aretes, " + $m.rules.Count + " frontieres")
-Write-Output ("  auto-test : les 7 regles ont echoue sur leur mutation temoin")
+Write-Output ("  auto-test : les " + $regles.Count + " regles ont echoue sur leur mutation temoin,")
+Write-Output ("              et le prealable de compression discrimine dans les deux sens")
 Write-Output ''
 
 $total = 0
