@@ -152,6 +152,8 @@
     { "repo": "linuxcnc", "file": "src/emc/nml_intf/emccfg.h", "line": 57, "match": "DEFAULT_TRAJ_PLANNER_TYPE 0", "claim": "pause: the planner selector defaults to trapezoidal" },
     { "repo": "linuxcnc", "file": "src/emc/ini/initraj.cc", "line": 157, "match": "PLANNER_TYPE", "claim": "pause: PLANNER_TYPE is read from the INI, default 0" },
     { "repo": "linuxcnc", "file": "src/emc/ini/initraj.cc", "line": 143, "match": "MAX_LINEAR_JERK.*1e9", "claim": "pause: the trajectory jerk key is MAX_LINEAR_JERK, and it defaults to 1e9 - so the 1.0 threshold does not fire on a default machine" },
+    { "repo": "linuxcnc", "file": "src/emc/ini/iniaxis.cc", "line": 117, "match": "MAX_JERK.*DEFAULT_AXIS_MAX_JERK", "claim": "pause: MAX_JERK is a per-axis key, a different one from MAX_LINEAR_JERK" },
+    { "repo": "linuxcnc", "file": "src/emc/ini/inijoint.cc", "line": 174, "match": "MAX_JERK.*DEFAULT_JOINT_MAX_JERK", "claim": "pause: ...and a per-joint key too" },
     { "repo": "linuxcnc", "file": "src/emc/ini/initraj.cc", "line": 159, "match": "planner_type == 1 && jerk < 1\\.0", "claim": "pause: S-curve is silently downgraded when jerk is invalid" },
     { "repo": "linuxcnc", "file": "src/emc/ini/inihal.cc", "line": 320, "match": "planner_type == 1 && NEW\\(traj_max_jerk\\) < 1\\.0", "claim": "pause: the same rule on the runtime HAL pin" },
     { "repo": "linuxcnc", "file": "src/emc/tp/tp.c", "line": 3664, "match": "planner_type != 1", "claim": "pause: the S-curve branch is entered only for type 1" },

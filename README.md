@@ -106,31 +106,43 @@ git -C linuxcnc-ethercat checkout 87a72a8
 powershell -File linuxcnc-audit/tools/verify-citations.ps1
 ```
 
-Expected: `305 pass, 0 fail`. On a later HEAD a FAIL usually means the line
+Expected: `307 pass, 0 fail`. On a later HEAD a FAIL usually means the line
 moved — re-anchor the citation rather than assume the finding broke.
 
 **The manifest is a curated set, not an index**, and the gap is stated rather
-than hidden. Measured 2026-08-09, with the manifest at 304 — it is **305 since
-2026-08-10**, one entry added for the trajectory jerk default: `LINUXCNC-FINDINGS.md`
-holds **220 distinct `file:line` citations, of which 187 have an entry at that
-exact line — 85%**.
+than hidden. Measured **2026-08-10**, manifest at 307: `LINUXCNC-FINDINGS.md`
+holds **221 distinct `file:line` citations, of which 189 have an entry at that
+exact line — 86%**.
 
-*The method, so it can be redone rather than believed:* extract every
-`name.ext:NNN` from the findings with a regex, compare against the manifest on
-`basename:line`. It does not resolve the shorthand the document uses when several
-lines of one file are cited in a row — `emcsvr.cc:140`, `:146`, `:151` counts as
-one citation, not three — so it **undercounts**. And note that **the instrument
-changed here**: an earlier pass counted 193 where this one counts 198 on the same
-commit. Two rulers, not growth.
+*The method, and this time as a command rather than a description, because the
+description was not enough to reproduce the number:*
 
-The 33 without an exact-line entry are three different things, and the difference
+```bash
+EXT='c|cc|h|hh|cpp|py|adoc|in|ps1|js|json|nml|hal|ini|md|txt|sh|am|mk'
+grep -oE "([A-Za-z0-9_.+-]+\.($EXT)|Makefile):[0-9]+" LINUXCNC-FINDINGS.md \
+  | sed 's|.*/||' | sort -u          # 221 citations
+```
+
+It does not resolve the shorthand the document uses when several lines of one
+file are cited in a row — `emcsvr.cc:140`, `:146`, `:151` counts as one citation,
+not three — so it **undercounts**.
+
+⚠ **Earlier editions of this paragraph gave 193, then 198, then 220, and none of
+them is reproducible from the prose that described the method.** Run against the
+same file, three implementations returned three numbers; run against three
+different days of the file, one implementation returns 195 · 217 · 221. The
+figures were not wrong so much as unfalsifiable — *a number offered as evidence
+has to carry the instrument that produced it*, which is why the command is above
+and the date is on the figure.
+
+The 32 without an exact-line entry are three different things, and the difference
 is the point:
 
 - **14 point at LinuxCNC's own `.adoc` documentation** — which is what this audit
   criticises and what its patches rewrite. Pinning them would guarantee a failure
   the day a patch lands, while saying nothing about the code. A check that breaks
   when you win is a bad check.
-- **10 have an entry within fifteen lines of the same file.** The block is
+- **9 have an entry within fifteen lines of the same file.** The block is
   watched; the exact line is not.
 - **9 are genuinely unwatched**, and are named here rather than left as a number:
   `control.c:333`, `control.main-pkg.in:70`, `control.top.in:119`,
