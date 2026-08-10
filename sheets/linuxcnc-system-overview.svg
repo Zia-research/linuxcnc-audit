@@ -5,1459 +5,1639 @@
   the source; this one is produced, and the next export overwrites it. The exact
   export command and its flags are in the repository README.
 
-  draw.io version that produced THIS file: NOT RECORDED. It was exported on
-  2026-08-08, before this note existed. Recording it matters: the same model
-  exported on 2026-08-10 with draw.io 31.1.8 gives 109720 bytes against the 96667
-  of this file, a 13 percent difference with no change to the drawing. A
-  regenerated export therefore shows a large diff that means nothing, and the
-  version is the only thing that explains why.
+  Produced 2026-08-10 with draw.io 31.1.8. Record the version on every
+  regeneration. The same model exported with a different version changes size by
+  more than ten percent with no change to the drawing, so a regenerated export
+  shows a large diff that means nothing, and the version is the only thing that
+  explains why.
 
-  This file is split one element per line. draw.io emits it as a single line of
-  96529 characters, which cannot be reviewed or diffed; that was the concrete
-  objection raised upstream. Splitting costs 1.5 percent of size.
+  Two things were done here that draw.io does not do by itself, and both answer
+  objections raised upstream against the tool.
+
+  One. Every shape in the model carries convertToSvg=1, so labels are emitted as
+  native SVG text instead of HTML inside foreignObject. Measured on this model:
+  the export goes from 109720 to 73965 bytes, and NO foreignObject element is
+  left at all, against 56 before. Text elements go from 57, most of them
+  truncated fallbacks reading like "INI file..." where the label was three lines
+  long, to 197 real ones with 302 tspan children, one per rendered line. The file
+  is therefore readable by any SVG renderer, not only by a browser.
+
+  Two. The file is split one element per line. draw.io emits it as a single line,
+  which cannot be reviewed or diffed. Splitting costs about two percent of size.
 -->
-<svg xmlns="http://www.w3.org/2000/svg" style="background: transparent; background-color: transparent; color-scheme: light dark;" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="3198px" height="2414px" viewBox="0 0 3198 2414">
+<svg xmlns="http://www.w3.org/2000/svg" style="background: transparent; background-color: transparent; color-scheme: light dark;" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="3209px" height="2414px" viewBox="0 0 3209 2414">
 <defs/>
 <g>
 <g data-cell-id="0">
 <g data-cell-id="1">
 <g data-cell-id="b13">
 <g transform="translate(0.5,0.5)">
-<rect x="597" y="1231" width="658" height="134" rx="20.1" ry="20.1" fill="#e1d5e7" stroke="#9673a6" stroke-width="3" pointer-events="all" style="fill: light-dark(rgb(225, 213, 231), rgb(57, 47, 63)); stroke: light-dark(rgb(150, 115, 166), rgb(149, 119, 163));"/>
+<rect x="607" y="1231" width="658" height="134" rx="20.1" ry="20.1" fill="#e1d5e7" stroke="#9673a6" stroke-width="3" pointer-events="all" style="fill: light-dark(rgb(225, 213, 231), rgb(57, 47, 63)); stroke: light-dark(rgb(150, 115, 166), rgb(149, 119, 163));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 656px; height: 1px; padding-top: 1240px; margin-left: 598px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">HAL shared memory · key 0x48414C32<br />2 MiB · pins · signals · params · functions · threads<br />every hal_init() attaches it — halcmd too</div>
-</div>
-</div>
-</foreignObject>
-<text x="926" y="1253" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">HAL shared memory · key 0x48414C32...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="46.800000000000004" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(936,1240) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan>HAL shared memory · key 0x48414C32</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan>2 MiB · pins · signals · params · functions · threads</tspan>
+</text>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan>every hal_init() attaches it — halcmd too</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="b14">
 <g transform="translate(0.5,0.5)">
-<rect x="1311" y="1231" width="658" height="134" rx="20.1" ry="20.1" fill="#e1d5e7" stroke="#9673a6" stroke-width="3" pointer-events="all" style="fill: light-dark(rgb(225, 213, 231), rgb(57, 47, 63)); stroke: light-dark(rgb(150, 115, 166), rgb(149, 119, 163));"/>
+<rect x="1321" y="1231" width="658" height="134" rx="20.1" ry="20.1" fill="#e1d5e7" stroke="#9673a6" stroke-width="3" pointer-events="all" style="fill: light-dark(rgb(225, 213, 231), rgb(57, 47, 63)); stroke: light-dark(rgb(150, 115, 166), rgb(149, 119, 163));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 656px; height: 1px; padding-top: 1240px; margin-left: 1312px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-<font color="#7A4A08" style="color: light-dark(rgb(122, 74, 8), rgb(206, 164, 108));">emcmot · RTAPI shmem key 100 — not NML, not a FIFO</font>
-<br />command · SINGLE SLOT · mutex · commandNum → Echo<br />status · seqlock head / tail<br />error · MPSC ring 32 × 1024 · newest lost</div>
-</div>
-</div>
-</foreignObject>
-<text x="1640" y="1253" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">emcmot · RTAPI shmem key 100 — not NML, not a FIFO...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="62.400000000000006" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(1650,1240) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan fill="rgb(122, 74, 8)" style="fill: light-dark(rgb(122, 74, 8), rgb(206, 164, 108));">
+<tspan>emcmot · RTAPI shmem key 100 — not NML, not a FIFO</tspan>
+</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan>command · SINGLE SLOT · mutex · commandNum → Echo</tspan>
+</text>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan>status · seqlock head / tail</tspan>
+</text>
+<text y="59.8" data-line-font-size="13" x="0">
+<tspan>error · MPSC ring 32 × 1024 · newest lost</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="b26">
 <g transform="translate(0.5,0.5)">
-<rect x="2207" y="791" width="470" height="140" rx="21" ry="21" fill="#fff2cc" stroke="#d6b656" pointer-events="all" style="fill: light-dark(rgb(255, 242, 204), rgb(40, 29, 0)); stroke: light-dark(rgb(214, 182, 86), rgb(109, 81, 0));"/>
+<rect x="2217" y="791" width="470" height="140" rx="21" ry="21" fill="#fff2cc" stroke="#d6b656" pointer-events="all" style="fill: light-dark(rgb(255, 242, 204), rgb(40, 29, 0)); stroke: light-dark(rgb(214, 182, 86), rgb(109, 81, 0));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 468px; height: 1px; padding-top: 800px; margin-left: 2208px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-<b>HAL files</b>
-<br />loadrt · addf · net · setp<br />read once at startup by halcmd<br />they BUILD HAL memory; no live link after</div>
-</div>
-</div>
-</foreignObject>
-<text x="2442" y="813" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">HAL files...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="62.400000000000006" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(2452,800) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan font-weight="bold">
+<tspan>HAL files</tspan>
+</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan>loadrt · addf · net · setp</tspan>
+</text>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan>read once at startup by halcmd</tspan>
+</text>
+<text y="59.8" data-line-font-size="13" x="0">
+<tspan>they BUILD HAL memory; no live link after</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="b27">
 <g transform="translate(0.5,0.5)">
-<rect x="2207" y="641" width="470" height="110" rx="16.5" ry="16.5" fill="#fff2cc" stroke="#d6b656" pointer-events="all" style="fill: light-dark(rgb(255, 242, 204), rgb(40, 29, 0)); stroke: light-dark(rgb(214, 182, 86), rgb(109, 81, 0));"/>
+<rect x="2217" y="641" width="470" height="110" rx="16.5" ry="16.5" fill="#fff2cc" stroke="#d6b656" pointer-events="all" style="fill: light-dark(rgb(255, 242, 204), rgb(40, 29, 0)); stroke: light-dark(rgb(214, 182, 86), rgb(109, 81, 0));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 468px; height: 1px; padding-top: 650px; margin-left: 2208px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-<b>INI file</b>
-<div>
-<b>
-<br />
-</b>
-</div>
-<div>
-<b>
-<br />
-</b>[KINS] · periods · limits · which GUI<br />read by task at startup — one way, never written back</div>
-</div>
-</div>
-</div>
-</foreignObject>
-<text x="2442" y="663" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">INI file...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="93.6" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(2452,650) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan font-weight="bold">
+<tspan>INI file</tspan>
+</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0"/>
+<text y="44.2" data-line-font-size="13" x="0"/>
+<text y="59.8" data-line-font-size="13" x="0"/>
+<text y="75.4" data-line-font-size="13" x="0">
+<tspan>[KINS] · periods · limits · which GUI</tspan>
+</text>
+<text y="91" data-line-font-size="13" x="0">
+<tspan>read by task at startup — one way, never written back</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="b24">
 <g>
-<rect x="602" y="2310" width="672" height="81" rx="12.15" ry="12.15" fill="#ffe6cc" stroke="#d79b00" stroke-width="2" pointer-events="all" style="fill: light-dark(rgb(255, 230, 204), rgb(54, 33, 10)); stroke: light-dark(rgb(215, 155, 0), rgb(153, 101, 0));"/>
+<rect x="612" y="2310" width="672" height="81" rx="12.15" ry="12.15" fill="#ffe6cc" stroke="#d79b00" stroke-width="2" pointer-events="all" style="fill: light-dark(rgb(255, 230, 204), rgb(54, 33, 10)); stroke: light-dark(rgb(215, 155, 0), rgb(153, 101, 0));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 670px; height: 1px; padding-top: 2319px; margin-left: 603px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">Machine hardware<br />drives · encoders · limit and home switches · spindle · field I/O</div>
-</div>
-</div>
-</foreignObject>
-<text x="938" y="2332" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">Machine hardware...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="31.200000000000003" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(948,2319) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan>Machine hardware</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan>drives · encoders · limit and home switches · spindle · field I/O</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="YvrQsZjTYEUz9iUAEqGL-11">
 <g transform="translate(0.5,0.5)">
-<path d="M 2767 696 L 2683.37 696" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 2678.12 696 L 2685.12 692.5 L 2683.37 696 L 2685.12 699.5 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 2777 696 L 2693.37 696" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 2688.12 696 L 2695.12 692.5 L 2693.37 696 L 2695.12 699.5 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
 </g>
 </g>
 <g data-cell-id="YvrQsZjTYEUz9iUAEqGL-12">
 <g transform="translate(0.5,0.5)">
-<path d="M 2852 756 L 2852 861 L 2683.37 861" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 2678.12 861 L 2685.12 857.5 L 2683.37 861 L 2685.12 864.5 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 2862 756 L 2862 861 L 2693.37 861" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 2688.12 861 L 2695.12 857.5 L 2693.37 861 L 2695.12 864.5 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
 </g>
 </g>
 <g data-cell-id="b25">
 <g transform="translate(0.5,0.5)">
-<rect x="2767" y="636" width="340" height="120" rx="18" ry="18" fill="#fff2cc" stroke="#d6b656" stroke-dasharray="3 3" pointer-events="all" style="fill: light-dark(rgb(255, 242, 204), rgb(40, 29, 0)); stroke: light-dark(rgb(214, 182, 86), rgb(109, 81, 0));"/>
+<rect x="2777" y="636" width="340" height="120" rx="18" ry="18" fill="#fff2cc" stroke="#d6b656" stroke-dasharray="3 3" pointer-events="all" style="fill: light-dark(rgb(255, 242, 204), rgb(40, 29, 0)); stroke: light-dark(rgb(214, 182, 86), rgb(109, 81, 0));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 338px; height: 1px; padding-top: 645px; margin-left: 2768px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-<b>Wizards</b>
-<br />pncconf / stepconf<br />they GENERATE the INI and HAL files, one way<br />you run them before the machine, not with it</div>
-</div>
-</div>
-</foreignObject>
-<text x="2937" y="658" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">Wizards...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="62.400000000000006" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(2947,645) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan font-weight="bold">
+<tspan>Wizards</tspan>
+</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan>pncconf / stepconf</tspan>
+</text>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan>they GENERATE the INI and HAL files, one way</tspan>
+</text>
+<text y="59.8" data-line-font-size="13" x="0">
+<tspan>you run them before the machine, not with it</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="b6">
 <g transform="translate(0.5,0.5)">
-<rect x="1077" y="710.5" width="650" height="135" rx="20.25" ry="20.25" fill="#e1d5e7" stroke="#9673a6" stroke-width="3" pointer-events="all" style="fill: light-dark(rgb(225, 213, 231), rgb(57, 47, 63)); stroke: light-dark(rgb(150, 115, 166), rgb(149, 119, 163));"/>
+<rect x="1087" y="710.5" width="650" height="135" rx="20.25" ry="20.25" fill="#e1d5e7" stroke="#9673a6" stroke-width="3" pointer-events="all" style="fill: light-dark(rgb(225, 213, 231), rgb(57, 47, 63)); stroke: light-dark(rgb(150, 115, 166), rgb(149, 119, 163));"/>
 </g>
 <g data-cell-id="b6a">
 <g transform="translate(0.5,0.5)">
-<rect x="1088.14" y="738.19" width="126.29" height="92" rx="13.8" ry="13.8" fill="none" stroke="#9673a6" pointer-events="all" style="stroke: light-dark(rgb(150, 115, 166), rgb(149, 119, 163));"/>
+<rect x="1098.14" y="738.19" width="126.29" height="92" rx="13.8" ry="13.8" fill="none" stroke="#9673a6" pointer-events="all" style="stroke: light-dark(rgb(150, 115, 166), rgb(149, 119, 163));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 124px; height: 1px; padding-top: 747px; margin-left: 1089px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-<b>emcCommand</b>
-<br />8192 B<br />queue<br />
-<font color="#7A4A08" style="color: light-dark(rgb(122, 74, 8), rgb(206, 164, 108));">clients W</font>
-<br />
-<font color="#7A4A08" style="color: light-dark(rgb(122, 74, 8), rgb(206, 164, 108));">task R</font>
-</div>
-</div>
-</div>
-</foreignObject>
-<text x="1151" y="760" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">emcCommand...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="78" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(1161.29,747.19) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan font-weight="bold">
+<tspan>emcCommand</tspan>
+</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan>8192 B</tspan>
+</text>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan>queue</tspan>
+</text>
+<text y="59.8" data-line-font-size="13" x="0">
+<tspan fill="rgb(122, 74, 8)" style="fill: light-dark(rgb(122, 74, 8), rgb(206, 164, 108));">
+<tspan>clients W</tspan>
+</tspan>
+</text>
+<text y="75.4" data-line-font-size="13" x="0">
+<tspan fill="rgb(122, 74, 8)" style="fill: light-dark(rgb(122, 74, 8), rgb(206, 164, 108));">
+<tspan>task R</tspan>
+</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="b6b">
 <g transform="translate(0.5,0.5)">
-<rect x="1221.86" y="738.19" width="126.29" height="92" rx="13.8" ry="13.8" fill="none" stroke="#9673a6" pointer-events="all" style="stroke: light-dark(rgb(150, 115, 166), rgb(149, 119, 163));"/>
+<rect x="1231.86" y="738.19" width="126.29" height="92" rx="13.8" ry="13.8" fill="none" stroke="#9673a6" pointer-events="all" style="stroke: light-dark(rgb(150, 115, 166), rgb(149, 119, 163));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 124px; height: 1px; padding-top: 747px; margin-left: 1223px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-<b>emcStatus</b>
-<br />20480 B<br />overwritten<br />
-<font color="#7A4A08" style="color: light-dark(rgb(122, 74, 8), rgb(206, 164, 108));">task W</font>
-<br />
-<font color="#7A4A08" style="color: light-dark(rgb(122, 74, 8), rgb(206, 164, 108));">clients R</font>
-</div>
-</div>
-</div>
-</foreignObject>
-<text x="1285" y="760" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">emcStatus...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="78" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(1295,747.19) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan font-weight="bold">
+<tspan>emcStatus</tspan>
+</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan>20480 B</tspan>
+</text>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan>overwritten</tspan>
+</text>
+<text y="59.8" data-line-font-size="13" x="0">
+<tspan fill="rgb(122, 74, 8)" style="fill: light-dark(rgb(122, 74, 8), rgb(206, 164, 108));">
+<tspan>task W</tspan>
+</tspan>
+</text>
+<text y="75.4" data-line-font-size="13" x="0">
+<tspan fill="rgb(122, 74, 8)" style="fill: light-dark(rgb(122, 74, 8), rgb(206, 164, 108));">
+<tspan>clients R</tspan>
+</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="b6c">
 <g transform="translate(0.5,0.5)">
-<rect x="1355.57" y="738.19" width="126.29" height="92" rx="13.8" ry="13.8" fill="none" stroke="#9673a6" pointer-events="all" style="stroke: light-dark(rgb(150, 115, 166), rgb(149, 119, 163));"/>
+<rect x="1365.57" y="738.19" width="126.29" height="92" rx="13.8" ry="13.8" fill="none" stroke="#9673a6" pointer-events="all" style="stroke: light-dark(rgb(150, 115, 166), rgb(149, 119, 163));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 124px; height: 1px; padding-top: 747px; margin-left: 1357px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-<b>emcError</b>
-<br />8192 B<br />queue<br />
-<font color="#7A4A08" style="color: light-dark(rgb(122, 74, 8), rgb(206, 164, 108));">task W</font>
-<br />
-<font color="#7A4A08" style="color: light-dark(rgb(122, 74, 8), rgb(206, 164, 108));">clients R</font>
-</div>
-</div>
-</div>
-</foreignObject>
-<text x="1419" y="760" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">emcError...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="78" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(1428.71,747.19) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan font-weight="bold">
+<tspan>emcError</tspan>
+</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan>8192 B</tspan>
+</text>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan>queue</tspan>
+</text>
+<text y="59.8" data-line-font-size="13" x="0">
+<tspan fill="rgb(122, 74, 8)" style="fill: light-dark(rgb(122, 74, 8), rgb(206, 164, 108));">
+<tspan>task W</tspan>
+</tspan>
+</text>
+<text y="75.4" data-line-font-size="13" x="0">
+<tspan fill="rgb(122, 74, 8)" style="fill: light-dark(rgb(122, 74, 8), rgb(206, 164, 108));">
+<tspan>clients R</tspan>
+</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="tnml">
-<g transform="translate(0.5,0.5)">
-<rect x="1496.71" y="741.88" width="219.14" height="73.85" fill="none" stroke="none" pointer-events="all"/>
+<g>
+<rect x="1506.71" y="741.88" width="219.14" height="73.85" fill="none" stroke="none" pointer-events="all"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe flex-start; width: 1px; height: 1px; padding-top: 779px; margin-left: 1499px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: left; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: nowrap; ">
-<b>NML · the only triplet</b>
-<br />SHMEM — shared memory,<br />like the two below<br />but this one never crosses<br />the boundary</div>
-</div>
-</div>
-</foreignObject>
-<text x="1499" y="783" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px">NML · the only triplet...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="start" data-blockTextHeight="78" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(1508.71,739.81) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan font-weight="bold">
+<tspan>NML · the only triplet</tspan>
+</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan>SHMEM — shared memory,</tspan>
+</text>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan>like the two below</tspan>
+</text>
+<text y="59.8" data-line-font-size="13" x="0">
+<tspan>but this one never crosses</tspan>
+</text>
+<text y="75.4" data-line-font-size="13" x="0">
+<tspan>the boundary</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 </g>
 <g data-cell-id="b7">
 <g transform="translate(0.5,0.5)">
-<rect x="1757" y="740" width="300" height="75" rx="11.25" ry="11.25" fill="#dae8fc" stroke="#6c8ebf" pointer-events="all" style="fill: light-dark(rgb(218, 232, 252), rgb(29, 41, 59)); stroke: light-dark(rgb(108, 142, 191), rgb(92, 121, 163));"/>
+<rect x="1767" y="740" width="300" height="75" rx="11.25" ry="11.25" fill="#dae8fc" stroke="#6c8ebf" pointer-events="all" style="fill: light-dark(rgb(218, 232, 252), rgb(29, 41, 59)); stroke: light-dark(rgb(108, 142, 191), rgb(92, 121, 163));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 298px; height: 1px; padding-top: 749px; margin-left: 1758px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-<b>linuxcncsvr — master of the three channels</b>
-<br />creates the segments · starts first<br />NML servers, TCP 5005 — its clients are remote</div>
-</div>
-</div>
-</foreignObject>
-<text x="1907" y="762" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">linuxcncsvr — master of the three channels...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="46.800000000000004" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(1917,749) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan font-weight="bold">
+<tspan>linuxcncsvr — master of the three channels</tspan>
+</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan>creates the segments · starts first</tspan>
+</text>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan>NML servers, TCP 5005 — its clients are remote</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="b3">
 <g transform="translate(0.5,0.5)">
-<rect x="1797" y="10" width="380" height="238" rx="35.7" ry="35.7" fill="#eee" stroke="#36393d" stroke-dasharray="3 3" pointer-events="all" style="fill: light-dark(rgb(238, 238, 238), rgb(0, 0, 0)); stroke: light-dark(rgb(54, 57, 61), rgb(186, 189, 192));"/>
+<rect x="1807" y="10" width="380" height="238" rx="35.7" ry="35.7" fill="#eee" stroke="#36393d" stroke-dasharray="3 3" pointer-events="all" style="fill: light-dark(rgb(238, 238, 238), rgb(0, 0, 0)); stroke: light-dark(rgb(54, 57, 61), rgb(186, 189, 192));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 378px; height: 1px; padding-top: 19px; margin-left: 1798px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-<b>remote NML client<br />
-</b>
-<br />another computer; nothing realtime runs there<br />needs libnml — in practice another Linux with LinuxCNC<br />a GUI-only control PC; task, motion and HAL stay here<br />AXIS there needs AXIS_NO_HAL=1 — HAL is local memory —<br />and loses jog pins, pyvcp panels, classicladder<br />config: client.nml on it · server.nml on the machine<br />
-<font color="#c0392b" style="color: light-dark(rgb(192, 57, 43), rgb(255, 140, 128));">
-<b>no authentication on TCP 5005 — anything that reaches it writes</b>
-</font>
-<br />
-<font color="#c0392b" style="color: light-dark(rgb(192, 57, 43), rgb(255, 140, 128));">client.nml / server.nml are NOT INSTALLED — source tree only</font>
-<br />
-<font color="#c0392b" style="color: light-dark(rgb(192, 57, 43), rgb(255, 140, 128));">and declare emcStatus at 10240 B against 20480 — NML halves it again</font>
-<br />
-<font color="#c0392b" style="color: light-dark(rgb(192, 57, 43), rgb(255, 140, 128));">unverified — run tool_watch to settle it</font>
-</div>
-</div>
-</div>
-</foreignObject>
-<text x="1987" y="32" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">remote NML client...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="187.19999999999996" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(1997,19) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan font-weight="bold">
+<tspan>remote NML client</tspan>
+</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0"/>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan>another computer; nothing realtime runs there</tspan>
+</text>
+<text y="59.8" data-line-font-size="13" x="0">
+<tspan>needs libnml — in practice another Linux with LinuxCNC</tspan>
+</text>
+<text y="75.4" data-line-font-size="13" x="0">
+<tspan>a GUI-only control PC; task, motion and HAL stay here</tspan>
+</text>
+<text y="91" data-line-font-size="13" x="0">
+<tspan>AXIS there needs AXIS_NO_HAL=1 — HAL is local memory —</tspan>
+</text>
+<text y="106.6" data-line-font-size="13" x="0">
+<tspan>and loses jog pins, pyvcp panels, classicladder</tspan>
+</text>
+<text y="122.2" data-line-font-size="13" x="0">
+<tspan>config: client.nml on it · server.nml on the machine</tspan>
+</text>
+<text y="137.8" data-line-font-size="13" x="0">
+<tspan fill="rgb(192, 57, 43)" style="fill: light-dark(rgb(192, 57, 43), rgb(255, 140, 128));">
+<tspan font-weight="bold">
+<tspan>no authentication on TCP 5005 — anything that reaches it writes</tspan>
+</tspan>
+</tspan>
+</text>
+<text y="153.4" data-line-font-size="13" x="0">
+<tspan fill="rgb(192, 57, 43)" style="fill: light-dark(rgb(192, 57, 43), rgb(255, 140, 128));">
+<tspan>client.nml / server.nml are NOT INSTALLED — source tree only</tspan>
+</tspan>
+</text>
+<text y="169" data-line-font-size="13" x="0">
+<tspan fill="rgb(192, 57, 43)" style="fill: light-dark(rgb(192, 57, 43), rgb(255, 140, 128));">
+<tspan>and declare emcStatus at 10240 B against 20480 — NML halves it again</tspan>
+</tspan>
+</text>
+<text y="184.6" data-line-font-size="13" x="0">
+<tspan fill="rgb(192, 57, 43)" style="fill: light-dark(rgb(192, 57, 43), rgb(255, 140, 128));">
+<tspan>unverified — run tool_watch to settle it</tspan>
+</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="b5">
 <g transform="translate(0.5,0.5)">
-<rect x="167" y="524.5" width="340" height="108" rx="16.2" ry="16.2" fill="#dae8fc" stroke="#6c8ebf" stroke-dasharray="3 3" pointer-events="all" style="fill: light-dark(rgb(218, 232, 252), rgb(29, 41, 59)); stroke: light-dark(rgb(108, 142, 191), rgb(92, 121, 163));"/>
+<rect x="177" y="524.5" width="340" height="108" rx="16.2" ry="16.2" fill="#dae8fc" stroke="#6c8ebf" stroke-dasharray="3 3" pointer-events="all" style="fill: light-dark(rgb(218, 232, 252), rgb(29, 41, 59)); stroke: light-dark(rgb(108, 142, 191), rgb(92, 121, 163));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 338px; height: 1px; padding-top: 534px; margin-left: 168px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-<b>halcmd / halshow</b>
-<br />HAL clients — hal_init() attaches HAL memory<br />a hand tool, not part of the cycle<br />setp writes a pin, getp reads one — live<br />they never touch NML</div>
-</div>
-</div>
-</foreignObject>
-<text x="337" y="547" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">halcmd / halshow...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="78" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(347,533.5) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan font-weight="bold">
+<tspan>halcmd / halshow</tspan>
+</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan>HAL clients — hal_init() attaches HAL memory</tspan>
+</text>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan>a hand tool, not part of the cycle</tspan>
+</text>
+<text y="59.8" data-line-font-size="13" x="0">
+<tspan>setp writes a pin, getp reads one — live</tspan>
+</text>
+<text y="75.4" data-line-font-size="13" x="0">
+<tspan>they never touch NML</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="b1">
 <g transform="translate(0.5,0.5)">
-<rect x="687" y="710.5" width="248" height="104" rx="15.6" ry="15.6" fill="#dae8fc" stroke="#6c8ebf" stroke-dasharray="3 3" pointer-events="all" style="fill: light-dark(rgb(218, 232, 252), rgb(29, 41, 59)); stroke: light-dark(rgb(108, 142, 191), rgb(92, 121, 163));"/>
+<rect x="697" y="710.5" width="248" height="104" rx="15.6" ry="15.6" fill="#dae8fc" stroke="#6c8ebf" stroke-dasharray="3 3" pointer-events="all" style="fill: light-dark(rgb(218, 232, 252), rgb(29, 41, 59)); stroke: light-dark(rgb(108, 142, 191), rgb(92, 121, 163));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 246px; height: 1px; padding-top: 720px; margin-left: 688px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">halui<br />no display at all — knobs and switches<br />[HAL]HALUI — adds, never replaces<br />92 IN + 56 OUT pin sites</div>
-</div>
-</div>
-</foreignObject>
-<text x="811" y="733" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">halui...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="62.400000000000006" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(821,719.5) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan>halui</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan>no display at all — knobs and switches</tspan>
+</text>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan>[HAL]HALUI — adds, never replaces</tspan>
+</text>
+<text y="59.8" data-line-font-size="13" x="0">
+<tspan>92 IN + 56 OUT pin sites</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="b0">
 <g transform="translate(0.5,0.5)">
-<rect x="967" y="523.5" width="462" height="109" rx="16.35" ry="16.35" fill="#dae8fc" stroke="#6c8ebf" pointer-events="all" style="fill: light-dark(rgb(218, 232, 252), rgb(29, 41, 59)); stroke: light-dark(rgb(108, 142, 191), rgb(92, 121, 163));"/>
+<rect x="977" y="523.5" width="462" height="109" rx="16.35" ry="16.35" fill="#dae8fc" stroke="#6c8ebf" pointer-events="all" style="fill: light-dark(rgb(218, 232, 252), rgb(29, 41, 59)); stroke: light-dark(rgb(108, 142, 191), rgb(92, 121, 163));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 460px; height: 1px; padding-top: 533px; margin-left: 968px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-<b>LOCAL GUI</b>
-<br />axis · gmoccapy · touchy · gscreen · qtvcp screens (qtdragon…)<br />each screen exports its OWN pins — and the count differs<br />axisui 16 · qtdragon 18</div>
-</div>
-</div>
-</foreignObject>
-<text x="1198" y="546" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">LOCAL GUI...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="62.400000000000006" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(1208,532.5) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan font-weight="bold">
+<tspan>LOCAL GUI</tspan>
+</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan>axis · gmoccapy · touchy · gscreen · qtvcp screens (qtdragon…)</tspan>
+</text>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan>each screen exports its OWN pins — and the count differs</tspan>
+</text>
+<text y="59.8" data-line-font-size="13" x="0">
+<tspan>axisui 16 · qtdragon 18</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="b8">
 <g transform="translate(0.5,0.5)">
-<rect x="826" y="1004" width="952" height="168" rx="25.2" ry="25.2" fill="#dae8fc" stroke="#6c8ebf" pointer-events="all" style="fill: light-dark(rgb(218, 232, 252), rgb(29, 41, 59)); stroke: light-dark(rgb(108, 142, 191), rgb(92, 121, 163));"/>
+<rect x="836" y="1004" width="952" height="168" rx="25.2" ry="25.2" fill="#dae8fc" stroke="#6c8ebf" pointer-events="all" style="fill: light-dark(rgb(218, 232, 252), rgb(29, 41, 59)); stroke: light-dark(rgb(108, 142, 191), rgb(92, 121, 163));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 950px; height: 1px; padding-top: 1013px; margin-left: 827px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">milltask — the task process<br />tool, coolant, estop — no NML channel left for I/O</div>
-</div>
-</div>
-</foreignObject>
-<text x="1302" y="1026" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">milltask — the task process...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="31.200000000000003" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(1312,1013) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan>milltask — the task process</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan>tool, coolant, estop — no NML channel left for I/O</tspan>
+</text>
+</g>
 </g>
 </g>
 <g data-cell-id="b9">
 <g transform="translate(0.5,0.5)">
-<rect x="854" y="1046" width="224" height="90" rx="13.5" ry="13.5" fill="none" stroke="#6c8ebf" pointer-events="all" style="stroke: light-dark(rgb(108, 142, 191), rgb(92, 121, 163));"/>
+<rect x="864" y="1046" width="224" height="90" rx="13.5" ry="13.5" fill="none" stroke="#6c8ebf" pointer-events="all" style="stroke: light-dark(rgb(108, 142, 191), rgb(92, 121, 163));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 222px; height: 1px; padding-top: 1055px; margin-left: 855px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-<b>RS-274 interpreter</b>
-<br />librs274.so — one class, TWO instances<br />task's: canon → interp_list → motion</div>
-</div>
-</div>
-</foreignObject>
-<text x="966" y="1068" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">RS-274 interpreter...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="46.800000000000004" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(976,1055) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan font-weight="bold">
+<tspan>RS-274 interpreter</tspan>
+</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan>librs274.so — one class, TWO instances</tspan>
+</text>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan>task's: canon → interp_list → motion</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="b12">
 <g transform="translate(0.5,0.5)">
-<rect x="1547" y="1046" width="196" height="90" rx="13.5" ry="13.5" fill="none" stroke="#6c8ebf" pointer-events="all" style="stroke: light-dark(rgb(108, 142, 191), rgb(92, 121, 163));"/>
+<rect x="1557" y="1046" width="196" height="90" rx="13.5" ry="13.5" fill="none" stroke="#6c8ebf" pointer-events="all" style="stroke: light-dark(rgb(108, 142, 191), rgb(92, 121, 163));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 194px; height: 1px; padding-top: 1055px; margin-left: 1548px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">iocontrol.0.*<br />14 HAL pins<br />former io process</div>
-</div>
-</div>
-</foreignObject>
-<text x="1645" y="1068" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">iocontrol.0.*...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="46.800000000000004" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(1655,1055) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan>iocontrol.0.*</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan>14 HAL pins</tspan>
+</text>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan>former io process</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="b11">
 <g transform="translate(0.5,0.5)">
-<rect x="1316" y="1046" width="210" height="90" rx="13.5" ry="13.5" fill="none" stroke="#6c8ebf" pointer-events="all" style="stroke: light-dark(rgb(108, 142, 191), rgb(92, 121, 163));"/>
+<rect x="1326" y="1046" width="210" height="90" rx="13.5" ry="13.5" fill="none" stroke="#6c8ebf" pointer-events="all" style="stroke: light-dark(rgb(108, 142, 191), rgb(92, 121, 163));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 208px; height: 1px; padding-top: 1055px; margin-left: 1317px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-<b>sequencing</b>
-<br />the task state machine —<br />decides what runs next</div>
-</div>
-</div>
-</foreignObject>
-<text x="1421" y="1068" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">sequencing...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="46.800000000000004" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(1431,1055) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan font-weight="bold">
+<tspan>sequencing</tspan>
+</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan>the task state machine —</tspan>
+</text>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan>decides what runs next</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="b10">
 <g transform="translate(0.5,0.5)">
-<rect x="1099" y="1046" width="196" height="90" rx="13.5" ry="13.5" fill="none" stroke="#6c8ebf" pointer-events="all" style="stroke: light-dark(rgb(108, 142, 191), rgb(92, 121, 163));"/>
+<rect x="1109" y="1046" width="196" height="90" rx="13.5" ry="13.5" fill="none" stroke="#6c8ebf" pointer-events="all" style="stroke: light-dark(rgb(108, 142, 191), rgb(92, 121, 163));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 194px; height: 1px; padding-top: 1055px; margin-left: 1100px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">interp_list<br />std::deque<br />throttled at 1000<br />[TASK]INTERP_MAX_LEN</div>
-</div>
-</div>
-</foreignObject>
-<text x="1197" y="1068" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">interp_list...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="62.400000000000006" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(1207,1055) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan>interp_list</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan>std::deque</tspan>
+</text>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan>throttled at 1000</tspan>
+</text>
+<text y="59.8" data-line-font-size="13" x="0">
+<tspan>[TASK]INTERP_MAX_LEN</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 </g>
 <g data-cell-id="b2">
 <g transform="translate(0.5,0.5)">
-<rect x="1393" y="126" width="320" height="108" rx="16.2" ry="16.2" fill="#eee" stroke="#36393d" stroke-dasharray="3 3" pointer-events="all" style="fill: light-dark(rgb(238, 238, 238), rgb(0, 0, 0)); stroke: light-dark(rgb(54, 57, 61), rgb(186, 189, 192));"/>
+<rect x="1403" y="126" width="320" height="108" rx="16.2" ry="16.2" fill="#eee" stroke="#36393d" stroke-dasharray="3 3" pointer-events="all" style="fill: light-dark(rgb(238, 238, 238), rgb(0, 0, 0)); stroke: light-dark(rgb(54, 57, 61), rgb(186, 189, 192));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 318px; height: 1px; padding-top: 135px; margin-left: 1394px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-<div>
-<b>REMOTE GUI</b>
-</div>
-<b>
-<div>
-<b>
-<br />
-</b>
-</div>telnet · nc · any socket client — plain text, not NML</b>
-<br />a human or a program, on another machine<br />
-<font color="#c0392b" style="color: light-dark(rgb(192, 57, 43), rgb(255, 140, 128));">two passwords, but sent in the clear — man warns twice</font>
-</div>
-</div>
-</div>
-</foreignObject>
-<text x="1553" y="148" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">REMOTE GUItelnet · nc · any socket client — plain...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="78" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(1563,135) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan font-weight="bold">
+<tspan>REMOTE GUI</tspan>
+</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0"/>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan font-weight="bold">
+<tspan>telnet · nc · any socket client — plain text, not NML</tspan>
+</tspan>
+</text>
+<text y="59.8" data-line-font-size="13" x="0">
+<tspan>a human or a program, on another machine</tspan>
+</text>
+<text y="75.4" data-line-font-size="13" x="0">
+<tspan fill="rgb(192, 57, 43)" style="fill: light-dark(rgb(192, 57, 43), rgb(255, 140, 128));">
+<tspan>two passwords, but sent in the clear — man warns twice</tspan>
+</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="t1">
-<g transform="translate(0.5,0.5)">
-<rect x="194" y="1154" width="103" height="16" fill="none" stroke="none" pointer-events="all"/>
+<g>
+<rect x="204" y="1154" width="103" height="16" fill="none" stroke="none" pointer-events="all"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe flex-start; width: 1px; height: 1px; padding-top: 1162px; margin-left: 196px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: left; color: #ff0000; ">
-<div style="display: inline-block; font-size: 30px; font-family: Helvetica; color: light-dark(#ff0000, #ededed); line-height: 1.2; pointer-events: all; font-weight: bold; white-space: nowrap; ">ordinary scheduling<div>
-<span>NOT REALTIME</span>
-</div>
-</div>
-</div>
-</div>
-</foreignObject>
-<text x="196" y="1171" fill="light-dark(#ff0000, #ededed)" font-family="Helvetica" font-size="30px" font-weight="bold">ordinar...</text>
-</switch>
+<g fill="#ff0000" font-family="Helvetica" font-weight="bold" text-anchor="start" data-blockTextHeight="72" font-size="30px" style="fill: light-dark(rgb(255, 0, 0), rgb(237, 237, 237));">
+<g transform="translate(206,1126) scale(1)">
+<text y="30" data-line-font-size="30" x="0">
+<tspan>ordinary scheduling</tspan>
+</text>
+<text y="66" data-line-font-size="30" x="0">
+<tspan>
+<tspan>NOT REALTIME</tspan>
+</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="t3">
-<g transform="translate(0.5,0.5)">
-<rect x="195" y="1434" width="60" height="16" fill="none" stroke="none" pointer-events="all"/>
+<g>
+<rect x="205" y="1434" width="60" height="16" fill="none" stroke="none" pointer-events="all"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe flex-start; width: 1px; height: 1px; padding-top: 1442px; margin-left: 197px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: left; color: #ff0000; ">
-<div style="display: inline-block; font-size: 30px; font-family: Helvetica; color: light-dark(#ff0000, #ededed); line-height: 1.2; pointer-events: all; font-weight: bold; white-space: nowrap; ">
-<span>REALTIME</span>
-<div>SCHED_FIFO · rtapi_app<span>
-</span>
-</div>
-</div>
-</div>
-</div>
-</foreignObject>
-<text x="197" y="1451" fill="light-dark(#ff0000, #ededed)" font-family="Helvetica" font-size="30px" font-weight="bold">REAL...</text>
-</switch>
+<g fill="#ff0000" font-family="Helvetica" font-weight="bold" text-anchor="start" data-blockTextHeight="72" font-size="30px" style="fill: light-dark(rgb(255, 0, 0), rgb(237, 237, 237));">
+<g transform="translate(207,1406) scale(1)">
+<text y="30" data-line-font-size="30" x="0">
+<tspan>
+<tspan>REALTIME</tspan>
+</tspan>
+</text>
+<text y="66" data-line-font-size="30" x="0">
+<tspan>SCHED_FIFO · rtapi_app</tspan>
+<tspan/>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="tstream">
-<g transform="translate(0.5,0.5)">
-<rect x="2007" y="1220" width="370" height="130" fill="none" stroke="none" pointer-events="all"/>
+<g>
+<rect x="2017" y="1220" width="370" height="130" fill="none" stroke="none" pointer-events="all"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe flex-start; width: 1px; height: 1px; padding-top: 1285px; margin-left: 2009px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: left; color: #000000; ">
-<div style="display: inline-block; font-size: 16px; font-family: Helvetica; color: light-dark(#000000, #ededed); line-height: 1.2; pointer-events: all; white-space: nowrap; ">streamer / sampler — the same kind of memory, optional<div>RTAPI segments of their own, created in realtime and</div>
-<div>attached by halstreamer / halsampler, ordinary processes</div>
-<div>— so they cross this band too</div>
-<div>keys 0x48535430+n (into HAL) · 0x48534130+n (out of HAL), 8 each</div>
-<div>loaded, they are addf'd into a thread and run in the cycle</div>
-<div>shipped configs: streamer 0 of 332 · sampler 1 (the panelui demo)</div>
-</div>
-</div>
-</div>
-</foreignObject>
-<text x="2009" y="1290" fill="#000000" font-family="Helvetica" font-size="16px">streamer / sampler — the same kind of memory, o...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="start" data-blockTextHeight="134.4" font-size="16px" style="fill: light-dark(rgb(0, 0, 0), rgb(237, 237, 237));">
+<g transform="translate(2019,1217.8) scale(1)">
+<text y="16" data-line-font-size="16" x="0">
+<tspan>streamer / sampler — the same kind of memory, optional</tspan>
+</text>
+<text y="35.2" data-line-font-size="16" x="0">
+<tspan>RTAPI segments of their own, created in realtime and</tspan>
+</text>
+<text y="54.4" data-line-font-size="16" x="0">
+<tspan>attached by halstreamer / halsampler, ordinary processes</tspan>
+</text>
+<text y="73.6" data-line-font-size="16" x="0">
+<tspan>— so they cross this band too</tspan>
+</text>
+<text y="92.8" data-line-font-size="16" x="0">
+<tspan>keys 0x48535430+n (into HAL) · 0x48534130+n (out of HAL), 8 each</tspan>
+</text>
+<text y="112" data-line-font-size="16" x="0">
+<tspan>loaded, they are addf'd into a thread and run in the cycle</tspan>
+</text>
+<text y="131.2" data-line-font-size="16" x="0">
+<tspan>shipped configs: streamer 0 of 332 · sampler 1 (the panelui demo)</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="t5">
-<g transform="translate(0.5,0.5)">
-<rect x="57" y="1250" width="420" height="90" fill="none" stroke="none" pointer-events="all"/>
+<g>
+<rect x="67" y="1250" width="420" height="90" fill="none" stroke="none" pointer-events="all"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 1px; height: 1px; padding-top: 1295px; margin-left: 267px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 16px; font-family: Helvetica; color: light-dark(#000000, #ededed); line-height: 1.2; pointer-events: all; white-space: nowrap; ">a scheduling boundary, not a kernel boundary<br />kernel modules only on the RTAI-<i>kernel</i> flavour — 1 of the 5 RTAPI flavours;<div>uspace/RTAI is user space too</div>
-</div>
-</div>
-</div>
-</foreignObject>
-<text x="267" y="1300" fill="#000000" font-family="Helvetica" font-size="16px" text-anchor="middle">a scheduling boundary, not a kernel boundary...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="57.60000000000001" font-size="16px" style="fill: light-dark(rgb(0, 0, 0), rgb(237, 237, 237));">
+<g transform="translate(277,1266.2) scale(1)">
+<text y="16" data-line-font-size="16" x="0">
+<tspan>a scheduling boundary, not a kernel boundary</tspan>
+</text>
+<text y="35.2" data-line-font-size="16" x="0">
+<tspan>kernel modules only on the RTAI-</tspan>
+<tspan font-style="italic">
+<tspan>kernel</tspan>
+</tspan>
+<tspan> flavour — 1 of the 5 RTAPI flavours;</tspan>
+</text>
+<text y="54.4" data-line-font-size="16" x="0">
+<tspan>uspace/RTAI is user space too</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="boundary">
 <g>
-<path d="M 17 1208 L 2377 1208" fill="none" stroke="#c0392b" stroke-width="4" stroke-miterlimit="10" stroke-dasharray="12 12" pointer-events="stroke" style="stroke: light-dark(rgb(192, 57, 43), rgb(255, 140, 128));"/>
+<path d="M 27 1208 L 2387 1208" fill="none" stroke="#c0392b" stroke-width="4" stroke-miterlimit="10" stroke-dasharray="12 12" pointer-events="stroke" style="stroke: light-dark(rgb(192, 57, 43), rgb(255, 140, 128));"/>
 </g>
 </g>
 <g data-cell-id="e1">
 <g transform="translate(0.5,0.5)">
-<path d="M 1553 240.37 L 1553 377 L 1640 377 L 1640 513.63" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 1553 235.12 L 1556.5 242.12 L 1553 240.37 L 1549.5 242.12 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 1640 518.88 L 1636.5 511.88 L 1640 513.63 L 1643.5 511.88 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1563 240.37 L 1563 377 L 1650 377 L 1650 513.63" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1563 235.12 L 1566.5 242.12 L 1563 240.37 L 1559.5 242.12 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1650 518.88 L 1646.5 511.88 L 1650 513.63 L 1653.5 511.88 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
 </g>
 </g>
 <g data-cell-id="e2">
 <g transform="translate(0.5,0.5)">
-<path d="M 1251.13 637.34 L 1251.1 671.5 L 1248 671.5 L 1247.96 704.13" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 1251.13 632.09 L 1254.62 639.09 L 1251.13 637.34 L 1247.62 639.09 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 1247.95 709.38 L 1244.46 702.38 L 1247.96 704.13 L 1251.46 702.39 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1261.13 637.34 L 1261.1 671.5 L 1258 671.5 L 1257.96 704.13" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1261.13 632.09 L 1264.62 639.09 L 1261.13 637.34 L 1257.62 639.09 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1257.95 709.38 L 1254.46 702.38 L 1257.96 704.13 L 1261.46 702.39 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
 </g>
 </g>
 <g data-cell-id="e3">
 <g transform="translate(0.5,0.5)">
-<path d="M 941.37 762.5 L 1006 762.5 L 1066.73 761.99" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 936.12 762.5 L 943.12 759 L 941.37 762.5 L 943.12 766 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 1071.98 761.94 L 1065.01 765.5 L 1066.73 761.99 L 1064.95 758.5 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 951.37 762.5 L 1016 762.5 L 1076.73 761.99" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 946.12 762.5 L 953.12 759 L 951.37 762.5 L 953.12 766 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1081.98 761.94 L 1075.01 765.5 L 1076.73 761.99 L 1074.95 758.5 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
 </g>
 </g>
 <g data-cell-id="e4">
 <g transform="translate(0.5,0.5)">
-<path d="M 708.82 825.86 L 708.8 1023 L 767 1023 L 767 1224.63" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 708.82 820.61 L 712.32 827.61 L 708.82 825.86 L 705.32 827.61 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 767 1229.88 L 763.5 1222.88 L 767 1224.63 L 770.5 1222.88 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 718.82 825.86 L 718.8 1023 L 777 1023 L 777 1224.63" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 718.82 820.61 L 722.32 827.61 L 718.82 825.86 L 715.32 827.61 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 777 1229.88 L 773.5 1222.88 L 777 1224.63 L 780.5 1222.88 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
 </g>
 </g>
 <g data-cell-id="e5">
 <g transform="translate(0.5,0.5)">
-<path d="M 1640 635.37 L 1640 669.8 L 1652.9 669.8 L 1652.9 704.13" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 1640 630.12 L 1643.5 637.12 L 1640 635.37 L 1636.5 637.12 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 1652.9 709.38 L 1649.4 702.38 L 1652.9 704.13 L 1656.4 702.38 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1650 635.37 L 1650 669.8 L 1662.9 669.8 L 1662.9 704.13" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1650 630.12 L 1653.5 637.12 L 1650 635.37 L 1646.5 637.12 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1662.9 709.38 L 1659.4 702.38 L 1662.9 704.13 L 1666.4 702.38 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
 </g>
 </g>
 <g data-cell-id="e6">
 <g transform="translate(0.5,0.5)">
-<path d="M 1402 851.87 L 1402 924.8 L 1302 924.8 L 1302 997.63" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 1402 846.62 L 1405.5 853.62 L 1402 851.87 L 1398.5 853.62 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 1302 1002.88 L 1298.5 995.88 L 1302 997.63 L 1305.5 995.88 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1412 851.87 L 1412 924.8 L 1312 924.8 L 1312 997.63" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1412 846.62 L 1415.5 853.62 L 1412 851.87 L 1408.5 853.62 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1312 1002.88 L 1308.5 995.88 L 1312 997.63 L 1315.5 995.88 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
 </g>
 </g>
 <g data-cell-id="e7">
 <g transform="translate(0.5,0.5)">
-<path d="M 1733.37 778 L 1747 778 L 1750.64 777.82" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 1728.12 778 L 1735.12 774.5 L 1733.37 778 L 1735.12 781.5 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 1755.88 777.56 L 1749.07 781.4 L 1750.64 777.82 L 1748.72 774.41 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1743.37 778 L 1757 778 L 1760.64 777.82" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1738.12 778 L 1745.12 774.5 L 1743.37 778 L 1745.12 781.5 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1765.88 777.56 L 1759.07 781.4 L 1760.64 777.82 L 1758.72 774.41 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
 </g>
 </g>
 <g data-cell-id="e8">
 <g transform="translate(0.5,0.5)">
-<path d="M 1638.07 1177.36 L 1638.1 1201.5 L 1640 1201.5 L 1640 1224.63" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 1638.06 1172.11 L 1641.57 1179.1 L 1638.07 1177.36 L 1634.57 1179.12 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 1640 1229.88 L 1636.5 1222.88 L 1640 1224.63 L 1643.5 1222.88 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1648.07 1177.36 L 1648.1 1201.5 L 1650 1201.5 L 1650 1224.63" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1648.06 1172.11 L 1651.57 1179.1 L 1648.07 1177.36 L 1644.57 1179.12 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1650 1229.88 L 1646.5 1222.88 L 1650 1224.63 L 1653.5 1222.88 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
 </g>
 </g>
 <g data-cell-id="e9">
 <g transform="translate(0.5,0.5)">
-<path d="M 1640 1371.37 L 1640 1471.1 L 1745.7 1471.1 L 1745.7 1570.71" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 1640 1366.12 L 1643.5 1373.12 L 1640 1371.37 L 1636.5 1373.12 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 1745.7 1575.96 L 1742.2 1568.96 L 1745.7 1570.71 L 1749.2 1568.96 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1650 1371.37 L 1650 1471.1 L 1755.7 1471.1 L 1755.7 1570.71" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1650 1366.12 L 1653.5 1373.12 L 1650 1371.37 L 1646.5 1373.12 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1755.7 1575.96 L 1752.2 1568.96 L 1755.7 1570.71 L 1759.2 1568.96 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
 </g>
 </g>
 <g data-cell-id="e11">
 <g transform="translate(0.5,0.5)">
-<path d="M 1987 254.37 L 1987 494 L 1982 494 L 1982 733.63" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 1987 249.12 L 1990.5 256.12 L 1987 254.37 L 1983.5 256.12 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 1982 738.88 L 1978.5 731.88 L 1982 733.63 L 1985.5 731.88 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1997 254.37 L 1997 494 L 1992 494 L 1992 733.63" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1997 249.12 L 2000.5 256.12 L 1997 254.37 L 1993.5 256.12 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1992 738.88 L 1988.5 731.88 L 1992 733.63 L 1995.5 731.88 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
 </g>
 </g>
 <g data-cell-id="e12">
 <g transform="translate(0.5,0.5)">
-<path d="M 1023 638.87 L 1023 660 L 667 660 L 667 1224.63" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 1023 633.62 L 1026.5 640.62 L 1023 638.87 L 1019.5 640.62 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 667 1229.88 L 663.5 1222.88 L 667 1224.63 L 670.5 1222.88 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1033 638.87 L 1033 660 L 677 660 L 677 1224.63" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1033 633.62 L 1036.5 640.62 L 1033 638.87 L 1029.5 640.62 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 677 1229.88 L 673.5 1222.88 L 677 1224.63 L 680.5 1222.88 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
 </g>
 </g>
 <g data-cell-id="e17">
 <g transform="translate(0.5,0.5)">
-<path d="M 454.38 1959.47 L 412 1959.5 L 412 2349.7 L 595.63 2349.69" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 459.63 1959.47 L 452.63 1962.98 L 454.38 1959.47 L 452.63 1955.98 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 600.88 2349.69 L 593.88 2353.19 L 595.63 2349.69 L 593.88 2346.19 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 464.38 1959.47 L 422 1959.5 L 422 2349.7 L 605.63 2349.69" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 469.63 1959.47 L 462.63 1962.98 L 464.38 1959.47 L 462.63 1955.98 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 610.88 2349.69 L 603.88 2353.19 L 605.63 2349.69 L 603.88 2346.19 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
 </g>
 </g>
 <g data-cell-id="e18">
 <g transform="translate(0.5,0.5)">
-<path d="M 1137.22 1371.37 L 1137.2 1620.2 L 1157.38 1620.18" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 1137.22 1366.12 L 1140.72 1373.12 L 1137.22 1371.37 L 1133.72 1373.12 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 1162.63 1620.17 L 1155.64 1623.68 L 1157.38 1620.18 L 1155.63 1616.68 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1147.22 1371.37 L 1147.2 1620.2 L 1167.38 1620.18" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1147.22 1366.12 L 1150.72 1373.12 L 1147.22 1371.37 L 1143.72 1373.12 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1172.63 1620.17 L 1165.64 1623.68 L 1167.38 1620.18 L 1165.63 1616.68 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
 </g>
 </g>
 <g data-cell-id="e19">
 <g transform="translate(0.5,0.5)">
-<path d="M 628.58 1369.63 L 628.6 1520 L 532.1 1520 L 532.07 1801.71" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 628.58 1364.38 L 632.08 1371.38 L 628.58 1369.63 L 625.08 1371.38 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 532.07 1806.96 L 528.57 1799.96 L 532.07 1801.71 L 535.57 1799.96 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 638.58 1369.63 L 638.6 1520 L 542.1 1520 L 542.07 1801.71" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 638.58 1364.38 L 642.08 1371.38 L 638.58 1369.63 L 635.08 1371.38 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 542.07 1806.96 L 538.57 1799.96 L 542.07 1801.71 L 545.57 1799.96 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
 </g>
 </g>
 <g data-cell-id="YvrQsZjTYEUz9iUAEqGL-6">
 <g>
-<path d="M 188 306 L 2992 306" fill="none" stroke="#36393d" stroke-width="14" stroke-miterlimit="10" stroke-dasharray="14 42" pointer-events="stroke" style="stroke: light-dark(rgb(54, 57, 61), rgb(186, 189, 192));"/>
+<path d="M 198 306 L 3002 306" fill="none" stroke="#36393d" stroke-width="14" stroke-miterlimit="10" stroke-dasharray="14 42" pointer-events="stroke" style="stroke: light-dark(rgb(54, 57, 61), rgb(186, 189, 192));"/>
 </g>
 </g>
 <g data-cell-id="YvrQsZjTYEUz9iUAEqGL-7">
-<g transform="translate(0.5,0.5)">
-<rect x="146" y="350" width="200" height="16" fill="none" stroke="none" pointer-events="all"/>
+<g>
+<rect x="156" y="350" width="200" height="16" fill="none" stroke="none" pointer-events="all"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe flex-start; width: 1px; height: 1px; padding-top: 358px; margin-left: 148px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: left; color: #36393d; ">
-<div style="display: inline-block; font-size: 30px; font-family: Helvetica; color: light-dark(#36393d, #babdc0); line-height: 1.2; pointer-events: all; white-space: nowrap; ">everything under this line is software<div>
-<b>INSIDE THE COMPUTER</b>
-</div>
-</div>
-</div>
-</div>
-</foreignObject>
-<text x="148" y="367" fill="#36393d" font-family="Helvetica" font-size="30px">everything und...</text>
-</switch>
+<g fill="#36393d" font-family="Helvetica" text-anchor="start" data-blockTextHeight="72" font-size="30px" style="fill: light-dark(rgb(54, 57, 61), rgb(186, 189, 192));">
+<g transform="translate(158,322) scale(1)">
+<text y="30" data-line-font-size="30" x="0">
+<tspan>everything under this line is software</tspan>
+</text>
+<text y="66" data-line-font-size="30" x="0">
+<tspan font-weight="bold">
+<tspan>INSIDE THE COMPUTER</tspan>
+</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="YvrQsZjTYEUz9iUAEqGL-9">
-<g transform="translate(0.5,0.5)">
-<rect x="146" y="240" width="200" height="36" fill="none" stroke="none" pointer-events="all"/>
+<g>
+<rect x="156" y="240" width="200" height="36" fill="none" stroke="none" pointer-events="all"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe flex-start; width: 1px; height: 1px; padding-top: 258px; margin-left: 148px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: left; color: #36393d; ">
-<div style="display: inline-block; font-size: 30px; font-family: Helvetica; color: light-dark(#36393d, #babdc0); line-height: 1.2; pointer-events: all; font-weight: bold; white-space: nowrap; ">REMOTE DESKTOP<br />over network</div>
-</div>
-</div>
-</foreignObject>
-<text x="148" y="267" fill="#36393d" font-family="Helvetica" font-size="30px" font-weight="bold">REMOTE DESKTOP...</text>
-</switch>
+<g fill="#36393d" font-family="Helvetica" font-weight="bold" text-anchor="start" data-blockTextHeight="72" font-size="30px" style="fill: light-dark(rgb(54, 57, 61), rgb(186, 189, 192));">
+<g transform="translate(158,222) scale(1)">
+<text y="30" data-line-font-size="30" x="0">
+<tspan>REMOTE DESKTOP</tspan>
+</text>
+<text y="66" data-line-font-size="30" x="0">
+<tspan>over network</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="c3a">
 <g transform="translate(0.5,0.5)">
-<path d="M 920.24 1176.52 L 920.2 1201.5 L 926 1201.5 L 926 1224.63" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 920.25 1171.27 L 923.74 1178.28 L 920.24 1176.52 L 916.74 1178.26 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 926 1229.88 L 922.5 1222.88 L 926 1224.63 L 929.5 1222.88 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 930.24 1176.52 L 930.2 1201.5 L 936 1201.5 L 936 1224.63" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 930.25 1171.27 L 933.74 1178.28 L 930.24 1176.52 L 926.74 1178.26 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 936 1229.88 L 932.5 1222.88 L 936 1224.63 L 939.5 1222.88 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
 </g>
 </g>
 <g data-cell-id="c3b">
 <g transform="translate(0.5,0.5)">
-<path d="M 994.53 1563.63 L 994.5 1467.5 L 991.1 1467.5 L 991.14 1366.81" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 994.53 1568.88 L 991.03 1561.88 L 994.53 1563.63 L 998.03 1561.88 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 991.14 1361.56 L 994.64 1368.56 L 991.14 1366.81 L 987.64 1368.56 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1004.53 1563.63 L 1004.5 1467.5 L 1001.1 1467.5 L 1001.14 1366.81" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1004.53 1568.88 L 1001.03 1561.88 L 1004.53 1563.63 L 1008.03 1561.88 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1001.14 1361.56 L 1004.64 1368.56 L 1001.14 1366.81 L 997.64 1368.56 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
 </g>
 </g>
 <g data-cell-id="b90">
 <g transform="translate(0.5,0.5)">
-<rect x="2207" y="471" width="470" height="140" rx="21" ry="21" fill="#fff2cc" stroke="#d6b656" pointer-events="all" style="fill: light-dark(rgb(255, 242, 204), rgb(40, 29, 0)); stroke: light-dark(rgb(214, 182, 86), rgb(109, 81, 0));"/>
+<rect x="2217" y="471" width="470" height="140" rx="21" ry="21" fill="#fff2cc" stroke="#d6b656" pointer-events="all" style="fill: light-dark(rgb(255, 242, 204), rgb(40, 29, 0)); stroke: light-dark(rgb(214, 182, 86), rgb(109, 81, 0));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 468px; height: 1px; padding-top: 480px; margin-left: 2208px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-<b>G-code program — .ngc</b>
-<br />the job, not the configuration<br />read TWICE, by two instances of the same interpreter:<br />task's — canon → interp_list → motion<br />the GUI's — canon → a drawing callback, the path on screen</div>
-</div>
-</div>
-</foreignObject>
-<text x="2442" y="493" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">G-code program — .ngc...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="78" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(2452,480) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan font-weight="bold">
+<tspan>G-code program — .ngc</tspan>
+</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan>the job, not the configuration</tspan>
+</text>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan>read TWICE, by two instances of the same interpreter:</tspan>
+</text>
+<text y="59.8" data-line-font-size="13" x="0">
+<tspan>task's — canon → interp_list → motion</tspan>
+</text>
+<text y="75.4" data-line-font-size="13" x="0">
+<tspan>the GUI's — canon → a drawing callback, the path on screen</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="b91">
 <g transform="translate(0.5,0.5)">
-<rect x="734" y="857" width="380" height="108" rx="16.2" ry="16.2" fill="#e1d5e7" stroke="#9673a6" stroke-width="3" pointer-events="all" style="fill: light-dark(rgb(225, 213, 231), rgb(57, 47, 63)); stroke: light-dark(rgb(150, 115, 166), rgb(149, 119, 163));"/>
+<rect x="744" y="857" width="380" height="108" rx="16.2" ry="16.2" fill="#e1d5e7" stroke="#9673a6" stroke-width="3" pointer-events="all" style="fill: light-dark(rgb(225, 213, 231), rgb(57, 47, 63)); stroke: light-dark(rgb(150, 115, 166), rgb(149, 119, 163));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 378px; height: 1px; padding-top: 866px; margin-left: 735px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-<b>tool table — mmap'd FILE, not RTAPI shm</b>
-<br />milltask creates · GUIs and halui attach<br />read-write on both sides, under a mutex<br />wholly non-realtime — never crosses the line</div>
-</div>
-</div>
-</foreignObject>
-<text x="924" y="879" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">tool table — mmap'd FILE, not RTAPI shm...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="62.400000000000006" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(934,866) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan font-weight="bold">
+<tspan>tool table — mmap'd FILE, not RTAPI shm</tspan>
+</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan>milltask creates · GUIs and halui attach</tspan>
+</text>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan>read-write on both sides, under a mutex</tspan>
+</text>
+<text y="59.8" data-line-font-size="13" x="0">
+<tspan>wholly non-realtime — never crosses the line</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="g3">
 <g transform="translate(0.5,0.5)">
-<path d="M 961.19 1000.32 L 961.2 984 L 961.49 970.39" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 961.18 1005.57 L 957.69 998.57 L 961.19 1000.32 L 964.69 998.57 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 961.6 965.15 L 964.95 972.22 L 961.49 970.39 L 957.95 972.07 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 971.19 1000.32 L 971.2 984 L 971.49 970.39" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 971.18 1005.57 L 967.69 998.57 L 971.19 1000.32 L 974.69 998.57 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 971.6 965.15 L 974.95 972.22 L 971.49 970.39 L 967.95 972.07 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
 </g>
 </g>
 <g data-cell-id="b92">
 <g>
-<rect x="437" y="1440" width="1900" height="660" rx="99" ry="99" fill="none" stroke="#6c8ebf" stroke-width="2" pointer-events="all" style="stroke: light-dark(rgb(108, 142, 191), rgb(92, 121, 163));"/>
+<rect x="447" y="1440" width="1900" height="660" rx="99" ry="99" fill="none" stroke="#6c8ebf" stroke-width="2" pointer-events="all" style="stroke: light-dark(rgb(108, 142, 191), rgb(92, 121, 163));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 1898px; height: 1px; padding-top: 1451px; margin-left: 438px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-<b>rtapi_app — the process these threads run in</b>
-<br />started by halcmd: loadrt runs "rtapi_app load &lt;mod&gt;"<br />a component is a shared object dlopen'd into it<br />uspace flavours only, the default; under RTAI-<i>kernel</i> they are kernel modules</div>
-</div>
-</div>
-</foreignObject>
-<text x="1387" y="1464" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">rtapi_app — the process these threads run in...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="62.400000000000006" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(1397,1451) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan font-weight="bold">
+<tspan>rtapi_app — the process these threads run in</tspan>
+</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan>started by halcmd: loadrt runs "rtapi_app load &lt;mod&gt;"</tspan>
+</text>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan>a component is a shared object dlopen'd into it</tspan>
+</text>
+<text y="59.8" data-line-font-size="13" x="0">
+<tspan>uspace flavours only, the default; under RTAI-</tspan>
+<tspan font-style="italic">
+<tspan>kernel</tspan>
+</tspan>
+<tspan> they are kernel modules</tspan>
+</text>
+</g>
 </g>
 </g>
 <g data-cell-id="b15">
 <g transform="translate(0.5,0.5)">
-<rect x="1163.75" y="1577.08" width="1163.75" height="444.23" rx="66.63" ry="66.63" fill="#fffdf5" stroke="#b0a06a" pointer-events="all" style="fill: light-dark(rgb(255, 253, 245), rgb(22, 20, 14)); stroke: light-dark(rgb(176, 160, 106), rgb(115, 101, 55));"/>
+<rect x="1173.75" y="1577.08" width="1163.75" height="444.23" rx="66.63" ry="66.63" fill="#fffdf5" stroke="#b0a06a" pointer-events="all" style="fill: light-dark(rgb(255, 253, 245), rgb(22, 20, 14)); stroke: light-dark(rgb(176, 160, 106), rgb(115, 101, 55));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 1162px; height: 1px; padding-top: 1586px; margin-left: 1165px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">servo-thread — servo_period_nsec · members, not execution order (addf order is config data)<br />
-<font color="#666" style="color: light-dark(rgb(102, 102, 102), rgb(0, 0, 0));">both exported by motmod</font>
-<br />
-<font color="#666" style="color: light-dark(rgb(102, 102, 102), rgb(0, 0, 0));">via hal_export_funct()</font>
-<br />
-<font color="#666" style="color: light-dark(rgb(102, 102, 102), rgb(0, 0, 0));">JOINT 1…16 — a motor, not an axis · 9 separate Cartesian axes</font>
-<br />
-<font color="#666" style="color: light-dark(rgb(102, 102, 102), rgb(0, 0, 0));">to HAL memory: joint.N.motor-pos-cmd OUT · motor-pos-fb IN</font>
-</div>
-</div>
-</div>
-</foreignObject>
-<text x="1746" y="1599" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">servo-thread — servo_period_nsec · members, not execution order (addf order is config data)...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="78" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(1755.63,1586.08) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan>servo-thread — servo_period_nsec · members, not execution order (addf order is config data)</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan fill="rgb(102, 102, 102)" style="fill: light-dark(rgb(102, 102, 102), rgb(0, 0, 0));">
+<tspan>both exported by motmod</tspan>
+</tspan>
+</text>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan fill="rgb(102, 102, 102)" style="fill: light-dark(rgb(102, 102, 102), rgb(0, 0, 0));">
+<tspan>via hal_export_funct()</tspan>
+</tspan>
+</text>
+<text y="59.8" data-line-font-size="13" x="0">
+<tspan fill="rgb(102, 102, 102)" style="fill: light-dark(rgb(102, 102, 102), rgb(0, 0, 0));">
+<tspan>JOINT 1…16 — a motor, not an axis · 9 separate Cartesian axes</tspan>
+</tspan>
+</text>
+<text y="75.4" data-line-font-size="13" x="0">
+<tspan fill="rgb(102, 102, 102)" style="fill: light-dark(rgb(102, 102, 102), rgb(0, 0, 0));">
+<tspan>to HAL memory: joint.N.motor-pos-cmd OUT · motor-pos-fb IN</tspan>
+</tspan>
+</text>
+</g>
 </g>
 </g>
 <g data-cell-id="b20">
 <g transform="translate(0.5,0.5)">
-<rect x="1197" y="1878.46" width="1064" height="99" rx="14.85" ry="14.85" fill="#d5e8d4" stroke="#82b366" pointer-events="all" style="fill: light-dark(rgb(213, 232, 212), rgb(31, 47, 30)); stroke: light-dark(rgb(130, 179, 102), rgb(68, 110, 44));"/>
+<rect x="1207" y="1878.46" width="1064" height="99" rx="14.85" ry="14.85" fill="#d5e8d4" stroke="#82b366" pointer-events="all" style="fill: light-dark(rgb(213, 232, 212), rgb(31, 47, 30)); stroke: light-dark(rgb(130, 179, 102), rgb(68, 110, 44));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 1062px; height: 1px; padding-top: 1887px; margin-left: 1198px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-<b>④</b> <b>HAL components in the same thread — wired by the integrator</b>
-<br />pid.N.do-pid-calcs · encoder · stepgen.capture-position · pwmgen · limit3 · estop_latch<br />124 .comp + 25 .c source files</div>
-</div>
-</div>
-</foreignObject>
-<text x="1729" y="1900" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">④ HAL components in the same thread — wired by the integrator...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="46.800000000000004" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(1739,1887.46) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan font-weight="bold">
+<tspan>④</tspan>
+</tspan>
+<tspan> </tspan>
+<tspan font-weight="bold">
+<tspan>HAL components in the same thread — wired by the integrator</tspan>
+</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan>pid.N.do-pid-calcs · encoder · stepgen.capture-position · pwmgen · limit3 · estop_latch</tspan>
+</text>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan>124 .comp + 25 .c source files</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="b16">
 <g transform="translate(0.5,0.5)">
-<rect x="1187.5" y="1695.77" width="332.5" height="49.5" rx="7.42" ry="7.42" fill="#d5e8d4" stroke="#82b366" pointer-events="all" style="fill: light-dark(rgb(213, 232, 212), rgb(31, 47, 30)); stroke: light-dark(rgb(130, 179, 102), rgb(68, 110, 44));"/>
+<rect x="1197.5" y="1695.77" width="332.5" height="49.5" rx="7.42" ry="7.42" fill="#d5e8d4" stroke="#82b366" pointer-events="all" style="fill: light-dark(rgb(213, 232, 212), rgb(31, 47, 30)); stroke: light-dark(rgb(130, 179, 102), rgb(68, 110, 44));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 331px; height: 1px; padding-top: 1705px; margin-left: 1189px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-<b>②</b> motion-command-handler</div>
-</div>
-</div>
-</foreignObject>
-<text x="1354" y="1718" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">② motion-command-handler</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(1363.75,1716.77) scale(1)">
+<text>
+<tspan font-weight="bold">
+<tspan>②</tspan>
+</tspan>
+<tspan> motion-command-handler</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="b19">
 <g transform="translate(0.5,0.5)">
-<rect x="1928.5" y="1674.19" width="365.75" height="177.69" rx="26.65" ry="26.65" fill="none" stroke="#b0a06a" pointer-events="all" style="stroke: light-dark(rgb(176, 160, 106), rgb(115, 101, 55));"/>
+<rect x="1938.5" y="1674.19" width="365.75" height="177.69" rx="26.65" ry="26.65" fill="none" stroke="#b0a06a" pointer-events="all" style="stroke: light-dark(rgb(176, 160, 106), rgb(115, 101, 55));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 364px; height: 1px; padding-top: 1683px; margin-left: 1930px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-<b>inside the controller</b>
-<br />TC_QUEUE — ring · 2000 segments ≈ 1 MB<br />spindle.N.* pins × 8<br />JOINT 1…16: cubic interpolator<br />→ backlash + screw comp → motor_pos_cmd pin</div>
-</div>
-</div>
-</foreignObject>
-<text x="2111" y="1696" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">inside the controller...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="78" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(2121.38,1683.19) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan font-weight="bold">
+<tspan>inside the controller</tspan>
+</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan>TC_QUEUE — ring · 2000 segments ≈ 1 MB</tspan>
+</text>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan>spindle.N.* pins × 8</tspan>
+</text>
+<text y="59.8" data-line-font-size="13" x="0">
+<tspan>JOINT 1…16: cubic interpolator</tspan>
+</text>
+<text y="75.4" data-line-font-size="13" x="0">
+<tspan>→ backlash + screw comp → motor_pos_cmd pin</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="b18">
 <g transform="translate(0.5,0.5)">
-<rect x="1573.44" y="1681.81" width="332.5" height="177.69" rx="26.65" ry="26.65" fill="#d5e8d4" stroke="#82b366" stroke-dasharray="3 3" pointer-events="all" style="fill: light-dark(rgb(213, 232, 212), rgb(31, 47, 30)); stroke: light-dark(rgb(130, 179, 102), rgb(68, 110, 44));"/>
+<rect x="1583.44" y="1681.81" width="332.5" height="177.69" rx="26.65" ry="26.65" fill="#d5e8d4" stroke="#82b366" stroke-dasharray="3 3" pointer-events="all" style="fill: light-dark(rgb(213, 232, 212), rgb(31, 47, 30)); stroke: light-dark(rgb(130, 179, 102), rgb(68, 110, 44));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 331px; height: 1px; padding-top: 1691px; margin-left: 1574px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-<b>tpmod</b> — cruckig · finite jerk<br />
-<b>homemod</b> · one of 19 <b>*kins</b>
-<br />separate modules (loadrt), called from motmod's functs:<br />controller RUNS it — tpRunCycle each period<br />handler FEEDS it — tpAddLine / tpAddCircle / tpSetVmax</div>
-</div>
-</div>
-</foreignObject>
-<text x="1740" y="1704" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">tpmod — cruckig · finite jerk...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="78" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(1749.69,1690.81) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan font-weight="bold">
+<tspan>tpmod</tspan>
+</tspan>
+<tspan> — cruckig · finite jerk</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan font-weight="bold">
+<tspan>homemod</tspan>
+</tspan>
+<tspan> · one of 19 </tspan>
+<tspan font-weight="bold">
+<tspan>*kins</tspan>
+</tspan>
+</text>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan>separate modules (loadrt), called from motmod's functs:</tspan>
+</text>
+<text y="59.8" data-line-font-size="13" x="0">
+<tspan>controller RUNS it — tpRunCycle each period</tspan>
+</text>
+<text y="75.4" data-line-font-size="13" x="0">
+<tspan>handler FEEDS it — tpAddLine / tpAddCircle / tpSetVmax</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="b17">
 <g transform="translate(0.5,0.5)">
-<rect x="1187.5" y="1769.38" width="332.5" height="49.5" rx="7.42" ry="7.42" fill="#d5e8d4" stroke="#82b366" pointer-events="all" style="fill: light-dark(rgb(213, 232, 212), rgb(31, 47, 30)); stroke: light-dark(rgb(130, 179, 102), rgb(68, 110, 44));"/>
+<rect x="1197.5" y="1769.38" width="332.5" height="49.5" rx="7.42" ry="7.42" fill="#d5e8d4" stroke="#82b366" pointer-events="all" style="fill: light-dark(rgb(213, 232, 212), rgb(31, 47, 30)); stroke: light-dark(rgb(130, 179, 102), rgb(68, 110, 44));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 331px; height: 1px; padding-top: 1778px; margin-left: 1189px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-<b>③</b> motion-controller</div>
-</div>
-</div>
-</foreignObject>
-<text x="1354" y="1791" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">③ motion-controller</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(1363.75,1790.38) scale(1)">
+<text>
+<tspan font-weight="bold">
+<tspan>③</tspan>
+</tspan>
+<tspan> motion-controller</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 </g>
 <g data-cell-id="b21">
 <g transform="translate(0.5,0.5)">
-<rect x="636.5" y="1570" width="477.38" height="170.08" rx="25.51" ry="25.51" fill="#fffdf5" stroke="#b0a06a" stroke-dasharray="3 3" pointer-events="all" style="fill: light-dark(rgb(255, 253, 245), rgb(22, 20, 14)); stroke: light-dark(rgb(176, 160, 106), rgb(115, 101, 55));"/>
+<rect x="646.5" y="1570" width="477.38" height="170.08" rx="25.51" ry="25.51" fill="#fffdf5" stroke="#b0a06a" stroke-dasharray="3 3" pointer-events="all" style="fill: light-dark(rgb(255, 253, 245), rgb(22, 20, 14)); stroke: light-dark(rgb(176, 160, 106), rgb(115, 101, 55));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 475px; height: 1px; padding-top: 1579px; margin-left: 638px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-<b>base-thread</b>
-<br />created only when servo_base_ratio &gt; 1<br />the servo thread hands it work through<br />stepgen's own state — not through pins</div>
-</div>
-</div>
-</foreignObject>
-<text x="875" y="1592" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">base-thread...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="62.400000000000006" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(885.19,1579) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan font-weight="bold">
+<tspan>base-thread</tspan>
+</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan>created only when servo_base_ratio &gt; 1</tspan>
+</text>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan>the servo thread hands it work through</tspan>
+</text>
+<text y="59.8" data-line-font-size="13" x="0">
+<tspan>stepgen's own state — not through pins</tspan>
+</text>
+</g>
 </g>
 </g>
 <g data-cell-id="b22">
 <g transform="translate(0.5,0.5)">
-<rect x="730.53" y="1650.62" width="289.32" height="43.07" rx="6.46" ry="6.46" fill="#d5e8d4" stroke="#82b366" pointer-events="all" style="fill: light-dark(rgb(213, 232, 212), rgb(31, 47, 30)); stroke: light-dark(rgb(130, 179, 102), rgb(68, 110, 44));"/>
+<rect x="740.53" y="1650.62" width="289.32" height="43.07" rx="6.46" ry="6.46" fill="#d5e8d4" stroke="#82b366" pointer-events="all" style="fill: light-dark(rgb(213, 232, 212), rgb(31, 47, 30)); stroke: light-dark(rgb(130, 179, 102), rgb(68, 110, 44));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 287px; height: 1px; padding-top: 1660px; margin-left: 732px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">stepgen.make-pulses</div>
-</div>
-</div>
-</foreignObject>
-<text x="875" y="1673" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">stepgen.make-pulses</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(885.19,1671.62) scale(1)">
+<text>
+<tspan>stepgen.make-pulses</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 </g>
 <g data-cell-id="b23">
 <g transform="translate(0.5,0.5)">
-<rect x="460.75" y="1808.08" width="548.63" height="213.23" rx="31.98" ry="31.98" fill="#d5e8d4" stroke="#82b366" pointer-events="all" style="fill: light-dark(rgb(213, 232, 212), rgb(31, 47, 30)); stroke: light-dark(rgb(130, 179, 102), rgb(68, 110, 44));"/>
+<rect x="470.75" y="1808.08" width="548.63" height="213.23" rx="31.98" ry="31.98" fill="#d5e8d4" stroke="#82b366" pointer-events="all" style="fill: light-dark(rgb(213, 232, 212), rgb(31, 47, 30)); stroke: light-dark(rgb(130, 179, 102), rgb(68, 110, 44));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 547px; height: 1px; padding-top: 1817px; margin-left: 462px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-<b>①</b> read · <b>⑤</b> write — <b>hardware drivers</b>
-<br />hostmot2 (Mesa) · lcec (EtherCAT) · hal_parport · gpio<br />loaded by loadrt like motmod — rtapi_app_main()<br />their functs are addf'd into whichever thread the integrator picks<br />23 driver files · hostmot2 alone: 42 modules, one driver<br />every driver is a HAL component — its pins live in HAL memory</div>
-</div>
-</div>
-</foreignObject>
-<text x="735" y="1830" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">① read · ⑤ write — hardware drivers...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="93.6" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(745.06,1817.08) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan font-weight="bold">
+<tspan>①</tspan>
+</tspan>
+<tspan> read · </tspan>
+<tspan font-weight="bold">
+<tspan>⑤</tspan>
+</tspan>
+<tspan> write — </tspan>
+<tspan font-weight="bold">
+<tspan>hardware drivers</tspan>
+</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan>hostmot2 (Mesa) · lcec (EtherCAT) · hal_parport · gpio</tspan>
+</text>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan>loaded by loadrt like motmod — rtapi_app_main()</tspan>
+</text>
+<text y="59.8" data-line-font-size="13" x="0">
+<tspan>their functs are addf'd into whichever thread the integrator picks</tspan>
+</text>
+<text y="75.4" data-line-font-size="13" x="0">
+<tspan>23 driver files · hostmot2 alone: 42 modules, one driver</tspan>
+</text>
+<text y="91" data-line-font-size="13" x="0">
+<tspan>every driver is a HAL component — its pins live in HAL memory</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="tbracket">
-<g transform="translate(0.5,0.5)">
-<rect x="484.5" y="2036.54" width="1702.5" height="55.85" fill="none" stroke="none" pointer-events="all"/>
+<g>
+<rect x="494.5" y="2036.54" width="1702.5" height="55.85" fill="none" stroke="none" pointer-events="all"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe flex-start; width: 1px; height: 1px; padding-top: 2064px; margin-left: 487px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: left; color: #7A4A08; ">
-<div style="display: inline-block; font-size: 15px; font-family: Helvetica; color: light-dark(#7A4A08, #cea46c); line-height: 1.2; pointer-events: all; white-space: nowrap; ">
-<b>①②③④⑤ is one shipped CONVENTION, not a rule.</b> Of the 55 shipped configs that addf both a hardware read and motion-command-handler, <b>54 put the read first</b> — and one does not:<br />configs/by_interface/general_mechatronics/GM6-PCI/3-axis-servo.hal reads its board <i>after</i> the controller has run. Reorder the addf lines and you reorder the machine's cycle.</div>
-</div>
-</div>
-</foreignObject>
-<text x="487" y="2069" fill="#7A4A08" font-family="Helvetica" font-size="15px">①②③④⑤ is one shipped CONVENTION, not a rule. Of the 55 shipped configs that addf both a hardware read and motion-command-handler, 54 put the read first — and one does not:...</text>
-</switch>
+<g fill="#7A4A08" font-family="Helvetica" text-anchor="start" data-blockTextHeight="36" font-size="15px" style="fill: light-dark(rgb(122, 74, 8), rgb(206, 164, 108));">
+<g transform="translate(496.5,2046.47) scale(1)">
+<text y="15" data-line-font-size="15" x="0">
+<tspan font-weight="bold">
+<tspan>①②③④⑤ is one shipped CONVENTION, not a rule.</tspan>
+</tspan>
+<tspan> Of the 55 shipped configs that addf both a hardware read and motion-command-handler, </tspan>
+<tspan font-weight="bold">
+<tspan>54 put the read first</tspan>
+</tspan>
+<tspan> — and one does not:</tspan>
+</text>
+<text y="33" data-line-font-size="15" x="0">
+<tspan>configs/by_interface/general_mechatronics/GM6-PCI/3-axis-servo.hal reads its board </tspan>
+<tspan font-style="italic">
+<tspan>after</tspan>
+</tspan>
+<tspan> the controller has run. Reorder the addf lines and you reorder the machine's cycle.</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 </g>
 <g data-cell-id="g4">
 <g transform="translate(0.5,0.5)">
-<path d="M 1065.87 641.48 L 1065.9 680 L 987 680 L 987 850.63" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 1065.87 636.23 L 1069.37 643.23 L 1065.87 641.48 L 1062.37 643.24 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 987 855.88 L 983.5 848.88 L 987 850.63 L 990.5 848.88 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1075.87 641.48 L 1075.9 680 L 997 680 L 997 850.63" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 1075.87 636.23 L 1079.37 643.23 L 1075.87 641.48 L 1072.37 643.24 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 997 855.88 L 993.5 848.88 L 997 850.63 L 1000.5 848.88 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
 </g>
 </g>
 <g data-cell-id="e10">
 <g transform="translate(0.5,0.5)">
-<path d="M 496.8 638.87 L 496.8 1190 L 616.7 1190 L 616.73 1224.63" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 496.8 633.62 L 500.3 640.62 L 496.8 638.87 L 493.3 640.62 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 616.74 1229.88 L 613.23 1222.89 L 616.73 1224.63 L 620.23 1222.88 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 506.8 638.87 L 506.8 1190 L 626.7 1190 L 626.73 1224.63" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 506.8 633.62 L 510.3 640.62 L 506.8 638.87 L 503.3 640.62 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 626.74 1229.88 L 623.23 1222.89 L 626.73 1224.63 L 630.23 1222.88 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
 </g>
 </g>
 <g data-cell-id="thead">
-<g transform="translate(0.5,0.5)">
-<rect x="2707" y="501" width="470" height="70" fill="none" stroke="none" pointer-events="all"/>
+<g>
+<rect x="2717" y="501" width="470" height="70" fill="none" stroke="none" pointer-events="all"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe flex-start; width: 1px; height: 1px; padding-top: 536px; margin-left: 2709px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: left; color: #5b636b; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#5b636b, #939aa1); line-height: 1.2; pointer-events: all; white-space: nowrap; ">
-<b>INPUTS — files, not processes</b>
-<br />detached on purpose: nothing here runs, and nothing here is<br />on the machine's cycle. They are read, then their arrows would<br />only add crossings. Kept as text.</div>
-</div>
-</div>
-</foreignObject>
-<text x="2709" y="540" fill="#5b636b" font-family="Helvetica" font-size="13px">INPUTS — files, not processes...</text>
-</switch>
+<g fill="#5b636b" font-family="Helvetica" text-anchor="start" data-blockTextHeight="62.400000000000006" font-size="13px" style="fill: light-dark(rgb(91, 99, 107), rgb(147, 154, 161));">
+<g transform="translate(2719,504.8) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan font-weight="bold">
+<tspan>INPUTS — files, not processes</tspan>
+</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan>detached on purpose: nothing here runs, and nothing here is</tspan>
+</text>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan>on the machine's cycle. They are read, then their arrows would</tspan>
+</text>
+<text y="59.8" data-line-font-size="13" x="0">
+<tspan>only add crossings. Kept as text.</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="ie_a1OAYyR4woEJlA5U2-5">
 <g>
-<path d="M 178 2176 L 2982 2176" fill="none" stroke="#36393d" stroke-width="14" stroke-miterlimit="10" stroke-dasharray="14 42" pointer-events="stroke" style="stroke: light-dark(rgb(54, 57, 61), rgb(186, 189, 192));"/>
+<path d="M 188 2176 L 2992 2176" fill="none" stroke="#36393d" stroke-width="14" stroke-miterlimit="10" stroke-dasharray="14 42" pointer-events="stroke" style="stroke: light-dark(rgb(54, 57, 61), rgb(186, 189, 192));"/>
 </g>
 </g>
 <g data-cell-id="ie_a1OAYyR4woEJlA5U2-6">
-<g transform="translate(0.5,0.5)">
-<rect x="155" y="2130" width="200" height="16" fill="none" stroke="none" pointer-events="all"/>
+<g>
+<rect x="165" y="2130" width="200" height="16" fill="none" stroke="none" pointer-events="all"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe flex-start; width: 1px; height: 1px; padding-top: 2138px; margin-left: 157px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: left; color: #36393d; ">
-<div style="display: inline-block; font-size: 30px; font-family: Helvetica; color: light-dark(#36393d, #babdc0); line-height: 1.2; pointer-events: all; white-space: nowrap; ">everything ABOVE this line is software<div>
-<b>INSIDE THE COMPUTER</b>
-</div>
-</div>
-</div>
-</div>
-</foreignObject>
-<text x="157" y="2147" fill="#36393d" font-family="Helvetica" font-size="30px">everything ABO...</text>
-</switch>
+<g fill="#36393d" font-family="Helvetica" text-anchor="start" data-blockTextHeight="72" font-size="30px" style="fill: light-dark(rgb(54, 57, 61), rgb(186, 189, 192));">
+<g transform="translate(167,2102) scale(1)">
+<text y="30" data-line-font-size="30" x="0">
+<tspan>everything ABOVE this line is software</tspan>
+</text>
+<text y="66" data-line-font-size="30" x="0">
+<tspan font-weight="bold">
+<tspan>INSIDE THE COMPUTER</tspan>
+</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="ie_a1OAYyR4woEJlA5U2-7">
-<g transform="translate(0.5,0.5)">
-<rect x="155" y="2210" width="200" height="36" fill="none" stroke="none" pointer-events="all"/>
+<g>
+<rect x="165" y="2210" width="200" height="36" fill="none" stroke="none" pointer-events="all"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe flex-start; width: 1px; height: 1px; padding-top: 2228px; margin-left: 157px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: left; color: #36393d; ">
-<div style="display: inline-block; font-size: 30px; font-family: Helvetica; color: light-dark(#36393d, #babdc0); line-height: 1.2; pointer-events: all; font-weight: bold; white-space: nowrap; ">THE MACHINE ITSELF<div>physical - no scheduling class applies to it</div>
-</div>
-</div>
-</div>
-</foreignObject>
-<text x="157" y="2237" fill="#36393d" font-family="Helvetica" font-size="30px" font-weight="bold">THE MACHINE IT...</text>
-</switch>
+<g fill="#36393d" font-family="Helvetica" font-weight="bold" text-anchor="start" data-blockTextHeight="72" font-size="30px" style="fill: light-dark(rgb(54, 57, 61), rgb(186, 189, 192));">
+<g transform="translate(167,2192) scale(1)">
+<text y="30" data-line-font-size="30" x="0">
+<tspan>THE MACHINE ITSELF</tspan>
+</text>
+<text y="66" data-line-font-size="30" x="0">
+<tspan>physical - no scheduling class applies to it</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="b93">
 <g transform="translate(0.5,0.5)">
-<rect x="547" y="380" width="340" height="225" rx="33.75" ry="33.75" fill="#dae8fc" stroke="#6c8ebf" stroke-dasharray="3 3" pointer-events="all" style="fill: light-dark(rgb(218, 232, 252), rgb(29, 41, 59)); stroke: light-dark(rgb(108, 142, 191), rgb(92, 121, 163));"/>
+<rect x="557" y="380" width="340" height="225" rx="33.75" ry="33.75" fill="#dae8fc" stroke="#6c8ebf" stroke-dasharray="3 3" pointer-events="all" style="fill: light-dark(rgb(218, 232, 252), rgb(29, 41, 59)); stroke: light-dark(rgb(108, 142, 191), rgb(92, 121, 163));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 338px; height: 1px; padding-top: 389px; margin-left: 548px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-<b>halrmt — a THIRD network door, onto HAL itself</b>
-<br />telnet · TCP 5006 · it attaches HAL like any component<br />
-<font color="#c0392b" style="color: light-dark(rgb(192, 57, 43), rgb(255, 140, 128));">LoadRt · Unload · AddF · Net · SetP · Shutdown</font>
-<br />
-<font color="#c0392b" style="color: light-dark(rgb(192, 57, 43), rgb(255, 140, 128));">— full control of the realtime config, over a socket</font>
-<br />
-<font color="#c0392b" style="color: light-dark(rgb(192, 57, 43), rgb(255, 140, 128));">default passwords EMC / EMCTOO · sessions unlimited</font>
-<br />
-<b>nothing starts it</b>: no config or script launches it<br />its man page: "It is not known if this interface currently works"</div>
-</div>
-</div>
-</foreignObject>
-<text x="717" y="402" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">halrmt — a THIRD network door, onto HAL itself...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="109.19999999999999" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(727,389) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan font-weight="bold">
+<tspan>halrmt — a THIRD network door, onto HAL itself</tspan>
+</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan>telnet · TCP 5006 · it attaches HAL like any component</tspan>
+</text>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan fill="rgb(192, 57, 43)" style="fill: light-dark(rgb(192, 57, 43), rgb(255, 140, 128));">
+<tspan>LoadRt · Unload · AddF · Net · SetP · Shutdown</tspan>
+</tspan>
+</text>
+<text y="59.8" data-line-font-size="13" x="0">
+<tspan fill="rgb(192, 57, 43)" style="fill: light-dark(rgb(192, 57, 43), rgb(255, 140, 128));">
+<tspan>— full control of the realtime config, over a socket</tspan>
+</tspan>
+</text>
+<text y="75.4" data-line-font-size="13" x="0">
+<tspan fill="rgb(192, 57, 43)" style="fill: light-dark(rgb(192, 57, 43), rgb(255, 140, 128));">
+<tspan>default passwords EMC / EMCTOO · sessions unlimited</tspan>
+</tspan>
+</text>
+<text y="91" data-line-font-size="13" x="0">
+<tspan font-weight="bold">
+<tspan>nothing starts it</tspan>
+</tspan>
+<tspan>: no config or script launches it</tspan>
+</text>
+<text y="106.6" data-line-font-size="13" x="0">
+<tspan>its man page: "It is not known if this interface currently works"</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="e22">
 <g transform="translate(0.5,0.5)">
-<path d="M 638.8 615.64 L 638.8 918 L 639.8 918 L 639.77 1223.29" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 638.8 610.39 L 642.3 617.39 L 638.8 615.64 L 635.3 617.39 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 639.77 1228.54 L 636.27 1221.54 L 639.77 1223.29 L 643.27 1221.54 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 648.8 615.64 L 648.8 918 L 649.8 918 L 649.77 1223.29" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 648.8 610.39 L 652.3 617.39 L 648.8 615.64 L 645.3 617.39 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 649.77 1228.54 L 646.27 1221.54 L 649.77 1223.29 L 653.27 1221.54 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
 </g>
 </g>
 <g data-cell-id="b4">
 <g transform="translate(0.5,0.5)">
-<rect x="1514" y="520" width="252" height="109" rx="16.35" ry="16.35" fill="#dae8fc" stroke="#6c8ebf" stroke-dasharray="3 3" pointer-events="all" style="fill: light-dark(rgb(218, 232, 252), rgb(29, 41, 59)); stroke: light-dark(rgb(108, 142, 191), rgb(92, 121, 163));"/>
+<rect x="1524" y="520" width="252" height="109" rx="16.35" ry="16.35" fill="#dae8fc" stroke="#6c8ebf" stroke-dasharray="3 3" pointer-events="all" style="fill: light-dark(rgb(218, 232, 252), rgb(29, 41, 59)); stroke: light-dark(rgb(108, 142, 191), rgb(92, 121, 163));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 250px; height: 1px; padding-top: 529px; margin-left: 1515px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">linuxcncrsh<br />telnet server · TCP 5007<br />a local NML client here</div>
-</div>
-</div>
-</foreignObject>
-<text x="1640" y="542" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px" text-anchor="middle">linuxcncrsh...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="46.800000000000004" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(1650,529) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan>linuxcncrsh</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan>telnet server · TCP 5007</tspan>
+</text>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan>a local NML client here</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="ie_a1OAYyR4woEJlA5U2-10">
 <g transform="translate(0.5,0.5)">
-<path d="M 717 276.37 L 717 373.63" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 717 271.12 L 720.5 278.12 L 717 276.37 L 713.5 278.12 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 717 378.88 L 713.5 371.88 L 717 373.63 L 720.5 371.88 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 727 276.37 L 727 373.63" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 727 271.12 L 730.5 278.12 L 727 276.37 L 723.5 278.12 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 727 378.88 L 723.5 371.88 L 727 373.63 L 730.5 371.88 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
 </g>
 </g>
 <g data-cell-id="ie_a1OAYyR4woEJlA5U2-9">
 <g transform="translate(0.5,0.5)">
-<rect x="557" y="90" width="320" height="180" rx="27" ry="27" fill="#eee" stroke="#36393d" stroke-dasharray="3 3" pointer-events="all" style="fill: light-dark(rgb(238, 238, 238), rgb(0, 0, 0)); stroke: light-dark(rgb(54, 57, 61), rgb(186, 189, 192));"/>
+<rect x="567" y="90" width="320" height="180" rx="27" ry="27" fill="#eee" stroke="#36393d" stroke-dasharray="3 3" pointer-events="all" style="fill: light-dark(rgb(238, 238, 238), rgb(0, 0, 0)); stroke: light-dark(rgb(54, 57, 61), rgb(186, 189, 192));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 318px; height: 1px; padding-top: 99px; margin-left: 558px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 17px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-<b>any telnet client</b>
-<br />no LinuxCNC-provided client exists:<br />the man page says telnet, and the tree<br />contains none — same as the 5007 door<br />a human or a script, on another machine</div>
-</div>
-</div>
-</foreignObject>
-<text x="717" y="116" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="17px" text-anchor="middle">any telnet client...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="102" font-size="17px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(727,99) scale(1)">
+<text y="17" data-line-font-size="17" x="0">
+<tspan font-weight="bold">
+<tspan>any telnet client</tspan>
+</tspan>
+</text>
+<text y="37.4" data-line-font-size="17" x="0">
+<tspan>no LinuxCNC-provided client exists:</tspan>
+</text>
+<text y="57.8" data-line-font-size="17" x="0">
+<tspan>the man page says telnet, and the tree</tspan>
+</text>
+<text y="78.2" data-line-font-size="17" x="0">
+<tspan>contains none — same as the 5007 door</tspan>
+</text>
+<text y="98.6" data-line-font-size="17" x="0">
+<tspan>a human or a script, on another machine</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="ie_a1OAYyR4woEJlA5U2-13">
 <g transform="translate(0.5,0.5)">
-<path d="M 807.02 820.87 L 806.97 853.66" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 807.03 815.62 L 810.52 822.62 L 807.02 820.87 L 803.52 822.61 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
-<path d="M 806.96 858.91 L 803.47 851.9 L 806.97 853.66 L 810.47 851.91 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 817.02 820.87 L 816.97 853.66" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke" style="stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 817.03 815.62 L 820.52 822.62 L 817.02 820.87 L 813.52 822.61 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
+<path d="M 816.96 858.91 L 813.47 851.9 L 816.97 853.66 L 820.47 851.91 Z" fill="#000000" stroke="#000000" stroke-miterlimit="10" pointer-events="all" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); stroke: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"/>
 </g>
 </g>
 <g data-cell-id="ie_a1OAYyR4woEJlA5U2-14">
 <g>
-<path d="M 17 1381 L 2377 1381" fill="none" stroke="#c0392b" stroke-width="4" stroke-miterlimit="10" stroke-dasharray="12 12" pointer-events="stroke" style="stroke: light-dark(rgb(192, 57, 43), rgb(255, 140, 128));"/>
+<path d="M 27 1381 L 2387 1381" fill="none" stroke="#c0392b" stroke-width="4" stroke-miterlimit="10" stroke-dasharray="12 12" pointer-events="stroke" style="stroke: light-dark(rgb(192, 57, 43), rgb(255, 140, 128));"/>
 </g>
 </g>
 <g data-cell-id="leg">
 <g transform="translate(0.5,0.5)">
-<rect x="2437" y="1000" width="700" height="665" rx="99.75" ry="99.75" fill="#ffffff" stroke="#36393d" pointer-events="all" style="fill: light-dark(rgb(255, 255, 255), rgb(18, 18, 18)); stroke: light-dark(rgb(54, 57, 61), rgb(186, 189, 192));"/>
+<rect x="2447" y="1000" width="700" height="665" rx="99.75" ry="99.75" fill="#ffffff" stroke="#36393d" pointer-events="all" style="fill: light-dark(rgb(255, 255, 255), rgb(18, 18, 18)); stroke: light-dark(rgb(54, 57, 61), rgb(186, 189, 192));"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 698px; height: 1px; padding-top: 1013px; margin-left: 2438px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
-<div style="display: inline-block; font-size: 16px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-<b>LEGEND — the colour says WHAT A THING IS</b>
-<br />
-<font style="font-size:13px">position says where it lives; the arrows say what moves</font>
-</div>
-</div>
-</div>
-</foreignObject>
-<text x="2787" y="1029" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="16px" text-anchor="middle">LEGEND — the colour says WHAT A THING IS...</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="middle" data-blockTextHeight="38.400000000000006" font-size="16px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(2797,1013) scale(1)">
+<text y="16" data-line-font-size="16" x="0">
+<tspan font-weight="bold">
+<tspan>LEGEND — the colour says WHAT A THING IS</tspan>
+</tspan>
+</text>
+<text y="35.2" data-line-font-size="16" x="0">
+<tspan style="font-size: 0.8125em;">
+<tspan>position says where it lives; the arrows say what moves</tspan>
+</tspan>
+</text>
+</g>
 </g>
 </g>
 <g data-cell-id="legs1">
 <g transform="translate(0.5,0.5)">
-<rect x="2457" y="1086" width="110" height="34" rx="5.1" ry="5.1" fill="#dae8fc" stroke="#6c8ebf" pointer-events="all" style="fill: light-dark(rgb(218, 232, 252), rgb(29, 41, 59)); stroke: light-dark(rgb(108, 142, 191), rgb(92, 121, 163));"/>
+<rect x="2467" y="1086" width="110" height="34" rx="5.1" ry="5.1" fill="#dae8fc" stroke="#6c8ebf" pointer-events="all" style="fill: light-dark(rgb(218, 232, 252), rgb(29, 41, 59)); stroke: light-dark(rgb(108, 142, 191), rgb(92, 121, 163));"/>
 </g>
 </g>
 <g data-cell-id="legt1">
-<g transform="translate(0.5,0.5)">
-<rect x="2581" y="1086" width="540" height="34" fill="none" stroke="none" pointer-events="all"/>
+<g>
+<rect x="2591" y="1086" width="540" height="34" fill="none" stroke="none" pointer-events="all"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe flex-start; width: 1px; height: 1px; padding-top: 1103px; margin-left: 2583px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: left; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: nowrap; ">a <b>PROCESS</b> — something the kernel schedules</div>
-</div>
-</div>
-</foreignObject>
-<text x="2583" y="1107" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px">a PROCESS — something the kernel schedules</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="start" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(2593,1108.5) scale(1)">
+<text>
+<tspan>a </tspan>
+<tspan font-weight="bold">
+<tspan>PROCESS</tspan>
+</tspan>
+<tspan> — something the kernel schedules</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="legs2">
 <g transform="translate(0.5,0.5)">
-<rect x="2457" y="1130" width="110" height="34" rx="5.1" ry="5.1" fill="#e1d5e7" stroke="#9673a6" stroke-width="3" pointer-events="all" style="fill: light-dark(rgb(225, 213, 231), rgb(57, 47, 63)); stroke: light-dark(rgb(150, 115, 166), rgb(149, 119, 163));"/>
+<rect x="2467" y="1130" width="110" height="34" rx="5.1" ry="5.1" fill="#e1d5e7" stroke="#9673a6" stroke-width="3" pointer-events="all" style="fill: light-dark(rgb(225, 213, 231), rgb(57, 47, 63)); stroke: light-dark(rgb(150, 115, 166), rgb(149, 119, 163));"/>
 </g>
 </g>
 <g data-cell-id="legt2">
-<g transform="translate(0.5,0.5)">
-<rect x="2581" y="1130" width="540" height="34" fill="none" stroke="none" pointer-events="all"/>
+<g>
+<rect x="2591" y="1130" width="540" height="34" fill="none" stroke="none" pointer-events="all"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe flex-start; width: 1px; height: 1px; padding-top: 1147px; margin-left: 2583px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: left; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: nowrap; ">
-<b>SHARED MEMORY</b> — created on one side, attached from the other</div>
-</div>
-</div>
-</foreignObject>
-<text x="2583" y="1151" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px">SHARED MEMORY — created on one side, attached from the other</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="start" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(2593,1152.5) scale(1)">
+<text>
+<tspan font-weight="bold">
+<tspan>SHARED MEMORY</tspan>
+</tspan>
+<tspan> — created on one side, attached from the other</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="legs3">
 <g transform="translate(0.5,0.5)">
-<rect x="2457" y="1174" width="110" height="34" rx="5.1" ry="5.1" fill="#d5e8d4" stroke="#82b366" pointer-events="all" style="fill: light-dark(rgb(213, 232, 212), rgb(31, 47, 30)); stroke: light-dark(rgb(130, 179, 102), rgb(68, 110, 44));"/>
+<rect x="2467" y="1174" width="110" height="34" rx="5.1" ry="5.1" fill="#d5e8d4" stroke="#82b366" pointer-events="all" style="fill: light-dark(rgb(213, 232, 212), rgb(31, 47, 30)); stroke: light-dark(rgb(130, 179, 102), rgb(68, 110, 44));"/>
 </g>
 </g>
 <g data-cell-id="legt3">
-<g transform="translate(0.5,0.5)">
-<rect x="2581" y="1174" width="540" height="34" fill="none" stroke="none" pointer-events="all"/>
+<g>
+<rect x="2591" y="1174" width="540" height="34" fill="none" stroke="none" pointer-events="all"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe flex-start; width: 1px; height: 1px; padding-top: 1191px; margin-left: 2583px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: left; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: nowrap; ">
-<b>REALTIME CODE</b> — a shared object dlopen'd into rtapi_app by loadrt</div>
-</div>
-</div>
-</foreignObject>
-<text x="2583" y="1195" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px">REALTIME CODE — a shared object dlopen'd into rtapi_app by loadrt</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="start" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(2593,1196.5) scale(1)">
+<text>
+<tspan font-weight="bold">
+<tspan>REALTIME CODE</tspan>
+</tspan>
+<tspan> — a shared object dlopen'd into rtapi_app by loadrt</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="legs4">
 <g transform="translate(0.5,0.5)">
-<rect x="2457" y="1218" width="110" height="34" rx="5.1" ry="5.1" fill="#fffdf5" stroke="#b0a06a" pointer-events="all" style="fill: light-dark(rgb(255, 253, 245), rgb(22, 20, 14)); stroke: light-dark(rgb(176, 160, 106), rgb(115, 101, 55));"/>
+<rect x="2467" y="1218" width="110" height="34" rx="5.1" ry="5.1" fill="#fffdf5" stroke="#b0a06a" pointer-events="all" style="fill: light-dark(rgb(255, 253, 245), rgb(22, 20, 14)); stroke: light-dark(rgb(176, 160, 106), rgb(115, 101, 55));"/>
 </g>
 </g>
 <g data-cell-id="legt4">
-<g transform="translate(0.5,0.5)">
-<rect x="2581" y="1218" width="540" height="34" fill="none" stroke="none" pointer-events="all"/>
+<g>
+<rect x="2591" y="1218" width="540" height="34" fill="none" stroke="none" pointer-events="all"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe flex-start; width: 1px; height: 1px; padding-top: 1235px; margin-left: 2583px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: left; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: nowrap; ">a <b>THREAD</b> — its members are config data, not code</div>
-</div>
-</div>
-</foreignObject>
-<text x="2583" y="1239" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px">a THREAD — its members are config data, not code</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="start" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(2593,1240.5) scale(1)">
+<text>
+<tspan>a </tspan>
+<tspan font-weight="bold">
+<tspan>THREAD</tspan>
+</tspan>
+<tspan> — its members are config data, not code</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="legs5">
 <g transform="translate(0.5,0.5)">
-<rect x="2457" y="1262" width="110" height="34" rx="5.1" ry="5.1" fill="#fff2cc" stroke="#d6b656" pointer-events="all" style="fill: light-dark(rgb(255, 242, 204), rgb(40, 29, 0)); stroke: light-dark(rgb(214, 182, 86), rgb(109, 81, 0));"/>
+<rect x="2467" y="1262" width="110" height="34" rx="5.1" ry="5.1" fill="#fff2cc" stroke="#d6b656" pointer-events="all" style="fill: light-dark(rgb(255, 242, 204), rgb(40, 29, 0)); stroke: light-dark(rgb(214, 182, 86), rgb(109, 81, 0));"/>
 </g>
 </g>
 <g data-cell-id="legt5">
-<g transform="translate(0.5,0.5)">
-<rect x="2581" y="1262" width="540" height="34" fill="none" stroke="none" pointer-events="all"/>
+<g>
+<rect x="2591" y="1262" width="540" height="34" fill="none" stroke="none" pointer-events="all"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe flex-start; width: 1px; height: 1px; padding-top: 1279px; margin-left: 2583px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: left; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: nowrap; ">a <b>FILE</b> — read, never a running thing</div>
-</div>
-</div>
-</foreignObject>
-<text x="2583" y="1283" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px">a FILE — read, never a running thing</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="start" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(2593,1284.5) scale(1)">
+<text>
+<tspan>a </tspan>
+<tspan font-weight="bold">
+<tspan>FILE</tspan>
+</tspan>
+<tspan> — read, never a running thing</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="legs6">
 <g transform="translate(0.5,0.5)">
-<rect x="2457" y="1306" width="110" height="34" rx="5.1" ry="5.1" fill="#eee" stroke="#36393d" pointer-events="all" style="fill: light-dark(rgb(238, 238, 238), rgb(0, 0, 0)); stroke: light-dark(rgb(54, 57, 61), rgb(186, 189, 192));"/>
+<rect x="2467" y="1306" width="110" height="34" rx="5.1" ry="5.1" fill="#eee" stroke="#36393d" pointer-events="all" style="fill: light-dark(rgb(238, 238, 238), rgb(0, 0, 0)); stroke: light-dark(rgb(54, 57, 61), rgb(186, 189, 192));"/>
 </g>
 </g>
 <g data-cell-id="legt6">
-<g transform="translate(0.5,0.5)">
-<rect x="2581" y="1306" width="540" height="34" fill="none" stroke="none" pointer-events="all"/>
+<g>
+<rect x="2591" y="1306" width="540" height="34" fill="none" stroke="none" pointer-events="all"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe flex-start; width: 1px; height: 1px; padding-top: 1323px; margin-left: 2583px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: left; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: nowrap; ">
-<b>NOT ON THIS COMPUTER</b>
-</div>
-</div>
-</div>
-</foreignObject>
-<text x="2583" y="1327" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px">NOT ON THIS COMPUTER</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="start" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(2593,1328.5) scale(1)">
+<text>
+<tspan font-weight="bold">
+<tspan>NOT ON THIS COMPUTER</tspan>
+</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="legs7">
 <g>
-<rect x="2457" y="1350" width="110" height="34" rx="5.1" ry="5.1" fill="#ffe6cc" stroke="#d79b00" stroke-width="2" pointer-events="all" style="fill: light-dark(rgb(255, 230, 204), rgb(54, 33, 10)); stroke: light-dark(rgb(215, 155, 0), rgb(153, 101, 0));"/>
+<rect x="2467" y="1350" width="110" height="34" rx="5.1" ry="5.1" fill="#ffe6cc" stroke="#d79b00" stroke-width="2" pointer-events="all" style="fill: light-dark(rgb(255, 230, 204), rgb(54, 33, 10)); stroke: light-dark(rgb(215, 155, 0), rgb(153, 101, 0));"/>
 </g>
 </g>
 <g data-cell-id="legt7">
-<g transform="translate(0.5,0.5)">
-<rect x="2581" y="1350" width="540" height="34" fill="none" stroke="none" pointer-events="all"/>
+<g>
+<rect x="2591" y="1350" width="540" height="34" fill="none" stroke="none" pointer-events="all"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe flex-start; width: 1px; height: 1px; padding-top: 1367px; margin-left: 2583px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: left; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: nowrap; ">
-<b>THE MACHINE</b> — not software at all</div>
-</div>
-</div>
-</foreignObject>
-<text x="2583" y="1371" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px">THE MACHINE — not software at all</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="start" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(2593,1372.5) scale(1)">
+<text>
+<tspan font-weight="bold">
+<tspan>THE MACHINE</tspan>
+</tspan>
+<tspan> — not software at all</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="legs8">
 <g transform="translate(0.5,0.5)">
-<rect x="2457" y="1394" width="110" height="34" rx="5.1" ry="5.1" fill="none" stroke="#36393d" stroke-dasharray="3 3" pointer-events="all" style="stroke: light-dark(rgb(54, 57, 61), rgb(186, 189, 192));"/>
+<rect x="2467" y="1394" width="110" height="34" rx="5.1" ry="5.1" fill="none" stroke="#36393d" stroke-dasharray="3 3" pointer-events="all" style="stroke: light-dark(rgb(54, 57, 61), rgb(186, 189, 192));"/>
 </g>
 </g>
 <g data-cell-id="legt8">
-<g transform="translate(0.5,0.5)">
-<rect x="2581" y="1394" width="540" height="34" fill="none" stroke="none" pointer-events="all"/>
+<g>
+<rect x="2591" y="1394" width="540" height="34" fill="none" stroke="none" pointer-events="all"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe flex-start; width: 1px; height: 1px; padding-top: 1411px; margin-left: 2583px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: left; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: nowrap; ">
-<b>no fill</b> — a container, or a subdivision of its parent</div>
-</div>
-</div>
-</foreignObject>
-<text x="2583" y="1415" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px">no fill — a container, or a subdivision of its parent</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="start" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(2593,1416.5) scale(1)">
+<text>
+<tspan font-weight="bold">
+<tspan>no fill</tspan>
+</tspan>
+<tspan> — a container, or a subdivision of its parent</tspan>
+</text>
+</g>
 </g>
 </g>
 </g>
 <g data-cell-id="legrules">
-<g transform="translate(0.5,0.5)">
-<rect x="2457" y="1446" width="664" height="160" fill="none" stroke="none" pointer-events="all"/>
+<g>
+<rect x="2467" y="1446" width="664" height="160" fill="none" stroke="none" pointer-events="all"/>
 </g>
 <g>
-<g>
-<switch>
-<foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%" height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
-<div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe flex-start; justify-content: unsafe flex-start; width: 1px; height: 1px; padding-top: 1453px; margin-left: 2459px;">
-<div style="box-sizing: border-box; font-size: 0; text-align: left; color: #000000; ">
-<div style="display: inline-block; font-size: 13px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: nowrap; ">
-<b>Why it is coloured this way:</b> so the colour can be checked, not admired.<br />• every GREEN box must sit inside rtapi_app<br />• every GREY box must sit above the remote line<br />• the ORANGE box must sit below the machine line<br />• every WHITE box must carry at least one link<br />All four hold as drawn. <b>And one trap</b>: "process" and "non-realtime" are not the<br />same thing — rtapi_app is a process and it lives below the line.<br />The letters on the NML strip say what each side DOES: the file declares task RW on<br />emcCommand, a permission it never uses.</div>
-</div>
-</div>
-</foreignObject>
-<text x="2459" y="1466" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="13px">Why it is coloured this way: so the colour can be checked, not admired....</text>
-</switch>
+<g fill="#000000" font-family="Helvetica" text-anchor="start" data-blockTextHeight="140.39999999999998" font-size="13px" style="fill: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">
+<g transform="translate(2469,1453) scale(1)">
+<text y="13" data-line-font-size="13" x="0">
+<tspan font-weight="bold">
+<tspan>Why it is coloured this way:</tspan>
+</tspan>
+<tspan> so the colour can be checked, not admired.</tspan>
+</text>
+<text y="28.6" data-line-font-size="13" x="0">
+<tspan>• every GREEN box must sit inside rtapi_app</tspan>
+</text>
+<text y="44.2" data-line-font-size="13" x="0">
+<tspan>• every GREY box must sit above the remote line</tspan>
+</text>
+<text y="59.8" data-line-font-size="13" x="0">
+<tspan>• the ORANGE box must sit below the machine line</tspan>
+</text>
+<text y="75.4" data-line-font-size="13" x="0">
+<tspan>• every WHITE box must carry at least one link</tspan>
+</text>
+<text y="91" data-line-font-size="13" x="0">
+<tspan>All four hold as drawn. </tspan>
+<tspan font-weight="bold">
+<tspan>And one trap</tspan>
+</tspan>
+<tspan>: "process" and "non-realtime" are not the</tspan>
+</text>
+<text y="106.6" data-line-font-size="13" x="0">
+<tspan>same thing — rtapi_app is a process and it lives below the line.</tspan>
+</text>
+<text y="122.2" data-line-font-size="13" x="0">
+<tspan>The letters on the NML strip say what each side DOES: the file declares task RW on</tspan>
+</text>
+<text y="137.8" data-line-font-size="13" x="0">
+<tspan>emcCommand, a permission it never uses.</tspan>
+</text>
 </g>
 </g>
 </g>
@@ -1465,10 +1645,5 @@
 </g>
 </g>
 </g>
-<switch>
-<g requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"/>
-<a transform="translate(0,-5)" xlink:href="https://www.drawio.com/doc/faq/svg-export-text-problems" target="_blank">
-<text text-anchor="middle" font-size="10px" x="50%" y="100%">Text is not SVG - cannot display</text>
-</a>
-</switch>
+</g>
 </svg>

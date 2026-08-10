@@ -92,9 +92,23 @@ draw.io.exe --export --format svg --embed-svg-fonts false --border 10 \
 
 Neither flag is decorative. `--border 10` is what gives `viewBox="0 0 3198 2414"`; without
 it the export is 3168 × 2384. `--embed-svg-fonts false` is the difference between **96 kB
-and 1.9 MB**. And the split matters because draw.io emits the whole file as **one line of
-96 529 characters**, which cannot be reviewed or diffed — the concrete objection raised
-upstream against the tool. Splitting costs 1.5 % of size and answers it.
+and 1.9 MB**. And the split matters because draw.io emits the whole file as **one line**,
+which cannot be reviewed or diffed — one of two objections raised upstream against the
+tool. Splitting costs about 2 % of size and answers it.
+
+**The other objection is answered in the model, not the command.** Every shape carries
+**`convertToSvg=1`**, the style property behind draw.io's *Convert Labels to SVG* checkbox
+(Format panel → Text → Advanced). Without it, draw.io writes each label as HTML inside a
+`<foreignObject>` and leaves a `<text>` fallback beside it — and those fallbacks are
+**truncated**, not merely reflowed: a three-line label came out as `INI file...`. A browser
+renders the HTML and never touches the fallback, but a renderer that does not implement the
+extension shows the truncation, and this project's own documentation pipeline runs on
+`asciidoctor-pdf`, not on a browser.
+
+With the property set, measured on this model: the export goes from **109 720 to 73 965
+bytes**, `<foreignObject>` from **56 to zero**, and text from 57 mostly-truncated fallbacks
+to **197 real `<text>` elements** with 302 `<tspan>` children, one per rendered line. *The
+file gets smaller and more robust at the same time*, which is unusual enough to record.
 
 **Record the draw.io version whenever this is regenerated**, in the comment at the top of
 the `.svg`. The same model exported on 2026-08-10 with 31.1.8 produces 109 720 bytes against
