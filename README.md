@@ -106,11 +106,12 @@ git -C linuxcnc-ethercat checkout 87a72a8
 powershell -File linuxcnc-audit/tools/verify-citations.ps1
 ```
 
-Expected: `304 pass, 0 fail`. On a later HEAD a FAIL usually means the line
+Expected: `305 pass, 0 fail`. On a later HEAD a FAIL usually means the line
 moved — re-anchor the citation rather than assume the finding broke.
 
 **The manifest is a curated set, not an index**, and the gap is stated rather
-than hidden. Measured 2026-08-09, with the manifest at 304: `LINUXCNC-FINDINGS.md`
+than hidden. Measured 2026-08-09, with the manifest at 304 — it is **305 since
+2026-08-10**, one entry added for the trajectory jerk default: `LINUXCNC-FINDINGS.md`
 holds **220 distinct `file:line` citations, of which 187 have an entry at that
 exact line — 85%**.
 

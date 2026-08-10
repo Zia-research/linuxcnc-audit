@@ -143,7 +143,7 @@
     { "repo": "lcec", "file": "examples/swm-fm45a/swm-fm45a.hal", "line": 43, "match": "addf lcec\\.read-all\\s+servo-thread", "claim": "ethercat: real machine config opens with the driver read" },
     { "repo": "lcec", "file": "examples/swm-fm45a/swm-fm45a.hal", "line": 52, "match": "addf lcec\\.write-all\\s+servo-thread", "claim": "ethercat: ...and closes with the driver write" },
 
-    { "repo": "linuxcnc", "file": "src/emc/nml_intf/emccfg.h", "line": 51, "match": "DEFAULT_TRAJ_MAX_JERK 0\\.0", "claim": "pause: MAX_JERK defaults to zero" },
+    { "repo": "linuxcnc", "file": "src/emc/nml_intf/emccfg.h", "line": 51, "match": "DEFAULT_TRAJ_MAX_JERK 0\\.0", "claim": "pause: DEFAULT_TRAJ_MAX_JERK exists but is DEAD - nothing reads it; the effective trajectory default is initraj.cc:143" },
     { "repo": "linuxcnc", "file": "src/emc/nml_intf/emccfg.h", "line": 87, "match": "DEFAULT_AXIS_MAX_JERK 0\\.0", "claim": "pause: ...for axes too" },
     { "repo": "linuxcnc", "file": "src/emc/tp/ruckig_wrapper.c", "line": 236, "match": "max_jerk <= 0\\.0", "claim": "pause: third guard — the wrapper also refuses a zero-jerk plan" },
     { "repo": "linuxcnc", "file": "src/emc/tp/tp.c", "line": 3688, "match": "revert to T-shaped", "claim": "pause: the in-branch fallback, in tp.c's own words" },
@@ -151,6 +151,7 @@
 
     { "repo": "linuxcnc", "file": "src/emc/nml_intf/emccfg.h", "line": 57, "match": "DEFAULT_TRAJ_PLANNER_TYPE 0", "claim": "pause: the planner selector defaults to trapezoidal" },
     { "repo": "linuxcnc", "file": "src/emc/ini/initraj.cc", "line": 157, "match": "PLANNER_TYPE", "claim": "pause: PLANNER_TYPE is read from the INI, default 0" },
+    { "repo": "linuxcnc", "file": "src/emc/ini/initraj.cc", "line": 143, "match": "MAX_LINEAR_JERK.*1e9", "claim": "pause: the trajectory jerk key is MAX_LINEAR_JERK, and it defaults to 1e9 - so the 1.0 threshold does not fire on a default machine" },
     { "repo": "linuxcnc", "file": "src/emc/ini/initraj.cc", "line": 159, "match": "planner_type == 1 && jerk < 1\\.0", "claim": "pause: S-curve is silently downgraded when jerk is invalid" },
     { "repo": "linuxcnc", "file": "src/emc/ini/inihal.cc", "line": 320, "match": "planner_type == 1 && NEW\\(traj_max_jerk\\) < 1\\.0", "claim": "pause: the same rule on the runtime HAL pin" },
     { "repo": "linuxcnc", "file": "src/emc/tp/tp.c", "line": 3664, "match": "planner_type != 1", "claim": "pause: the S-curve branch is entered only for type 1" },
