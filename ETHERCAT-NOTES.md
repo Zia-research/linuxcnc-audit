@@ -408,9 +408,16 @@ git -C linuxcnc-ethercat checkout 87a72a8
 **Some** of the `file:line` citations here are covered by the machine-checked
 manifest in `tools/` — not all of them, and this line used to
 claim otherwise. The manifest is a curated set backing `LINUXCNC-FINDINGS.md`; it was
-never an index of every citation in either document. Measured 2026-08-07: 15 of the
-citations in this file have no manifest entry, and 39 of those in the findings do
-not either. A green verifier run therefore means *the manifest's* citations hold — it
+never an index of every citation in either document. **Measured 2026-08-10: this file
+carries 32 distinct `file:line` citations, of which 13 have no manifest entry** — most of
+them in `lcec_main.c`, which the manifest barely covers.
+
+The figure for the *findings* is deliberately not repeated here: it lives in `README.md`,
+with the command that reproduces it. This line said **39** from 2026-08-07 until
+2026-08-10, by which time the answer was 32 — *a number kept in two files is a number that
+will drift*, which is the same correction already made to the verifier's own header.
+
+A green verifier run therefore means *the manifest's* citations hold — it
 says nothing about the ones it does not contain. Re-read those by hand at the pinned
 HEADs above. Run it:
 

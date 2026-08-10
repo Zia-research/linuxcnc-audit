@@ -90,11 +90,22 @@ draw.io.exe --export --format svg --embed-svg-fonts false --border 10 \
 #   (Get-Content x.svg -Raw) -replace '><', ">`n<" | Set-Content x.svg
 ```
 
-Neither flag is decorative. `--border 10` is what gives `viewBox="0 0 3198 2414"`; without
-it the export is 3168 × 2384. `--embed-svg-fonts false` is the difference between **96 kB
-and 1.9 MB**. And the split matters because draw.io emits the whole file as **one line**,
-which cannot be reviewed or diffed — one of two objections raised upstream against the
-tool. Splitting costs about 2 % of size and answers it.
+Neither flag is decorative. `--border 10` sets the margin and therefore the `viewBox`;
+read the current one back rather than trusting this sentence, because **it moves whenever
+the text metrics do**:
+
+```bash
+grep -o 'viewBox="[^"]*"' sheets/linuxcnc-system-overview.svg
+```
+
+It answers `0 0 3209 2414` today. An earlier export — before the labels became native SVG
+text, which changed the measured bounding box — gave 3198 × 2414 with the flag against
+3168 × 2384 without it. **The flag's contribution is the point, not the absolute number**,
+and this paragraph said 3198 for four days after the figure had stopped producing it.
+`--embed-svg-fonts false` is the difference between **96 kB and 1.9 MB**. And the split
+matters because draw.io emits the whole file as **one line**, which cannot be reviewed or
+diffed — one of two objections raised upstream against the tool. Splitting costs about 2 %
+of size and answers it.
 
 **The other objection is answered in the model, not the command.** Every shape carries
 **`convertToSvg=1`**, the style property behind draw.io's *Convert Labels to SVG* checkbox
@@ -119,10 +130,16 @@ truncated fallback, and nothing in the export says so. **Count `<foreignObject>`
 output rather than trusting the property to be present in the model.**
 
 **Record the draw.io version whenever this is regenerated**, in the comment at the top of
-the `.svg`. The same model exported on 2026-08-10 with 31.1.8 produces 109 720 bytes against
-the 96 667 of the committed file — **13 % more with no change to the drawing**. A regenerated
-export therefore shows a large diff that means nothing, and the version is the only thing
-that explains why. *An artefact that is generated has to say what generated it.*
+the `.svg`. The same model, the same command: the export committed on 2026-08-08 was
+96 667 bytes; re-exported on 2026-08-10 with 31.1.8 it came out at 109 720 — **13 % more
+with no change to the drawing**. A regenerated export therefore shows a large diff that
+means nothing, and the version is the only thing that explains why. *An artefact that is
+generated has to say what generated it.*
+
+Neither of those two figures is the size of the file committed here: the labels became
+native SVG text afterwards, which changed it again. That is the trap this paragraph fell
+into — it called 96 667 *"the committed file"*, and stayed on the page after the committed
+file had changed twice. *Ask the file, not the paragraph.*
 
 The HTML page carries its own copy of the figure, inline, so that it stays a single file
 with no dependencies. It was produced by a converter that no longer exists — see *The figure
