@@ -78,11 +78,33 @@ on one side of every line. **And the two shared-memory segments lie in the bound
 attached from the other, which is what shared memory is. A configuration can create more,
 and the figure names them.
 
-**The source is [`sheets/linuxcnc-system-overview.drawio`](sheets/linuxcnc-system-overview.drawio)**,
-and the HTML page is generated from it: box geometry comes from the model, connector
-routing from draw.io's own SVG export, and only the `<svg>` block of the page is replaced,
-so the prose around it never makes the round trip. Editing the SVG in the page by hand is a
-change the next conversion deletes.
+**The source is [`sheets/linuxcnc-system-overview.drawio`](sheets/linuxcnc-system-overview.drawio)** —
+43 kB of uncompressed XML over 335 lines, so it reviews and diffs like the rest of the
+repository. [`sheets/linuxcnc-system-overview.svg`](sheets/linuxcnc-system-overview.svg) is
+exported from it:
+
+```bash
+draw.io.exe --export --format svg --embed-svg-fonts false --border 10 \
+            --output linuxcnc-system-overview.svg linuxcnc-system-overview.drawio
+# then split the single output line, one element per line:
+#   (Get-Content x.svg -Raw) -replace '><', ">`n<" | Set-Content x.svg
+```
+
+Neither flag is decorative. `--border 10` is what gives `viewBox="0 0 3198 2414"`; without
+it the export is 3168 × 2384. `--embed-svg-fonts false` is the difference between **96 kB
+and 1.9 MB**. And the split matters because draw.io emits the whole file as **one line of
+96 529 characters**, which cannot be reviewed or diffed — the concrete objection raised
+upstream against the tool. Splitting costs 1.5 % of size and answers it.
+
+**Record the draw.io version whenever this is regenerated**, in the comment at the top of
+the `.svg`. The same model exported on 2026-08-10 with 31.1.8 produces 109 720 bytes against
+the 96 667 of the committed file — **13 % more with no change to the drawing**. A regenerated
+export therefore shows a large diff that means nothing, and the version is the only thing
+that explains why. *An artefact that is generated has to say what generated it.*
+
+The HTML page carries its own copy of the figure, inline, so that it stays a single file
+with no dependencies. It was produced by a converter that no longer exists — see *The figure
+checker* below for why — so the next change to the figure inlines the export above instead.
 
 Both network doors are drawn, because a door that is not shown is a door nobody thinks
 about, and they are not alike: `linuxcncrsh` is a telnet server on TCP 5007 speaking
