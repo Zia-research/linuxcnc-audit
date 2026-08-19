@@ -1,5 +1,5 @@
 <meta charset="utf-8">
-<title>LinuxCNC context diagram — as published vs corrected</title>
+<title>LinuxCNC context diagram — as published, reviewed, rebuilt</title>
 <style>
   :root { --ink:#1a1d21; --muted:#5b636b; --line:#d8dde2; --bg:#f4f6f8; --card:#fff; --red:#c0392b; }
   * { box-sizing:border-box; }
@@ -26,6 +26,8 @@
   .fixln { stroke:var(--red); fill:none; stroke-width:2; }
   .fixtx { fill:var(--red); font-weight:700; }
   .badge { fill:var(--red); }
+  .badge-d { fill:#7a828a; }
+  .decln { stroke:#7a828a; fill:none; stroke-width:2; }
   .badge-t { fill:#fff; font-weight:700; font-size:10px; }
   body.orig .v-fix { display:none; }
   body.fix  .v-orig { display:none; }
@@ -47,15 +49,18 @@
 </style>
 
 <div class="wrap">
-<h1>LinuxCNC context diagram — as published vs corrected</h1>
+<h1>LinuxCNC context diagram — as published, reviewed, rebuilt</h1>
 <p class="sub">
   <code>docs/src/getting-started/images/LCNC_Architecture_C1.drawio.svg</code>, merged by PR
   <a href="https://github.com/LinuxCNC/linuxcnc/pull/3781">#3781</a> on 2026-03-01. The working
   base of this page is their work: the diagram zz912 drew, shaped in review by smoe, c-morley and
   BsAtHome in that thread, and merged by andypugh. Both states are
-  redrawn here from the same code, so the only differences between them are the corrections.
+  redrawn here from the same code, so the only differences between them are the two marked changes.
   <strong>The three actor boxes — operator, developers, integrator — have been dropped from both
-  views</strong>, along with the thirteen arrows that started from them. The third view is not that
+  views</strong>, along with the thirteen arrows that started from them — a change of purpose, not
+  a correction, and one <strong>zz912 has declined for his own diagram</strong>: the actors are what
+  it was drawn to show. His answer of 2026-08-10 opens the notes below, and it settles two of the
+  three points raised here. The third view is not that
   drawing at all: it is rebuilt from the source, cross-checked against the findings file, and its
   structure differs because the published structure does not match the code. Third sheet of the
   audit — the verification passes behind it, and the corrections they forced on this page itself,
@@ -64,9 +69,10 @@
 
 <div class="bar">
   <button id="b1" class="on">Published wiring</button>
-  <button id="b2">Corrected wiring</button>
+  <button id="b2">Reviewed wiring</button>
   <button id="b3">Rebuilt from the code</button>
-  <span class="hint">First two: same drawing, changes in red. Third: redrawn from scratch.</span>
+  <span class="hint">First two: same drawing. <strong>Red</strong>: the error zz912 accepts.
+    <strong>Grey</strong>: raised, and declined by him. Third: redrawn from scratch.</span>
 </div>
 
 <div class="stage" id="stage-ab">
@@ -76,6 +82,8 @@
       <path d="M0,0 L7,3 L0,6 z" fill="#000"/></marker>
     <marker id="ar" markerWidth="8" markerHeight="8" refX="6.5" refY="3" orient="auto-start-reverse">
       <path d="M0,0 L7,3 L0,6 z" fill="#c0392b"/></marker>
+    <marker id="ad" markerWidth="8" markerHeight="8" refX="6.5" refY="3" orient="auto-start-reverse">
+      <path d="M0,0 L7,3 L0,6 z" fill="#7a828a"/></marker>
   </defs>
 
   <!-- ============ SOLID LINES (mandatory) ============ -->
@@ -132,8 +140,8 @@
   <g class="v-fix">
     <!-- (1) halcmd / halshow attach to HAL, not to the core -->
     <path class="fixln dash" d="M668,317 V397 H642" marker-end="url(#ar)"/>
-    <!-- (2) embedded panels export HAL pins -->
-    <path class="fixln dash" d="M88,158 H26 V397 H114" marker-end="url(#ar)"/>
+    <!-- (2) embedded panels export HAL pins - raised, and declined by zz912: see the first note -->
+    <path class="decln dash" d="M88,158 H26 V397 H114" marker-end="url(#ad)"/>
   </g>
 
   <!-- ============ TEXT ============ -->
@@ -180,7 +188,7 @@
   <!-- ============ BADGES ============ -->
   <g class="v-fix">
     <circle class="badge" cx="656" cy="397" r="9"/><text class="badge-t" x="656" y="401">1</text>
-    <circle class="badge" cx="26" cy="278" r="9"/><text class="badge-t" x="26" y="282">2</text>
+    <circle class="badge-d" cx="26" cy="278" r="9"/><text class="badge-t" x="26" y="282">2</text>
   </g>
 
   <!-- ============ LEGEND ============ -->
@@ -313,6 +321,39 @@
 </div>
 
 <div class="notes">
+  <div class="note">
+    <h3>zz912's answer — 2026-08-10 — and what this page withdraws</h3>
+    <p>The three observations below were put to the author of the figure on his own thread. He
+      answered on 2026-08-10
+      (<a href="https://github.com/LinuxCNC/linuxcnc/pull/3718#issuecomment-5239246007">#3718</a>):
+      <strong>one he accepts as an error in his diagram, two he declines, with his reasons.</strong>
+      They are recorded here rather than argued past, and the arguments are left standing where they
+      were made — marked as answered, not deleted, so a reader can check the answer against what it
+      answers.</p>
+    <p><strong>Accepted — the terminal tools (note 1).</strong> <em>"I agree with you here. That is
+      an error in my diagram. If you want to prepare a PR fixing this, please do so."</em></p>
+    <p><strong>Declined — the embedded panels' HAL link (note 2).</strong> <em>"I agree that there
+      is currently no such direct link that should be shown in the diagram. I deliberately did not
+      draw one."</em> His reasons, in his words: <em>"C-morley is currently working on ZMQ
+      communication, so I think we should wait and see what becomes the preferred approach for
+      creating and communicating with embedded panels in the future."</em> — <em>"HAL is a realtime
+      part of the system, whereas embedded panels are a user-interface mechanism."</em> — and the
+      question is outside what this diagram is for: <em>"deciding whether an Embedded Panel should
+      communicate through HAL, ZMQ, or something else is an architectural design question that I
+      don't think should be encoded into the C1 context diagram."</em>
+      <strong>This page called the omission "a real gap"; that judgement is withdrawn.</strong> The
+      code fact underneath it — those panels exist to export HAL pins — is not in dispute, and he
+      does not dispute it.</p>
+    <p><strong>Declined — dropping the three actors.</strong> <em>"Regarding the three actors,
+      though, my intention was actually almost the opposite of yours. The Operator, Integrator and
+      Developer are the most important parts of my context diagram."</em> And on what removing them
+      would do: <em>"Removing them would make the diagram clearer as an internal technical map, but
+      it would also remove the main purpose for which I created this particular diagram."</em>
+      <strong>Nothing on this page proposes that removal for his figure.</strong> The two A/B views
+      here drop the actors because this page asks the wiring question — which is, in his words,
+      <em>"a different question"</em>.</p>
+  </div>
+
   <div class="note only-ab">
     <h3>1 &nbsp;The terminal tools sit on the wrong side of the boundary</h3>
     <p>As published, one box holds <code>halcmd / halshow / linuxcncrsh</code> and draws a single
@@ -328,12 +369,16 @@
   </div>
 
   <div class="note only-ab">
-    <h3>2 &nbsp;Embedded tabs and panels have no link to HAL</h3>
+    <h3>2 &nbsp;Embedded tabs and panels have no link to HAL — raised, and declined</h3>
     <p>Their entire purpose is to export HAL pins — <code>pyvcp_widgets.py:205,209</code> and
       <code>gladevcp/hal_widgets.py:44-45</code> call <code>newpin()</code>. As published they
       connect only to the GUI. On a diagram whose central organising line is the
-      <em>HAL Interface Boundary</em>, leaving out the HAL link of the one component that exists to
-      cross it is a real gap.</p>
+      <em>HAL Interface Boundary</em>, this page argued that leaving out the HAL link of the one
+      component that exists to cross it was a real gap.</p>
+    <p><strong>zz912 has declined that, and the omission is deliberate</strong> — his three reasons
+      are quoted in the first note. The pin exports stand; the conclusion drawn from them does not.
+      The arrow stays on the second view, in grey, as a point raised and answered — not as a
+      defect.</p>
   </div>
 
   <div class="note grey only-ab">
@@ -357,7 +402,7 @@
   </div>
 
   <div class="note grey only-ab">
-    <h3>What dropping the three actor boxes changes</h3>
+    <h3>What dropping the three actor boxes changes — and why zz912 keeps them</h3>
     <p>Operator, Developers/Testers and Integrator were the <em>actors</em> of a C4 level-1 context
       diagram — a system in its scope, with its users and neighbouring systems. Removing them, and
       the thirteen arrows fanning out from them, turns this into something else: a map of the parts
@@ -369,9 +414,12 @@
       question the original was built to answer. zz912's stated aim was <em>"to show how developers,
       integrators and operators are involved in the project. That's all."</em> Judged as a technical
       map this version is clearer; judged as what it was drawn to be, the actors were the content.</p>
-    <p>Worth keeping straight if any of this ever goes upstream: the two red corrections are defects
-      in the published figure, and this removal is a change of purpose. They should not travel in
-      the same sentence.</p>
+    <p><strong>zz912 answered this on 2026-08-10: he keeps the actors</strong>, because they are
+      what the figure was drawn to show. His words are in the first note. Nothing here is a proposal
+      to remove them from his diagram.</p>
+    <p>Worth keeping straight if any of this ever goes upstream: one marked change is an error in
+      the published figure and its author says so; one was raised and declined; and this removal is
+      a change of purpose. The three should not travel in the same sentence.</p>
   </div>
 
   <div class="note only-code">
@@ -439,6 +487,23 @@
       motmod's functs" — "linked into" was loose — and the servo-thread box now says its contents
       are members, not execution order.</p>
   </div>
+
+  <div class="note">
+    <h3>Corrections to this page — 2026-08-19</h3>
+    <p>zz912 answered the three observations on 2026-08-10. Until today this page went on serving
+      two of them as though they were still open: it called the missing panels → HAL link
+      <em>a real gap</em>, and it weighed the removal of the three actors as a live option. Sending
+      him here would have made him read, as current, arguments he had already answered — with his
+      reasons — nine days earlier.</p>
+    <p>What changed: his answer now opens the notes, in his own words and linked to the comment; the
+      two declined points are marked as declined at the place where they are made; and the second
+      marked change is drawn in grey, badge included, so the accepted error and the declined
+      observation are no longer the same colour. The page is titled <em>as published, reviewed,
+      rebuilt</em> rather than <em>vs corrected</em>, because one of the two marks is not a
+      correction.</p>
+    <p>Nothing was deleted. The arguments stand where they were made, which is what lets a reader
+      check the answer against what it answers.</p>
+  </div>
 </div>
 
 <p class="foot">
@@ -449,7 +514,7 @@
   solid against operator ↔ physical panel dashed, integrator → hardware, HAL Modules ↔ Machine
   Hardware, Core ↔ HAL boundary, and the solid/dashed legend applied consistently throughout.
   Verified line by line against the pinned clone (<code>caa13ca6ae</code>) and corrected on
-  2026-08-06 — see the last note.
+  2026-08-06 — see the closing notes: a second pass followed on 2026-08-19.
 </p>
 </div>
 

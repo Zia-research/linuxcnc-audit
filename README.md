@@ -54,12 +54,15 @@ diagram audited alongside.
 ### [`sheets/linuxcnc-context-diagram.html`](sheets/linuxcnc-context-diagram.html)
 
 The C4 context diagram merged by LinuxCNC PR #3781, in three states: as
-published, with its two connection errors corrected in red — the terminal
-tools' only link points at the core when two of the three are HAL clients, and
-the embedded panels lack the HAL link that is their entire purpose — and
-rebuilt from the source. The page records its own verification passes and the
-corrections they forced on it, including one error of exactly the class it
-criticises.
+published, with two marked changes, and rebuilt from the source. **One of the
+two its author accepts as an error**, and invited a PR for: the terminal tools'
+only link points at the core when two of the three are HAL clients. **The other
+he declines**: the embedded panels have no HAL link because he deliberately drew
+none, and his reasons — the ZMQ work in progress, HAL being realtime where
+panels are interface, and the question not belonging in a C1 diagram — are
+quoted on the page in his own words. The page records his answer of 2026-08-10,
+its own verification passes, and the corrections they forced on it, including
+one error of exactly the class it criticises.
 
 ### [`sheets/linuxcnc-system-overview.html`](sheets/linuxcnc-system-overview.html)
 
