@@ -168,10 +168,10 @@
     <text x="548" y="568" class="sm">(drivers, counters, stepgens, logic)</text>
     <text x="788" y="534">HAL Components - Library</text>
     <text x="788" y="591">HAL Components - Custom</text>
-    <text x="167" y="705">Wizards</text><text x="167" y="719" class="sm">PNCconf / Stepconf</text>
+    <text x="167" y="705">Wizards</text><text x="167" y="719" class="sm">PNConf / Stepconf</text>
     <text x="448" y="697">Machine Hardware</text>
     <text x="448" y="711" class="sm">(Panels, buttons,</text><text x="448" y="725" class="sm">potentiometers)</text>
-    <text x="648" y="705">Machine Hardware</text><text x="648" y="719" class="sm">(axes, spindle, IO, safety)</text>
+    <text x="648" y="705">Machine Hardware</text><text x="648" y="719" class="sm">(joints, spindles, IO, safety)</text>
 
     <!-- Terminal labels -->
     <g class="v-orig">
@@ -334,10 +334,14 @@
       an error in my diagram. If you want to prepare a PR fixing this, please do so."</em></p>
     <p><strong>Declined — the embedded panels' HAL link (note 2).</strong> <em>"I agree that there
       is currently no such direct link that should be shown in the diagram. I deliberately did not
-      draw one."</em> His reasons, in his words: <em>"C-morley is currently working on ZMQ
-      communication, so I think we should wait and see what becomes the preferred approach for
-      creating and communicating with embedded panels in the future."</em> — <em>"HAL is a realtime
-      part of the system, whereas embedded panels are a user-interface mechanism."</em> — and the
+      draw one."</em> His reasons, in his words. The mechanism is unsettled: <em>"Part of the
+      reason is that C-morley is currently working on ZMQ communication, so I think we should wait
+      and see what becomes the preferred approach for creating and communicating with embedded
+      panels in the future."</em> The impression it would give: <em>"When I was a beginner, I
+      initially had the impression that HAL was somehow the universal solution for connecting
+      everything to everything in LinuxCNC. I don't think that is a particularly helpful impression
+      to give to beginners."</em> The layering: <em>"HAL is a realtime part of the system, whereas
+      embedded panels are a user-interface mechanism."</em> And the
       question is outside what this diagram is for: <em>"deciding whether an Embedded Panel should
       communicate through HAL, ZMQ, or something else is an architectural design question that I
       don't think should be encoded into the C1 context diagram."</em>
@@ -375,8 +379,8 @@
       connect only to the GUI. On a diagram whose central organising line is the
       <em>HAL Interface Boundary</em>, this page argued that leaving out the HAL link of the one
       component that exists to cross it was a real gap.</p>
-    <p><strong>zz912 has declined that, and the omission is deliberate</strong> — his three reasons
-      are quoted in the first note. The pin exports stand; the conclusion drawn from them does not.
+    <p><strong>zz912 has declined that, and the omission is deliberate</strong> — his reasons are
+      quoted in the first note. The pin exports stand; the conclusion drawn from them does not.
       The arrow stays on the second view, in grey, as a point raised and answered — not as a
       defect.</p>
   </div>
@@ -393,9 +397,13 @@
       confusing rather than false.</p>
     <p><strong>"Machine Hardware" labels two different boxes</strong> — panels and buttons on one
       side, joints and spindles on the other.</p>
-    <p><strong>"Machine Hardware (axes, spindle, IO, safety)".</strong> The moving parts of a
-      machine are joints; "axes" here is the conflation the findings' erratum 6 documents
-      elsewhere. At context level, debatable — left as published.</p>
+    <p><strong>"Machine Hardware (joints, spindles, IO, safety)".</strong> The served figure
+      already says joints, and it is right — the moving parts of a machine are joints, and "axes"
+      is the conflation the findings' erratum 6 documents elsewhere. Its own <code>.drawio</code>
+      source still says <em>"(axes, spindle, IO, safety)"</em>: the two files have disagreed since
+      <a href="https://github.com/LinuxCNC/linuxcnc/pull/4057">#4057</a>, where the published SVG
+      was replaced by a hand-rebuilt one. That divergence is reported in
+      <a href="https://github.com/LinuxCNC/linuxcnc/pull/4423">#4423</a>, not settled here.</p>
     <p>The caption added during review also matters: <em>"It is not intended to help you understand
       the functionality of LinuxCNC."</em> That covers the simplifications above. It does not cover
       a wrong connection — showing who talks to what is precisely what this diagram sets out to do.</p>
@@ -503,6 +511,24 @@
       correction.</p>
     <p>Nothing was deleted. The arguments stand where they were made, which is what lets a reader
       check the answer against what it answers.</p>
+    <p><strong>Later the same day, two more — and they are of a worse kind.</strong> Correction 3
+      above says the as-published view was restored to the merged file's
+      <em>"(axes, spindle, IO, safety)"</em>, and correction 4 says the wizard names were matched
+      to the published <code>PNCconf / Stepconf</code>. Both are false. The figure the documentation
+      actually serves reads <em>"(joints, spindles, IO, safety)"</em> and
+      <code>PNConf / Stepconf</code>. The published state had been judged on the
+      <code>.drawio</code> source instead of the SVG served from it — the very fault this page
+      charges elsewhere, committed here twice. The two drawn labels now reproduce what is served,
+      <code>PNConf</code> and its dropped letter included; the wizard's own name is
+      <code>pncconf</code>.</p>
+    <p><strong>Corrections 3 and 4 are left exactly as they were written.</strong> They record what
+      was done on 2026-08-06, and rewriting them would remove the mistake instead of showing it.</p>
+    <p>Two smaller ones in the answer note above. zz912's ZMQ reason was quoted from
+      <em>"C-morley is currently…"</em>, cutting the <em>"Part of the reason is that"</em> that
+      opens his sentence — a hedge, and dropping it made one reason among several read as the
+      reason. And a fourth reason of his was left out while the text called them three: the
+      impression HAL gives a beginner, which carries the most weight of the four, since this figure
+      lives in the <em>Getting Started</em> chapter. All four are now quoted, whole.</p>
   </div>
 </div>
 
